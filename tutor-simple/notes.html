@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tutor · Demo notes</title>
+  <link rel="stylesheet" href="organic.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .notes { max-width: 980px; margin: 0 auto; padding: 26px 26px 64px; display: flex; flex-direction: column; gap: 22px; }
+    .notes h1 { font-size: 40px; margin: 0; }
+    .notes h2 { font-size: 26px; margin: 0 0 10px; }
+    .notes h3 { font-size: 19px; margin: 18px 0 8px; }
+    .notes section { padding: 24px 26px; gap: 10px; }
+    .notes p, .notes li { font-size: 16px; line-height: 1.55; }
+    .notes ol, .notes ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+    .notes .say { display: block; margin-top: 4px; color: var(--color-accent-2-700); font-style: italic; }
+    .pitch { font-family: var(--font-heading); font-size: 22px; line-height: 1.35; color: var(--color-accent-700); margin: 0; }
+    .principle { padding: 16px 18px; border-radius: var(--radius-lg); background: var(--color-accent-2-100); font-size: 17px; }
+    .notes .table-wrap { overflow-x: auto; }
+    .notes .table { min-width: 640px; }
+    .notes .table td { vertical-align: top; font-size: 15px; }
+    .notes .table td:first-child { font-weight: 600; }
+    .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .flow span.box { padding: 10px 14px; border-radius: 999px; background: var(--color-neutral-100); border: 2px solid var(--color-neutral-300); font-size: 15px; }
+    .flow span.box.ai { border-color: var(--color-accent); background: var(--color-accent-100); }
+    .flow span.box.human { border-color: var(--color-accent-2); background: var(--color-accent-2-100); }
+    .flow .arrow { color: var(--color-neutral-600); font-size: 18px; }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; }
+    .toc a { text-decoration: none; }
+    .badge { display: inline-block; min-width: 26px; text-align: center; font-family: var(--font-heading); color: var(--color-accent-700); }
+    @media print { .topbar, .toc { display: none; } .notes section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+
+  <header class="nav topbar">
+    <span class="nav-brand">Tutor</span>
+    <nav>
+      <a class="btn btn-ghost tab" href="index.html">Lessons</a>
+      <a class="btn btn-ghost tab" href="index.html#board">Board</a>
+      <a class="btn btn-ghost tab" href="index.html#progress">Progress</a>
+      <a class="btn btn-ghost tab active" href="notes.html">Demo notes</a>
+    </nav>
+  </header>
+
+  <main class="notes">
+    <div>
+      <span class="tag tag-accent-2">Demo notes</span>
+      <h1>Tutor: prototype and roadmap</h1>
+      <p class="lede">What the prototype shows, how it maps to the PRD, what is not built yet, and where AI comes in next.</p>
+    </div>
+
+    <nav class="toc">
+      <a class="btn btn-secondary" href="#what">1. What it is</a>
+      <a class="btn btn-secondary" href="#script">2. Demo script</a>
+      <a class="btn btn-secondary" href="#fit">3. PRD fit</a>
+      <a class="btn btn-secondary" href="#gaps">4. Not built yet</a>
+      <a class="btn btn-secondary" href="#ai">5. Where AI comes in</a>
+      <a class="btn btn-secondary" href="#next">6. Next steps</a>
+    </nav>
+
+    <section id="what" class="card">
+      <h2>1. What this prototype is</h2>
+      <p>A clickable prototype of the <strong>core teaching loop</strong>. A stick-figure tutor teaches on a chalkboard: it speaks, points at what it is talking about, asks the learner to tap, type or drag an answer, answers questions mid-lesson, and records progress by what the learner did <strong>without help</strong>.</p>
+      <p class="pitch">"This proves the teaching experience works across subjects and curricula. The next phase adds AI to write, adapt and personalise the lessons this board performs."</p>
+    </section>
+
+    <section id="script" class="card">
+      <h2>2. Demo script (about 5 minutes)</h2>
+      <ol>
+        <li><strong>Lessons screen.</strong> Eight objectives across Maths, English, Science, Geography and Music. Switch the curriculum (Nigeria / England / United States).
+          <span class="say">"Curriculum is a setting, not the product. The experience stays the same."</span></li>
+        <li><strong>Open "Reading large whole numbers"</strong> (the pilot topic) and press <strong>Play lesson</strong>. Point out that the tutor explains <em>why</em> before any rule, and points at each digit as it speaks.</li>
+        <li><strong>Answer wrong on purpose</strong>, then press <strong>Hint</strong>.
+          <span class="say">"Feedback never shames. A hint is a hint, not the answer."</span></li>
+        <li><strong>Press "Ask the tutor"</strong> and type <em>"why is there a zero?"</em>, then <strong>Back to the lesson</strong>.
+          <span class="say">"The learner can interrupt, and the lesson keeps its place."</span>
+          Then ask <em>"who won the football?"</em> (use exactly this question).
+          <span class="say">"It stays in scope. It won't guess; it flags the question for the teacher."</span></li>
+        <li><strong>Open "Parts of a plant cell"</strong>, drag the labels onto the diagram, then <strong>Check my answer</strong>.
+          <span class="say">"Same tutor and loop, different subject and a different kind of interaction."</span></li>
+        <li><strong>Progress screen.</strong>
+          <span class="say">"We measure mastery, not completion. Answers with and without help are counted separately."</span></li>
+      </ol>
+      <p class="muted" style="margin:6px 0 0">Before presenting: on Progress, press <strong>Clear this learner's record</strong>. Open the app with <strong>start.command</strong>, then on the Board press <strong>Test voice</strong> to check the sound. Chrome or Edge gives the best voice.</p>
+    </section>
+
+    <section id="fit" class="card">
+      <h2>3. How it fits the PRD</h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>PRD requirement</th><th>In the prototype</th></tr></thead>
+          <tbody>
+            <tr><td>A teacher, not a chatbot or video course</td><td>Tutor on a board that speaks, points and reacts. No open chat</td></tr>
+            <tr><td>Speech, pointing and gestures in sync</td><td>Speech and pointing are timed together. The tutor nods, tilts its head and celebrates</td></tr>
+            <tr><td>First principles before formal rules</td><td>Every lesson starts with <em>why</em> ("Rounding is not a rule to memorise...")</td></tr>
+            <tr><td>Learner selects, drags or answers</td><td>Tap, drag-and-drop and typed answers</td></tr>
+            <tr><td>Interrupt with a question, return without losing progress</td><td>"Ask the tutor" keeps the lesson's place; "Back to the lesson" resumes</td></tr>
+            <tr><td>Mastery, not completion</td><td>With-help and without-help answers counted separately; Mastered / Developing / Needs support</td></tr>
+            <tr><td>Curriculum is a variable, not the product</td><td>Curriculum switcher; same experience for Nigeria, England and the US</td></tr>
+            <tr><td>Not tied to Nigeria</td><td>8 lessons, 5 subjects, 3 curricula. Nigeria is only the default</td></tr>
+            <tr><td>Bounded, child-safe conversation</td><td>Out-of-scope questions get "I will not guess, I will flag it for your teacher"</td></tr>
+            <tr><td>Dignified feedback</td><td>"Not yet", "A hint, not the answer"</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="gaps" class="card">
+      <h2>4. What is not built yet</h2>
+      <ol>
+        <li><strong>Pilot depth.</strong> The pilot topic (Large Whole Numbers, JSS1) has one short lesson up to 100,000. The real pilot needs millions and billions, and practice that moves from guided to independent.</li>
+        <li><strong>Curriculum adaptation is shallow.</strong> Switching changes grade names and which lessons are available, not terminology ("units" vs "ones") or sequencing.</li>
+        <li><strong>Mastery covers 2 of 5 measures.</strong> Accuracy and independence are measured; retention, transfer and misconception recovery are not.</li>
+        <li><strong>Learner view only.</strong> No parent, teacher, school or reviewer views yet.</li>
+        <li><strong>No AI yet.</strong> Lessons are hand-written scripts, and "Ask the tutor" matches keywords.</li>
+        <li><strong>Accessibility.</strong> The chalkboard is drawn on a canvas, which screen readers cannot read and the keyboard cannot operate.</li>
+        <li><strong>Progress is saved in the browser only.</strong> Nothing syncs to a server, teacher or other device.</li>
+      </ol>
+    </section>
+
+    <section id="ai" class="card">
+      <h2>5. Where AI comes in</h2>
+      <div class="principle"><strong>AI writes the script, the board performs it.</strong> The board, the tutor's gestures and the progress tracking stay as predictable code. Every lesson is already data (steps like "point at this digit, say this, ask that"). The AI produces or adjusts that same data, and the app plays it exactly as it plays hand-written lessons today. The AI never draws on the board directly and never chats freely with a child, which keeps it safe, reviewable and inside the curriculum.</div>
+
+      <h3>Lesson creation (offline)</h3>
+      <div class="flow">
+        <span class="box">Curriculum objective</span><span class="arrow">→</span>
+        <span class="box ai">AI drafts lesson data</span><span class="arrow">→</span>
+        <span class="box human">Human reviewer approves</span><span class="arrow">→</span>
+        <span class="box">Lesson library</span>
+      </div>
+      <h3>During a lesson (live)</h3>
+      <div class="flow">
+        <span class="box">Learner question or answer</span><span class="arrow">→</span>
+        <span class="box ai">AI, limited to this lesson</span><span class="arrow">→</span>
+        <span class="box human">App checks the reply</span><span class="arrow">→</span>
+        <span class="box">Tutor says it and points</span>
+      </div>
+
+      <h3>Where AI plugs in, in order of value</h3>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Where</th><th>What the AI does</th><th>PRD link</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge">1</span>Ask the tutor <span class="tag tag-accent">live</span></td><td>Answers the learner's own questions, limited to the current lesson. Returns the answer, what to point at on the board, and whether to flag it for the teacher</td><td>Question interruption; child safety</td></tr>
+            <tr><td><span class="badge">2</span>Marking answers <span class="tag tag-accent">live</span></td><td>Accepts answers the keyword check misses ("forty thousand"). When wrong, works out <em>why</em> and picks the right re-teach</td><td>Misconception recovery; dignified feedback</td></tr>
+            <tr><td><span class="badge">3</span>Writing lessons <span class="tag tag-accent-2">offline</span></td><td>Drafts a full lesson from a curriculum objective. A human approves it before any child sees it</td><td>Content pipeline; curriculum integrity</td></tr>
+            <tr><td><span class="badge">4</span>Curriculum wording <span class="tag tag-accent-2">offline</span></td><td>Rewrites lessons in local terms ("units" vs "ones", "JSS1" vs "Year 7"). Also reviewed</td><td>Localization; curriculum as a variable</td></tr>
+            <tr><td><span class="badge">5</span>Fresh practice <span class="tag tag-accent">live</span></td><td>Generates new practice questions for retention and transfer. For maths, code double-checks every answer</td><td>Retention and transfer</td></tr>
+            <tr><td><span class="badge">6</span>Reports</td><td>Writes plain-language progress summaries for parents and teachers</td><td>Parents, teachers, schools</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Items 1 and 2 make the tutor feel intelligent to a learner. Items 3 and 4 let it scale to any country and curriculum, which is the PRD's central claim.</p>
+
+      <h3>How it would be built</h3>
+      <ul>
+        <li><strong>A small server</strong> sits between the app and the AI model, so the API key never reaches the browser. One endpoint per feature, e.g. <code>/ask</code>, <code>/mark</code>, <code>/draft-lesson</code>.</li>
+        <li><strong>Models:</strong> a fast model (e.g. Claude Haiku 4.5) for live features, so a child never waits; a stronger model (e.g. Claude Sonnet 5) for writing and adapting lessons offline.</li>
+        <li><strong>Safety:</strong> live replies come back in a fixed format the app checks. Anything off-topic, malformed or unsafe falls back to "I'll flag that for your teacher." Nothing AI-written reaches a lesson without human review.</li>
+      </ul>
+
+      <h3>How this answers the PRD's open questions</h3>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>PRD open question</th><th>Our answer</th></tr></thead>
+          <tbody>
+            <tr><td>Is the board hand-authored or generated?</td><td><strong>Both.</strong> The board performs lesson data; AI drafts that data and humans approve it</td></tr>
+            <tr><td>How is content produced at scale?</td><td>AI drafts per curriculum objective and reviewers approve, instead of writing from scratch</td></tr>
+            <tr><td>How is the conversation kept in scope?</td><td>The AI sees only the current lesson, replies in a checked format, and falls back to flagging the teacher</td></tr>
+            <tr><td>How is curriculum context applied?</td><td>Curriculum is a setting. AI adapts wording per curriculum, reviewed once and reused</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="next" class="card">
+      <h2>6. Suggested next steps</h2>
+      <ol>
+        <li>Add AI to <strong>Ask the tutor</strong>: the biggest live impact for the smallest build.</li>
+        <li>Build out the <strong>pilot lesson</strong>: Large Whole Numbers to millions and billions, with more practice.</li>
+        <li>Add <strong>curriculum terminology</strong> switching, drafted by AI and reviewed by a human.</li>
+        <li>Add <strong>retention checks</strong> (revisit questions days later) and a <strong>teacher view</strong>.</li>
+        <li>Add an <strong>accessible, keyboard-friendly</strong> layer over the board.</li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>

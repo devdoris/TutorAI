@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-54798a6b-4bb5-404d-bad0-3e603ae644d6/styles.css">
+<script src="_ds/organic-54798a6b-4bb5-404d-bad0-3e603ae644d6/_ds_bundle.js"></script>
+<style>
+@keyframes tutor-nod { 0%,100% { transform: rotate(0deg) } 30% { transform: rotate(9deg) } 65% { transform: rotate(-4deg) } }
+@keyframes tutor-jump { 0%,100% { transform: translateY(0) } 35% { transform: translateY(-26px) } 70% { transform: translateY(-6px) } }
+@keyframes tutor-pulse { 0%,100% { opacity: .2 } 50% { opacity: .85 } }
+@keyframes tutor-spark { 0% { opacity: 0; transform: scale(.4) } 40% { opacity: 1; transform: scale(1) } 100% { opacity: 0; transform: scale(1.5) } }
+@keyframes tutor-invite { 0%,100% { opacity: .25 } 50% { opacity: .7 } }
+</style>
+</helmet>
+<div style="min-height: 100%; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); padding: 28px 26px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; align-items: center;">
+
+  <div style="width: 100%; max-width: 1240px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span class="tag tag-accent-2" style="align-self: flex-start;">Interactive teaching board</span>
+      <h1 style="font-family: var(--font-heading); font-size: 38px; line-height: 1.05; margin: 0;">The tutor at the board</h1>
+      <p style="margin: 0; max-width: 52ch; font-size: 15px; color: var(--color-neutral-700); text-wrap: pretty;">Tap a circle, change a digit, answer the tutor's question — or open the teacher panel and build the lesson the class needs.</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <div class="tag tag-neutral" style="font-size: 14px;">{{ scoreLabel }}</div>
+      <button class="btn btn-ghost" onClick="{{ onTogglePanel }}">{{ panelLabel }}</button>
+    </div>
+  </div>
+
+  <div style="width: 100%; max-width: 1240px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">
+
+    <div style="flex: 1 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+
+      <div style="background: var(--color-neutral-200); border-radius: var(--radius-lg); padding: 16px; box-sizing: border-box; box-shadow: var(--shadow-md);">
+        <div style="position: relative; container-type: inline-size; width: 100%;">
+          <svg viewBox="0 0 1000 700" style="width: 100%; height: auto; display: block; overflow: visible;">
+            <rect x="236" y="26" width="740" height="566" rx="30" fill="var(--color-accent-700)"></rect>
+            <rect x="252" y="42" width="708" height="534" rx="20" fill="#2c332d"></rect>
+
+            <line x1="330" y1="324" x2="{{ traceX }}" y2="324" stroke="#eae2cf" stroke-width="4" stroke-linecap="round" stroke-dasharray="14 12" opacity="{{ traceOpacity }}" style="transition: all .35s linear;"></line>
+
+            <sc-for list="{{ digits }}" as="item" hint-placeholder-count="5">
+              <g style="cursor: pointer;" onClick="{{ item.onPoint }}">
+                <circle cx="{{ item.cx }}" cy="240" r="52" fill="{{ item.fill }}" stroke="{{ item.stroke }}" stroke-width="{{ item.sw }}" style="transition: all .3s ease;"></circle>
+                <sc-if value="{{ quizActive }}" hint-placeholder-val="{{ false }}">
+                  <circle cx="{{ item.cx }}" cy="240" r="66" fill="none" stroke="var(--color-accent-2)" stroke-width="3" stroke-dasharray="6 14" style="animation: tutor-invite 1.6s ease-in-out infinite;"></circle>
+                </sc-if>
+              </g>
+            </sc-for>
+
+            <g style="{{ figureStyle }}">
+              <line x1="150" y1="498" x2="112" y2="588" stroke="var(--color-text)" stroke-width="9" stroke-linecap="round"></line>
+              <line x1="150" y1="498" x2="192" y2="588" stroke="var(--color-text)" stroke-width="9" stroke-linecap="round"></line>
+              <line x1="150" y1="378" x2="150" y2="500" stroke="var(--color-text)" stroke-width="10" stroke-linecap="round"></line>
+              <polyline points="{{ leftArm }}" fill="none" stroke="var(--color-text)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" style="transition: all .45s cubic-bezier(.3,.8,.3,1);"></polyline>
+              <polyline points="{{ rightArm }}" fill="none" stroke="var(--color-text)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" style="transition: all .45s cubic-bezier(.3,.8,.3,1);"></polyline>
+              <g style="{{ headStyle }}">
+                <circle cx="150" cy="332" r="38" fill="var(--color-bg)" stroke="var(--color-text)" stroke-width="9"></circle>
+                <circle cx="137" cy="326" r="4.5" fill="var(--color-text)"></circle>
+                <circle cx="163" cy="326" r="4.5" fill="var(--color-text)"></circle>
+                <path d="{{ mouth }}" fill="none" stroke="var(--color-text)" stroke-width="5" stroke-linecap="round" style="transition: all .3s ease;"></path>
+              </g>
+              <sc-if value="{{ listening }}" hint-placeholder-val="{{ false }}">
+                <g>
+                  <circle cx="150" cy="332" r="60" fill="none" stroke="var(--color-accent-2)" stroke-width="4" style="animation: tutor-pulse 1.4s ease-in-out infinite;"></circle>
+                </g>
+              </sc-if>
+              <sc-if value="{{ celebrating }}" hint-placeholder-val="{{ false }}">
+                <g fill="var(--color-accent)" style="animation: tutor-spark 1.1s ease-out infinite;">
+                  <circle cx="72" cy="286" r="7"></circle>
+                  <circle cx="228" cy="268" r="9"></circle>
+                  <circle cx="120" cy="238" r="6"></circle>
+                </g>
+              </sc-if>
+            </g>
+
+            <line x1="{{ pointFromX }}" y1="{{ pointFromY }}" x2="{{ pointToX }}" y2="{{ pointToY }}" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 12" opacity="{{ guideOpacity }}" style="transition: all .45s cubic-bezier(.3,.8,.3,1);"></line>
+          </svg>
+
+          <div style="position: absolute; inset: 0; pointer-events: none;">
+            <div style="position: absolute; left: 29.2%; top: 9.5%; font-family: var(--font-heading); font-size: 3.3cqw; color: #f3ecdc;">{{ heading }}</div>
+            <div style="position: absolute; left: 29.2%; top: 17%; font-size: 1.9cqw; letter-spacing: .08em; color: #cfd8c4;">{{ subheading }}</div>
+            <div style="position: absolute; left: 29.2%; right: 5%; bottom: 21.5%; max-width: 62cqw; font-size: 2cqw; line-height: 1.35; font-style: italic; color: #f3ecdc; text-wrap: pretty;">{{ written }}</div>
+            <div style="position: absolute; left: 29.2%; top: 21.5%; font-size: 1.9cqw; color: var(--color-accent-300); opacity: {{ questionOpacity }};">{{ questionText }}</div>
+
+            <sc-for list="{{ digits }}" as="item" hint-placeholder-count="5">
+              <div style="position: absolute; left: {{ item.leftPct }}; top: 34.3%; transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer; line-height: 1;" onClick="{{ item.onPoint }}">
+                <span style="font-family: var(--font-heading); font-size: 5cqw; color: {{ item.ink }};">{{ item.d }}</span>
+              </div>
+              <div style="position: absolute; left: {{ item.leftPct }}; top: 48.5%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.4cqw; text-align: center; width: {{ colWidth }}; height: 11cqw; overflow: hidden;">
+                <span style="font-size: {{ labelSize }}; letter-spacing: .06em; line-height: 1.2; color: {{ item.labelInk }};">{{ item.label }}</span>
+                <span style="font-size: 1.3cqw; color: #9fb08f; opacity: {{ valuesOpacity }};">{{ item.value }}</span>
+                <div style="display: flex; gap: 0.6cqw; margin-top: auto; opacity: {{ editOpacity }}; pointer-events: {{ editEvents }};">
+                  <button onClick="{{ item.onDown }}" title="Lower this digit" style="width: 2.6cqw; height: 2.6cqw; border-radius: 999px; border: 0.2cqw solid #8d9c7e; background: transparent; color: #eae2cf; font-size: 1.5cqw; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;" style-hover="background: var(--color-accent-2); color: #2c332d;">–</button>
+                  <button onClick="{{ item.onUp }}" title="Raise this digit" style="width: 2.6cqw; height: 2.6cqw; border-radius: 999px; border: 0.2cqw solid #8d9c7e; background: transparent; color: #eae2cf; font-size: 1.5cqw; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;" style-hover="background: var(--color-accent-2); color: #2c332d;">+</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 14px 18px; display: flex; flex-direction: row; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+        <div style="flex: 1 1 auto; min-width: 260px;">
+          <div class="card-kicker">Tutor says</div>
+          <div style="font-size: 17px; line-height: 1.35; min-height: 46px;">{{ caption }}</div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-primary" onClick="{{ onQuiz }}">{{ quizLabel }}</button>
+          <sc-if value="{{ quizActive }}" hint-placeholder-val="{{ false }}">
+            <button class="btn btn-ghost" onClick="{{ onReveal }}">Show me</button>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+          <span style="font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); margin-right: 4px;">Point at</span>
+          <sc-for list="{{ digits }}" as="item" hint-placeholder-count="5">
+            <button class="btn btn-secondary" onClick="{{ item.onPoint }}" style="font-size: 14px;">{{ item.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+          <span style="font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); margin-right: 4px;">Actions</span>
+          <button class="btn btn-secondary" onClick="{{ onTrace }}">Read it together</button>
+          <button class="btn btn-secondary" onClick="{{ onCompare }}">Compare places</button>
+          <button class="btn btn-secondary" onClick="{{ onWrite }}">Write in words</button>
+          <button class="btn btn-secondary" onClick="{{ onListen }}">Wait for a question</button>
+          <button class="btn btn-secondary" onClick="{{ onNod }}">Nod</button>
+          <button class="btn btn-secondary" onClick="{{ onCelebrate }}">Celebrate</button>
+          <button class="btn btn-ghost" onClick="{{ onReset }}">Reset</button>
+        </div>
+        <p style="margin: 2px 0 0; font-size: 13px; color: var(--color-neutral-600);">Keyboard: ← → move the pointer, Enter points, Q asks a question, Space plays the lesson.</p>
+      </div>
+    </div>
+
+    <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ true }}">
+      <aside class="card elev-lg" style="flex: 0 1 348px; min-width: 300px; padding: 22px; display: flex; flex-direction: column; gap: 18px; position: sticky; top: 20px;">
+        <div>
+          <div class="card-kicker">Teacher setup</div>
+          <div class="card-title" style="margin: 2px 0 0;">Build this lesson</div>
+        </div>
+
+        <div class="field">
+          <label for="tb-num">Number on the board</label>
+          <input id="tb-num" class="input" value="{{ numberText }}" onChange="{{ onNumber }}" inputmode="numeric" placeholder="e.g. 40632">
+          <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+            <sc-for list="{{ presets }}" as="p" hint-placeholder-count="3">
+              <button class="btn btn-ghost" onClick="{{ p.onPick }}" style="font-size: 13px; padding: 6px 12px;">{{ p.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="tb-head">Lesson title</label>
+          <input id="tb-head" class="input" value="{{ heading }}" onChange="{{ onHeading }}">
+        </div>
+        <div class="field">
+          <label for="tb-sub">Objective line</label>
+          <input id="tb-sub" class="input" value="{{ subheading }}" onChange="{{ onSubheading }}">
+        </div>
+
+        <div class="field">
+          <label for="tb-pace">Teaching pace — {{ paceLabel }}</label>
+          <input id="tb-pace" class="input" type="range" min="0.6" max="1.8" step="0.2" value="{{ pace }}" onChange="{{ onPace }}" style="padding: 0; border: 0; background: transparent; accent-color: var(--color-accent);">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <span style="font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Board options</span>
+          <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="4">
+            <button onClick="{{ t.onToggle }}" style="{{ t.style }}">
+              <span>{{ t.label }}</span>
+              <span style="{{ t.pillStyle }}">{{ t.state }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <span style="font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Lesson script</span>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <sc-for list="{{ scriptSteps }}" as="s" hint-placeholder-count="4">
+              <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: {{ s.bg }}; font-size: 14px;">
+                <span style="width: 20px; font-family: var(--font-heading); color: var(--color-accent-700);">{{ s.n }}</span>
+                <span style="flex: 1;">{{ s.label }}</span>
+                <button class="btn btn-ghost" onClick="{{ s.onUp }}" title="Move up" style="padding: 2px 8px; font-size: 13px;">↑</button>
+                <button class="btn btn-ghost" onClick="{{ s.onRemove }}" title="Remove step" style="padding: 2px 8px; font-size: 13px;">✕</button>
+              </div>
+            </sc-for>
+            <div style="font-size: 13px; color: var(--color-neutral-600); opacity: {{ emptyScriptOpacity }};">No steps yet — add one below.</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <select class="input" value="{{ stepPick }}" onChange="{{ onStepPick }}" style="flex: 1; font-size: 14px;">
+              <sc-for list="{{ stepOptions }}" as="o" hint-placeholder-count="6">
+                <option value="{{ o.value }}">{{ o.label }}</option>
+              </sc-for>
+            </select>
+            <button class="btn btn-secondary" onClick="{{ onAddStep }}">Add</button>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary btn-block" onClick="{{ onPlay }}">{{ playLabel }}</button>
+          </div>
+        </div>
+      </aside>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}">
+const PLACES = [
+  { label: "Units", mult: 1 }, { label: "Tens", mult: 10 }, { label: "Hundreds", mult: 100 },
+  { label: "Thousands", mult: 1000 }, { label: "Ten thousands", mult: 10000 }, { label: "Hundred thousands", mult: 100000 }
+];
+const ONES = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+const TENS = ["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+const STEPS = [
+  { value: "point-each", label: "Point at every place" },
+  { value: "trace", label: "Read the number together" },
+  { value: "compare", label: "Compare two places" },
+  { value: "write", label: "Write it in words" },
+  { value: "quiz", label: "Ask the learner a question" },
+  { value: "listen", label: "Wait for a question" },
+  { value: "celebrate", label: "Celebrate" }
+];
+const STORE = "tutor-board-setup-v2";
+
+function under1000(n) {
+  let out = "";
+  if (n >= 100) { out += ONES[Math.floor(n / 100)] + " hundred"; n %= 100; if (n) out += " and "; }
+  if (n >= 20) { out += TENS[Math.floor(n / 10)]; if (n % 10) out += "-" + ONES[n % 10]; }
+  else if (n > 0) out += ONES[n];
+  return out;
+}
+function words(n) {
+  if (n === 0) return "zero";
+  const th = Math.floor(n / 1000), rest = n % 1000;
+  let out = "";
+  if (th) out += under1000(th) + " thousand";
+  if (th && rest) out += rest < 100 ? " and " : ", ";
+  if (rest) out += under1000(rest);
+  return out;
+}
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const group = n => n.toLocaleString("en-US");
+
+class Component extends DCLogic {
+  state = {
+    digits: [4, 0, 6, 3, 2],
+    heading: "Large whole numbers",
+    subheading: "Every place is ten times the one on its right",
+    pace: 1, guide: true, voice: false, showValues: true, letEdit: true,
+    target: 2, mode: "idle", caption: "Tap a circle and I will point at it — or open the teacher panel and set the lesson up.",
+    written: "", writeFor: "", nod: 0, compare: null, quiz: null, question: "",
+    correct: 0, tries: 0, panelOpen: true,
+    script: ["trace", "compare", "quiz", "celebrate"], stepPick: "point-each", playing: false
+  };
+  timers = [];
+  seq = 0;
+  playSeq = 0;
+  writeSeq = 0;
+  inPlay = false;
+
+  componentDidMount() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE) || "null");
+      if (saved) this.setState(saved);
+    } catch (e) {}
+    this.onKey = e => {
+      const ds = this.state.digits;
+      if (e.key === "ArrowRight") this.point(Math.min(this.state.target + 1, ds.length - 1));
+      else if (e.key === "ArrowLeft") this.point(Math.max(this.state.target - 1, 0));
+      else if (e.key === "Enter") this.point(this.state.target);
+      else if (e.key === "q" || e.key === "Q") this.quiz();
+      else if (e.code === "Space" && e.target === document.body) { e.preventDefault(); this.play(); }
+      else return;
+    };
+    window.addEventListener("keydown", this.onKey);
+  }
+  componentWillUnmount() { window.removeEventListener("keydown", this.onKey); this.stop(); }
+
+  save(patch) {
+    this.setState(patch);
+    const s = Object.assign({}, this.state, patch);
+    const keep = { digits: s.digits, heading: s.heading, subheading: s.subheading, pace: s.pace, guide: s.guide, voice: s.voice, showValues: s.showValues, letEdit: s.letEdit, script: s.script, panelOpen: s.panelOpen };
+    try { localStorage.setItem(STORE, JSON.stringify(keep)); } catch (e) {}
+  }
+
+  cancel() {
+    this.seq++;
+    this.timers.forEach(clearTimeout);
+    this.timers = [];
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    this.quizResolve = null;
+    if (!this.inPlay) this.setState({ playing: false });
+  }
+  stop() {
+    this.playSeq++;
+    this.inPlay = false;
+    this.cancel();
+    this.setState({ playing: false });
+  }
+  wait(ms) {
+    return new Promise(res => setTimeout(res, Math.max(16, ms / this.state.pace)));
+  }
+  say(text, extra) {
+    this.setState(Object.assign({ caption: text }, extra || {}));
+    if (this.state.voice && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = Math.min(1.4, this.state.pace);
+      window.speechSynthesis.speak(u);
+    }
+  }
+
+  places() {
+    const ds = this.state.digits;
+    const n = ds.length;
+    const gap = n >= 6 ? 108 : 116;
+    const startX = 612 - ((n - 1) * gap) / 2;
+    return ds.map((d, i) => {
+      const p = PLACES[n - 1 - i];
+      return { d: String(d), i, label: p.label, mult: p.mult, worth: d * p.mult, cx: startX + i * gap };
+    });
+  }
+  value() { return Number(this.state.digits.join("")); }
+
+  point(i, silent, chained) {
+    if (this.state.quiz) return this.answer(i);
+    if (!chained) this.stop();
+    const it = this.places()[i];
+    this.setState({ target: i, mode: "point", compare: null });
+    if (!silent) this.say(it.worth === 0
+      ? "This " + it.d + " holds the " + it.label.toLowerCase() + " place open. On its own it is worth nothing, but it keeps every other digit in its place."
+      : "The " + it.d + " sits in the " + it.label.toLowerCase() + " place, so it is worth " + group(it.worth) + ".");
+  }
+
+  bump(i, delta) {
+    const digits = this.state.digits.slice();
+    digits[i] = (digits[i] + delta + 10) % 10;
+    this.stop();
+    this.writeSeq++;
+    const p = this.places()[i];
+    this.save({ digits, target: i, mode: "point", compare: null, quiz: null, question: "", written: "" });
+    this.say("Now the " + p.label.toLowerCase() + " place holds " + digits[i] + ", so the number reads " + cap(words(Number(digits.join("")))) + ".");
+  }
+
+  async trace(chained) {
+    if (!chained) this.stop();
+    const tok = ++this.seq;
+    const ds = this.places();
+    this.setState({ mode: "trace", compare: null, quiz: null, question: "", target: 0 });
+    this.say("Let us read it together, left to right.");
+    await this.wait(700);
+    if (tok !== this.seq) return;
+    for (const it of ds) {
+      this.setState({ target: it.i, mode: "trace" });
+      this.say(it.worth ? cap(words(it.worth)) + " …" : "Nothing in the " + it.label.toLowerCase() + " …");
+      await this.wait(950);
+      if (tok !== this.seq) return;
+    }
+    const v = this.value();
+    this.setState({ mode: "point", written: group(v) + " = " + cap(words(v)) });
+    this.say(cap(words(v)) + ".");
+  }
+
+  async compare(chained) {
+    if (!chained) this.stop();
+    const tok = ++this.seq;
+    const ds = this.places();
+    const a = Math.max(0, Math.min(this.state.target, ds.length - 2)), b = a + 1;
+    this.setState({ mode: "compare", compare: [a, b], target: a, quiz: null, question: "" });
+    this.say("Same kind of digit, different place: one step to the left is worth " + ds[a].mult / ds[b].mult + " times more. " + ds[a].d + " here means " + group(ds[a].worth) + ", while " + ds[b].d + " there means " + group(ds[b].worth) + ".");
+    for (const t of [b, a, b, a]) { await this.wait(750); if (tok !== this.seq) return; this.setState({ target: t, mode: "compare" }); }
+  }
+
+  async write(chained) {
+    if (!chained) this.stop();
+    const id = ++this.writeSeq;
+    const key = this.state.digits.join("");
+    const v = this.value();
+    const text = group(v) + " = " + cap(words(v));
+    this.setState({ mode: "write", compare: null, quiz: null, question: "", written: "", writeFor: key });
+    this.say("I will write it in words while you watch.");
+    for (let k = 1; k <= text.length; k++) {
+      await this.wait(38);
+      if (id !== this.writeSeq) return;
+      this.setState({ written: text.slice(0, k), writeFor: key });
+    }
+  }
+
+  listen(chained) {
+    if (!chained) this.stop();
+    this.setState({ mode: "listen", compare: null, quiz: null, question: "" });
+    this.say("I am listening — ask me anything about this number and we will come straight back here.");
+  }
+  async listenStep() { this.listen(true); await this.wait(2600); }
+
+  nod() {
+    this.setState({ mode: "nod", compare: null, nod: this.state.nod + 1 });
+    this.say("Yes — that is exactly it.");
+    this.timers.push(setTimeout(() => this.setState({ mode: "point" }), 1100));
+  }
+
+  celebrate() {
+    this.setState({ mode: "celebrate", compare: null, quiz: null, question: "" });
+    this.say("Well done! You read a whole number by its places.");
+    this.timers.push(setTimeout(() => this.setState({ mode: "point" }), 2600));
+  }
+  async celebrateStep() { this.celebrate(); await this.wait(2400); }
+
+  quiz = () => {
+    if (this.state.quiz) return;
+    const ds = this.places();
+    const pick = ds[Math.floor(Math.random() * ds.length)];
+    this.setState({ mode: "quiz", compare: null, written: "", quiz: { answer: pick.i }, question: "Which digit is in the " + pick.label.toLowerCase() + " place?" });
+    this.say("Which digit is in the " + pick.label.toLowerCase() + " place? Tap its circle on the board.");
+    return new Promise(res => { this.quizResolve = res; });
+  };
+
+  answer(i) {
+    const q = this.state.quiz;
+    if (!q) return;
+    const ds = this.places();
+    const right = i === q.answer;
+    const it = ds[i];
+    if (right) {
+      this.setState({ quiz: null, question: "", target: i, mode: "nod", nod: this.state.nod + 1, correct: this.state.correct + 1, tries: this.state.tries + 1 });
+      this.say("Correct — the " + it.d + " is in the " + it.label.toLowerCase() + " place, worth " + group(it.worth) + ".");
+      this.timers.push(setTimeout(() => this.setState({ mode: "point" }), 1200));
+      const r = this.quizResolve; this.quizResolve = null;
+      if (r) setTimeout(r, 1400);
+    } else {
+      this.setState({ tries: this.state.tries + 1, target: i, mode: "quiz" });
+      this.say("That one is the " + it.label.toLowerCase() + " place. Count the places from the right — units, tens, hundreds — and try again.");
+    }
+  }
+
+  reveal = () => {
+    const q = this.state.quiz;
+    if (!q) return;
+    const it = this.places()[q.answer];
+    this.setState({ quiz: null, question: "", target: q.answer, mode: "point" });
+    this.say("Here it is — the " + it.d + " in the " + it.label.toLowerCase() + " place, worth " + group(it.worth) + ". We will come back to this one.");
+    const r = this.quizResolve; this.quizResolve = null;
+    if (r) setTimeout(r, 900);
+  };
+
+  async pointEach() {
+    const ds = this.places();
+    const tok = ++this.seq;
+    for (const it of ds) { this.point(it.i, false, true); await this.wait(1600); if (tok !== this.seq) return; }
+  }
+
+  play = async () => {
+    if (this.state.playing) { this.stop(); this.say("Lesson paused. Press play when you are ready."); return; }
+    this.stop();
+    const id = ++this.playSeq;
+    this.inPlay = true;
+    this.setState({ playing: true });
+    const alive = () => {
+      if (id === this.playSeq) return true;
+      this.inPlay = false;
+      this.setState({ playing: false });
+      return false;
+    };
+    for (const step of this.state.script) {
+      if (!alive()) return;
+      if (step === "point-each") await this.pointEach();
+      else if (step === "trace") await this.trace(true);
+      else if (step === "compare") await this.compare(true);
+      else if (step === "write") await this.write(true);
+      else if (step === "quiz") await this.quiz();
+      else if (step === "listen") await this.listenStep();
+      else if (step === "celebrate") await this.celebrateStep();
+      if (!alive()) return;
+      await this.wait(500);
+      if (!alive()) return;
+    }
+    this.inPlay = false;
+    this.setState({ playing: false });
+    this.say("That is the end of this lesson. Change the number or the script and we can teach it again.");
+  };
+
+  reset = () => {
+    this.stop();
+    this.writeSeq++;
+    this.setState({ mode: "idle", written: "", compare: null, quiz: null, question: "", target: 2, correct: 0, tries: 0 });
+    this.say("Fresh board. Tap a circle or pick an action.");
+  };
+
+  renderVals() {
+    const st = this.state;
+    const ds = this.places();
+    const tIdx = Math.min(st.target, ds.length - 1);
+    const t = ds[tIdx];
+    const pointing = ["point", "trace", "compare", "write", "nod"].indexOf(st.mode) >= 0;
+    const written = st.writeFor === st.digits.join("") ? st.written : "";
+
+    const SX = 150, SY = 402;
+    let rightArm = SX + "," + SY + " " + (SX + 46) + "," + (SY + 40) + " " + (SX + 58) + "," + (SY + 58);
+    let leftArm = SX + "," + SY + " " + (SX - 46) + "," + (SY + 40) + " " + (SX - 58) + "," + (SY + 58);
+    let handX = SX + 58, handY = SY + 58;
+    if (pointing) {
+      const ang = Math.atan2(240 - SY, t.cx - SX), eAng = ang - 0.35;
+      const ex = SX + 62 * Math.cos(eAng), ey = SY + 62 * Math.sin(eAng);
+      handX = ex + 66 * Math.cos(ang); handY = ey + 66 * Math.sin(ang);
+      rightArm = SX + "," + SY + " " + ex.toFixed(1) + "," + ey.toFixed(1) + " " + handX.toFixed(1) + "," + handY.toFixed(1);
+    } else if (st.mode === "celebrate") {
+      rightArm = SX + "," + SY + " " + (SX + 52) + "," + (SY - 34) + " " + (SX + 66) + "," + (SY - 82);
+      leftArm = SX + "," + SY + " " + (SX - 52) + "," + (SY - 34) + " " + (SX - 66) + "," + (SY - 82);
+    }
+
+    const cmp = st.compare || [];
+    const digits = ds.map(it => {
+      const isT = it.i === tIdx && pointing;
+      const inCmp = cmp.indexOf(it.i) >= 0;
+      return {
+        d: it.d, label: it.label, cx: it.cx, leftPct: (it.cx / 10).toFixed(2) + "%",
+        value: it.worth ? group(it.worth) : "—",
+        fill: isT ? "var(--color-accent)" : inCmp ? "#3c4a3d" : "rgba(243,236,220,0.07)",
+        stroke: isT ? "#f3ecdc" : inCmp ? "var(--color-accent-2)" : "rgba(243,236,220,0.45)",
+        sw: isT ? 5 : inCmp ? 4 : 2.5,
+        ink: isT ? "#2c332d" : "#f3ecdc",
+        labelInk: isT || inCmp ? "#eae2cf" : "#a9b79b",
+        onPoint: () => this.point(it.i),
+        onUp: e => { e.stopPropagation(); this.bump(it.i, 1); },
+        onDown: e => { e.stopPropagation(); this.bump(it.i, -1); }
+      };
+    });
+
+    const toggleRow = (key, label, on, onText, offText) => ({
+      key, label, state: on ? onText : offText,
+      onToggle: () => this.save({ [key]: !on }),
+      style: "display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 10px 14px; border-radius: 999px; border: 2px solid " + (on ? "var(--color-accent-2)" : "var(--color-neutral-300)") + "; background: " + (on ? "var(--color-accent-2-100)" : "transparent") + "; font-family: var(--font-body); font-size: 14px; color: var(--color-text); cursor: pointer; text-align: left;",
+      pillStyle: "font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: " + (on ? "var(--color-accent-2-900)" : "var(--color-neutral-600)") + ";"
+    });
+
+    return {
+      digits,
+      caption: st.caption, written: written,
+      heading: st.heading, subheading: st.subheading,
+      questionText: st.question, questionOpacity: st.question ? 1 : 0,
+      leftArm, rightArm,
+      mouth: st.mode === "celebrate" ? "M132 346 q18 18 36 0" : st.mode === "listen" ? "M136 348 q14 -6 28 0" : "M134 346 q16 10 32 0",
+      headStyle: st.mode === "nod" ? "animation: tutor-nod 1s ease-in-out " + st.nod + "; transform-origin: 150px 370px;"
+        : "transform: rotate(" + (st.mode === "listen" ? -7 : st.mode === "quiz" ? 5 : 0) + "deg); transform-origin: 150px 372px; transition: transform .4s ease;",
+      figureStyle: st.mode === "celebrate" ? "animation: tutor-jump .9s ease-in-out infinite;" : "",
+      listening: st.mode === "listen" || st.mode === "quiz",
+      celebrating: st.mode === "celebrate",
+      traceX: st.mode === "trace" || written ? ds[ds.length - 1].cx + 62 : 330,
+      traceOpacity: st.mode === "trace" || written ? 0.6 : 0,
+      guideOpacity: st.guide && pointing ? 0.9 : 0,
+      pointFromX: handX, pointFromY: handY,
+      pointToX: pointing ? t.cx - 56 : handX, pointToY: pointing ? 240 : handY,
+      inviteOpacity: st.quiz ? 1 : 0,
+      colWidth: (st.digits.length >= 6 ? 10.2 : 13) + "cqw",
+      labelSize: (st.digits.length >= 6 ? 1.25 : 1.6) + "cqw",
+      valuesOpacity: st.showValues ? 1 : 0,
+      editOpacity: st.letEdit ? 1 : 0,
+      editEvents: st.letEdit ? "auto" : "none",
+      quizActive: !!st.quiz,
+      quizLabel: st.quiz ? "Waiting for your answer…" : "Ask me a question",
+      scoreLabel: st.tries ? st.correct + " right of " + st.tries + " tries" : "No answers yet",
+      panelOpen: st.panelOpen, panelLabel: st.panelOpen ? "Hide teacher setup" : "Teacher setup",
+      numberText: st.digits.join(""),
+      pace: st.pace, paceLabel: st.pace < 0.9 ? "unhurried" : st.pace > 1.3 ? "brisk" : "steady",
+      playLabel: st.playing ? "Pause lesson" : "Play lesson",
+      stepPick: st.stepPick, stepOptions: STEPS,
+      emptyScriptOpacity: st.script.length ? 0 : 1,
+      scriptSteps: st.script.map((s, i) => ({
+        n: i + 1, label: (STEPS.find(x => x.value === s) || {}).label || s,
+        bg: st.playing ? "var(--color-neutral-100)" : "var(--color-neutral-100)",
+        onRemove: () => this.save({ script: st.script.filter((_, k) => k !== i) }),
+        onUp: () => { if (!i) return; const a = st.script.slice(); const tmp = a[i - 1]; a[i - 1] = a[i]; a[i] = tmp; this.save({ script: a }); }
+      })),
+      presets: [
+        { label: "3 digits", onPick: () => this.setNumber("507") },
+        { label: "5 digits", onPick: () => this.setNumber("40632") },
+        { label: "6 digits", onPick: () => this.setNumber("280419") }
+      ],
+      toggles: [
+        toggleRow("guide", "Chalk pointer guide", st.guide, "shown", "hidden"),
+        toggleRow("showValues", "Place values under circles", st.showValues, "shown", "hidden"),
+        toggleRow("letEdit", "Learner can change digits", st.letEdit, "allowed", "locked"),
+        toggleRow("voice", "Speak the narration aloud", st.voice, "on", "off")
+      ],
+      onTogglePanel: () => this.save({ panelOpen: !st.panelOpen }),
+      onNumber: e => this.setNumber(e.target.value),
+      onHeading: e => this.save({ heading: e.target.value }),
+      onSubheading: e => this.save({ subheading: e.target.value }),
+      onPace: e => this.save({ pace: Number(e.target.value) }),
+      onStepPick: e => this.setState({ stepPick: e.target.value }),
+      onAddStep: () => this.save({ script: st.script.concat([st.stepPick]) }),
+      onPlay: this.play,
+      onQuiz: this.quiz, onReveal: this.reveal,
+      onTrace: () => this.trace(), onCompare: () => this.compare(), onWrite: () => this.write(),
+      onListen: () => this.listen(), onNod: () => { this.stop(); this.nod(); },
+      onCelebrate: () => { this.stop(); this.celebrate(); }, onReset: this.reset
+    };
+  }
+
+  setNumber(raw) {
+    const clean = String(raw).replace(/\D/g, "").slice(0, 6);
+    const digits = (clean.length ? clean : "0").split("").map(Number);
+    this.stop();
+    this.writeSeq++;
+    this.save({ digits, target: Math.min(this.state.target, digits.length - 1), written: "", quiz: null, question: "", mode: "idle" });
+    this.say("New number on the board: " + cap(words(Number(digits.join("")))) + ".");
+  }
+}
+</script>
+</body>
+</html>

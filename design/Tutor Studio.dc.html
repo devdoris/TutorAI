@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-54798a6b-4bb5-404d-bad0-3e603ae644d6/styles.css">
+<script src="_ds/organic-54798a6b-4bb5-404d-bad0-3e603ae644d6/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<style>
+@keyframes tutor-nod { 0%,100% { transform: rotate(0deg) } 30% { transform: rotate(9deg) } 65% { transform: rotate(-4deg) } }
+@keyframes tutor-jump { 0%,100% { transform: translateY(0) } 35% { transform: translateY(-26px) } 70% { transform: translateY(-6px) } }
+@keyframes tutor-pulse { 0%,100% { opacity: .2 } 50% { opacity: .85 } }
+@keyframes tutor-spark { 0% { opacity: 0; transform: scale(.4) } 40% { opacity: 1; transform: scale(1) } 100% { opacity: 0; transform: scale(1.5) } }
+@keyframes tutor-invite { 0%,100% { opacity: .3 } 50% { opacity: .8 } }
+</style>
+</helmet>
+<div style="min-height: 100%; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); box-sizing: border-box;">
+
+  <header class="nav" style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 14px 26px;">
+    <span class="nav-brand" style="font-family: var(--font-heading); font-size: 22px;">Tutor</span>
+    <nav style="display: flex; gap: 8px;">
+      <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="3">
+        <button class="btn btn-ghost" onClick="{{ tb.onGo }}" style="{{ tb.style }}">{{ tb.label }}</button>
+      </sc-for>
+    </nav>
+    <div style="flex: 1 1 20px;"></div>
+    <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--color-neutral-700);">
+      <span>Curriculum</span>
+      <select class="input" value="{{ curriculum }}" onChange="{{ onCurriculum }}" style="width: auto; font-size: 14px; padding: 8px 14px;">
+        <sc-for list="{{ curricula }}" as="c" hint-placeholder-count="3">
+          <option value="{{ c.id }}">{{ c.label }}</option>
+        </sc-for>
+      </select>
+    </label>
+  </header>
+
+  <sc-if value="{{ onPicker }}" hint-placeholder-val="{{ true }}">
+    <section style="padding: 30px 26px 48px; display: flex; flex-direction: column; gap: 22px; align-items: center;">
+      <div style="width: 100%; max-width: 1180px; display: flex; flex-direction: column; gap: 8px;">
+        <span class="tag tag-accent-2" style="align-self: flex-start;">{{ curriculumLine }}</span>
+        <h1 style="font-family: var(--font-heading); font-size: 40px; margin: 0; line-height: 1.05;">Pick an objective to teach</h1>
+        <p style="margin: 0; max-width: 62ch; font-size: 16px; color: var(--color-neutral-700); text-wrap: pretty;">The same board, tutor and practice loop teach every one of these. What changes is the representation on the board and the objective behind it — never the teaching experience.</p>
+      </div>
+      <div style="width: 100%; max-width: 1180px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 18px;">
+        <sc-for list="{{ lessonCards }}" as="l" hint-placeholder-count="8">
+          <article class="card elev-sm" style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+              <span class="card-kicker">{{ l.subject }}</span>
+              <span class="{{ l.statusClass }}">{{ l.statusLabel }}</span>
+            </div>
+            <div class="card-title" style="font-size: 21px;">{{ l.title }}</div>
+            <div class="card-body" style="font-size: 15px; color: var(--color-neutral-700);">{{ l.objective }}</div>
+            <div class="card-meta" style="font-size: 13px; color: var(--color-neutral-600);">{{ l.meta }}</div>
+            <div style="margin-top: auto; padding-top: 8px;">
+              <button class="btn btn-primary" onClick="{{ l.onOpen }}" disabled="{{ l.locked }}">{{ l.cta }}</button>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ onBoard }}" hint-placeholder-val="{{ false }}">
+    <section style="padding: 22px 26px 44px; display: flex; flex-direction: column; gap: 18px; align-items: center;">
+      <div style="width: 100%; max-width: 1400px; display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+          <span class="tag tag-neutral" style="align-self: flex-start;">{{ lessonSubject }}</span>
+          <h1 style="font-family: var(--font-heading); font-size: 32px; margin: 0; line-height: 1.08;">{{ lessonTitle }}</h1>
+          <p style="margin: 0; max-width: 64ch; font-size: 15px; color: var(--color-neutral-700);">{{ lessonObjective }}</p>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+          <span class="tag tag-outline">{{ stepLabel }}</span>
+          <button class="btn btn-ghost" onClick="{{ onTogglePanel }}">{{ panelLabel }}</button>
+        </div>
+      </div>
+
+      <div style="width: 100%; max-width: 1400px; display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start;">
+
+        <div style="flex: 1 1 620px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+
+          <div style="background: var(--color-neutral-200); border-radius: var(--radius-lg); padding: 16px; box-sizing: border-box; box-shadow: var(--shadow-md);">
+            <div style="position: relative; width: 100%;">
+              <svg viewBox="0 0 1000 700" style="width: 100%; height: auto; display: block;">
+                <rect x="236" y="26" width="740" height="566" rx="30" fill="var(--color-accent-700)"></rect>
+                <rect x="252" y="42" width="708" height="534" rx="20" fill="#2c332d"></rect>
+
+                <sc-for list="{{ decorLines }}" as="d" hint-placeholder-count="0">
+                  <line x1="{{ d.x1 }}" y1="{{ d.y1 }}" x2="{{ d.x2 }}" y2="{{ d.y2 }}" stroke="{{ d.color }}" stroke-width="{{ d.w }}" stroke-dasharray="{{ d.dash }}" stroke-linecap="round"></line>
+                </sc-for>
+
+                <g style="{{ figureStyle }}">
+                  <line x1="150" y1="498" x2="112" y2="588" stroke="var(--color-text)" stroke-width="9" stroke-linecap="round"></line>
+                  <line x1="150" y1="498" x2="192" y2="588" stroke="var(--color-text)" stroke-width="9" stroke-linecap="round"></line>
+                  <line x1="150" y1="378" x2="150" y2="500" stroke="var(--color-text)" stroke-width="10" stroke-linecap="round"></line>
+                  <polyline points="{{ leftArm }}" fill="none" stroke="var(--color-text)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" style="transition: all .45s cubic-bezier(.3,.8,.3,1);"></polyline>
+                  <polyline points="{{ rightArm }}" fill="none" stroke="var(--color-text)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" style="transition: all .45s cubic-bezier(.3,.8,.3,1);"></polyline>
+                  <g style="{{ headStyle }}">
+                    <circle cx="150" cy="332" r="38" fill="var(--color-bg)" stroke="var(--color-text)" stroke-width="9"></circle>
+                    <circle cx="137" cy="326" r="4.5" fill="var(--color-text)"></circle>
+                    <circle cx="163" cy="326" r="4.5" fill="var(--color-text)"></circle>
+                    <path d="{{ mouth }}" fill="none" stroke="var(--color-text)" stroke-width="5" stroke-linecap="round" style="transition: all .3s ease;"></path>
+                  </g>
+                  <sc-if value="{{ listening }}" hint-placeholder-val="{{ false }}">
+                    <circle cx="150" cy="332" r="60" fill="none" stroke="var(--color-accent-2)" stroke-width="4" style="animation: tutor-pulse 1.4s ease-in-out infinite;"></circle>
+                  </sc-if>
+                  <sc-if value="{{ celebrating }}" hint-placeholder-val="{{ false }}">
+                    <g fill="var(--color-accent)" style="animation: tutor-spark 1.1s ease-out infinite;">
+                      <circle cx="72" cy="286" r="7"></circle>
+                      <circle cx="228" cy="268" r="9"></circle>
+                      <circle cx="120" cy="238" r="6"></circle>
+                    </g>
+                  </sc-if>
+                </g>
+
+                <line x1="{{ pointFromX }}" y1="{{ pointFromY }}" x2="{{ pointToX }}" y2="{{ pointToY }}" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 12" opacity="{{ guideOpacity }}" style="transition: all .45s cubic-bezier(.3,.8,.3,1);"></line>
+              </svg>
+
+              <div style="position: absolute; left: 25.2%; top: 6%; width: 70.8%; height: 76.3%; container-type: inline-size; pointer-events: none;">
+                <sc-if value="{{ hasPhoto }}" hint-placeholder-val="{{ false }}">
+                  <div style="position: absolute; left: 3%; top: 18%; width: 50%; height: 66%; border-radius: 2cqw; overflow: hidden; background: var(--color-neutral-100); box-shadow: var(--shadow-md); pointer-events: auto;">
+                    <image-slot id="tutor-diagram" shape="rounded" radius="18" placeholder="Drop a diagram or photograph for this lesson"></image-slot>
+                  </div>
+                </sc-if>
+
+                <div style="position: absolute; left: 3%; top: 2%; font-family: var(--font-heading); font-size: 4.4cqw; color: #f3ecdc;">{{ boardHeading }}</div>
+                <div style="position: absolute; left: 3%; top: 11%; font-size: 2.5cqw; letter-spacing: .06em; color: #cfd8c4;">{{ boardSub }}</div>
+                <div style="position: absolute; left: 3%; bottom: 2%; right: 3%; font-size: 2.6cqw; line-height: 1.3; color: var(--color-accent-300); text-wrap: pretty;">{{ boardQuestion }}</div>
+
+                <sc-for list="{{ boardSlots }}" as="s" hint-placeholder-count="0">
+                  <div data-slot="{{ s.id }}" style="{{ s.style }}">
+                    <span style="font-size: 2cqw; color: #a9b79b;">{{ s.label }}</span>
+                    <span style="font-size: 2.4cqw; color: #f3ecdc;">{{ s.filled }}</span>
+                  </div>
+                </sc-for>
+
+                <sc-for list="{{ boardObjects }}" as="ob" hint-placeholder-count="5">
+                  <div style="{{ ob.style }}" onClick="{{ ob.onTap }}">
+                    <span style="{{ ob.textStyle }}">{{ ob.label }}</span>
+                    <span style="{{ ob.subStyle }}">{{ ob.sub }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{ hasTray }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+              <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+                <span class="card-kicker">{{ trayTitle }}</span>
+                <span style="font-size: 13px; color: var(--color-neutral-600);">Drag a card into place — or tap a card, then tap where it belongs.</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; min-height: 44px;">
+                <sc-for list="{{ trayChips }}" as="c" hint-placeholder-count="4">
+                  <button style="{{ c.style }}" onPointerDown="{{ c.onDown }}" onClick="{{ c.onTap }}">{{ c.label }}</button>
+                </sc-for>
+                <span style="font-size: 14px; color: var(--color-neutral-600); align-self: center; opacity: {{ trayEmptyOpacity }};">All cards placed.</span>
+              </div>
+              <sc-if value="{{ hasRowSlots }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  <sc-for list="{{ rowSlots }}" as="s" hint-placeholder-count="3">
+                    <div data-slot="{{ s.id }}" onClick="{{ s.onTap }}" style="{{ s.style }}">
+                      <span style="font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-neutral-600);">{{ s.label }}</span>
+                      <span style="font-size: 16px;">{{ s.filled }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <div class="card" style="padding: 16px 18px; display: flex; flex-direction: row; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+            <div style="flex: 1 1 auto; min-width: 260px;">
+              <div class="card-kicker">Tutor says</div>
+              <div style="font-size: 17px; line-height: 1.35; min-height: 46px;">{{ caption }}</div>
+              <div style="font-size: 13px; color: var(--color-accent-700); min-height: 0; opacity: {{ voiceNoteOpacity }};">{{ voiceNote }}</div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onClick="{{ onPlay }}">{{ playLabel }}</button>
+              <button class="btn btn-secondary" onClick="{{ onNext }}">Next step</button>
+              <button class="btn btn-secondary" onClick="{{ onHint }}">Hint</button>
+              <button class="btn btn-secondary" onClick="{{ onRepeat }}">Say that again</button>
+              <button class="btn btn-secondary" onClick="{{ onTestVoice }}">Test voice</button>
+              <button class="btn btn-secondary" onClick="{{ onVoiceToggle }}" style="{{ voiceBtnStyle }}">{{ voiceBtnLabel }}</button>
+              <button class="btn btn-secondary" onClick="{{ onAskToggle }}">Ask the tutor</button>
+              <sc-if value="{{ needsCheck }}" hint-placeholder-val="{{ false }}">
+                <button class="btn btn-primary" onClick="{{ onCheck }}">Check my answer</button>
+              </sc-if>
+              <sc-if value="{{ waitingAnswer }}" hint-placeholder-val="{{ false }}">
+                <button class="btn btn-ghost" onClick="{{ onReveal }}">Show me</button>
+              </sc-if>
+            </div>
+          </div>
+
+          <sc-if value="{{ needsTyped }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="padding: 16px 18px; display: flex; flex-direction: row; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+              <div class="field" style="flex: 1 1 220px;">
+                <label for="ts-answer">Your answer</label>
+                <input id="ts-answer" class="input" value="{{ typed }}" onChange="{{ onTyped }}" placeholder="Type it here">
+              </div>
+              <button class="btn btn-primary" onClick="{{ onSubmitTyped }}">Send to the tutor</button>
+              <sc-if value="{{ hasMic }}" hint-placeholder-val="{{ false }}">
+                <button class="btn btn-secondary" onClick="{{ onMic }}">{{ micLabel }}</button>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ askOpen }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;">
+              <div class="card-kicker">Your question — the lesson holds its place</div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                <div class="field" style="flex: 1 1 260px;">
+                  <label for="ts-ask">Ask about this lesson</label>
+                  <input id="ts-ask" class="input" value="{{ askText }}" onChange="{{ onAskText }}" placeholder="e.g. why does the place matter?">
+                </div>
+                <button class="btn btn-primary" onClick="{{ onAskSend }}">Ask</button>
+              </div>
+              <sc-if value="{{ hasAskReply }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--radius-lg); background: var(--color-accent-2-100);">
+                  <div style="font-size: 16px; line-height: 1.4;">{{ askReply }}</div>
+                  <button class="btn btn-secondary" onClick="{{ onBridgeBack }}" style="align-self: flex-start;">{{ bridgeLabel }}</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ true }}">
+          <aside class="card elev-lg" style="flex: 0 1 380px; min-width: 320px; padding: 22px; display: flex; flex-direction: column; gap: 18px;">
+            <div>
+              <div class="card-kicker">Teacher setup</div>
+              <div class="card-title" style="margin: 2px 0 0;">Author this lesson</div>
+            </div>
+
+            <div class="field">
+              <label for="ts-title">Lesson title</label>
+              <input id="ts-title" class="input" value="{{ lessonTitle }}" onChange="{{ onEditTitle }}">
+            </div>
+            <div class="field">
+              <label for="ts-obj">Objective</label>
+              <input id="ts-obj" class="input" value="{{ lessonObjective }}" onChange="{{ onEditObjective }}">
+            </div>
+            <div class="field">
+              <label for="ts-kind">Board representation</label>
+              <select id="ts-kind" class="input" value="{{ boardKind }}" onChange="{{ onEditKind }}">
+                <sc-for list="{{ kindOptions }}" as="k" hint-placeholder-count="8">
+                  <option value="{{ k.value }}">{{ k.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Board objects</span>
+              <sc-for list="{{ objectRows }}" as="r" hint-placeholder-count="4">
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <input class="input" value="{{ r.label }}" onChange="{{ r.onLabel }}" style="flex: 1 1 60px; font-size: 14px; padding: 8px 12px;">
+                  <input class="input" value="{{ r.x }}" onChange="{{ r.onX }}" title="Across %" style="width: 62px; font-size: 14px; padding: 8px 10px;">
+                  <input class="input" value="{{ r.y }}" onChange="{{ r.onY }}" title="Down %" style="width: 62px; font-size: 14px; padding: 8px 10px;">
+                  <button class="btn btn-ghost" onClick="{{ r.onRemove }}" title="Remove" style="padding: 4px 10px;">✕</button>
+                </div>
+              </sc-for>
+              <button class="btn btn-secondary" onClick="{{ onAddObject }}" style="align-self: flex-start;">Add object</button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Teaching steps</span>
+              <sc-for list="{{ stepRows }}" as="s" hint-placeholder-count="5">
+                <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: var(--radius-lg); background: {{ s.bg }};">
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <span style="width: 18px; font-family: var(--font-heading); color: var(--color-accent-700);">{{ s.n }}</span>
+                    <select class="input" value="{{ s.verb }}" onChange="{{ s.onVerb }}" style="flex: 1; font-size: 13px; padding: 7px 10px;">
+                      <sc-for list="{{ verbOptions }}" as="v" hint-placeholder-count="8">
+                        <option value="{{ v.value }}">{{ v.label }}</option>
+                      </sc-for>
+                    </select>
+                    <select class="input" value="{{ s.target }}" onChange="{{ s.onTarget }}" style="flex: 1; font-size: 13px; padding: 7px 10px;">
+                      <sc-for list="{{ targetOptions }}" as="o" hint-placeholder-count="5">
+                        <option value="{{ o.value }}">{{ o.label }}</option>
+                      </sc-for>
+                    </select>
+                    <button class="btn btn-ghost" onClick="{{ s.onUp }}" title="Move up" style="padding: 2px 8px;">↑</button>
+                    <button class="btn btn-ghost" onClick="{{ s.onRemove }}" title="Remove" style="padding: 2px 8px;">✕</button>
+                  </div>
+                  <input class="input" value="{{ s.say }}" onChange="{{ s.onSay }}" placeholder="What the tutor says" style="font-size: 13px; padding: 8px 12px;">
+                  <input class="input" value="{{ s.prompt }}" onChange="{{ s.onPrompt }}" placeholder="Question on the board (leave blank for none)" style="font-size: 13px; padding: 8px 12px; opacity: {{ s.promptOpacity }};">
+                </div>
+              </sc-for>
+              <div style="display: flex; gap: 8px;">
+                <select class="input" value="{{ addVerb }}" onChange="{{ onAddVerbPick }}" style="flex: 1; font-size: 13px;">
+                  <sc-for list="{{ verbOptions }}" as="v" hint-placeholder-count="8">
+                    <option value="{{ v.value }}">{{ v.label }}</option>
+                  </sc-for>
+                </select>
+                <button class="btn btn-secondary" onClick="{{ onAddStep }}">Add step</button>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Board options</span>
+              <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="3">
+                <button onClick="{{ t.onToggle }}" style="{{ t.style }}">
+                  <span>{{ t.label }}</span>
+                  <span style="{{ t.pillStyle }}">{{ t.state }}</span>
+                </button>
+              </sc-for>
+              <sc-if value="{{ hasVoices }}" hint-placeholder-val="{{ false }}">
+                <div class="field">
+                  <label for="ts-voice">Tutor voice</label>
+                  <select id="ts-voice" class="input" value="{{ voiceName }}" onChange="{{ onVoicePick }}">
+                    <sc-for list="{{ voiceOptions }}" as="v" hint-placeholder-count="3">
+                      <option value="{{ v.name }}">{{ v.name }} — {{ v.lang }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+              </sc-if>
+              <div class="field">
+                <label for="ts-rate">Voice speed — {{ rateLabel }}</label>
+                <input id="ts-rate" class="input" type="range" min="0.6" max="1.15" step="0.05" value="{{ rate }}" onChange="{{ onRate }}" style="padding: 0; border: 0; background: transparent; accent-color: var(--color-accent);">
+              </div>
+              <div class="field">
+                <label for="ts-pace">Teaching pace — {{ paceLabel }}</label>
+                <input id="ts-pace" class="input" type="range" min="0.6" max="1.8" step="0.2" value="{{ pace }}" onChange="{{ onPace }}" style="padding: 0; border: 0; background: transparent; accent-color: var(--color-accent);">
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Lesson file</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onClick="{{ onDownload }}">Download JSON</button>
+                <label class="btn btn-secondary" style="cursor: pointer;">
+                  <span>Load JSON</span>
+                  <input type="file" accept=".json,application/json" onChange="{{ onUpload }}" style="display: none;">
+                </label>
+                <button class="btn btn-ghost" onClick="{{ onRestore }}">Restore demo</button>
+              </div>
+              <textarea class="input" value="{{ jsonText }}" onChange="{{ onJsonText }}" spellcheck="false" style="min-height: 140px; font-size: 12px; font-family: ui-monospace, monospace; line-height: 1.45;"></textarea>
+              <button class="btn btn-secondary" onClick="{{ onApplyJson }}" style="align-self: flex-start;">Apply JSON</button>
+              <span style="font-size: 13px; color: var(--color-accent-700); opacity: {{ jsonErrorOpacity }};">{{ jsonError }}</span>
+            </div>
+          </aside>
+        </sc-if>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ onReport }}" hint-placeholder-val="{{ false }}">
+    <section style="padding: 30px 26px 48px; display: flex; flex-direction: column; gap: 22px; align-items: center;">
+      <div style="width: 100%; max-width: 1180px; display: flex; flex-direction: column; gap: 8px;">
+        <span class="tag tag-accent-2" style="align-self: flex-start;">{{ curriculumLine }}</span>
+        <h1 style="font-family: var(--font-heading); font-size: 38px; margin: 0; line-height: 1.05;">Progress by objective</h1>
+        <p style="margin: 0; max-width: 64ch; font-size: 16px; color: var(--color-neutral-700); text-wrap: pretty;">Not lessons completed — what the learner can do without help. Guided success and independent success are recorded separately.</p>
+      </div>
+
+      <div style="width: 100%; max-width: 1180px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px;">
+        <sc-for list="{{ summary }}" as="s" hint-placeholder-count="3">
+          <div class="card" style="padding: 18px; display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-family: var(--font-heading); font-size: 38px; line-height: 1; color: {{ s.color }};">{{ s.count }}</span>
+            <span style="font-size: 15px;">{{ s.label }}</span>
+            <span style="font-size: 13px; color: var(--color-neutral-600);">{{ s.note }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="width: 100%; max-width: 1180px; overflow-x: auto;">
+        <table class="table" style="width: 100%; min-width: 760px;">
+          <thead>
+            <tr>
+              <th>Objective</th>
+              <th>Status</th>
+              <th>Independent</th>
+              <th>Guided</th>
+              <th>Hints</th>
+              <th>Work on next</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ reportRows }}" as="r" hint-placeholder-count="8">
+              <tr>
+                <td>
+                  <div style="font-weight: 600;">{{ r.title }}</div>
+                  <div style="font-size: 13px; color: var(--color-neutral-600);">{{ r.subject }}</div>
+                </td>
+                <td><span class="{{ r.statusClass }}">{{ r.status }}</span></td>
+                <td>{{ r.independent }}</td>
+                <td>{{ r.guided }}</td>
+                <td>{{ r.hints }}</td>
+                <td style="font-size: 14px; color: var(--color-neutral-700);">{{ r.next }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="width: 100%; max-width: 1180px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onClick="{{ onGoPicker }}">Back to lessons</button>
+        <button class="btn btn-ghost" onClick="{{ onClearProgress }}">Clear this learner's record</button>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ dragging }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ dragStyle }}">{{ dragLabel }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:960}}">
+const CURRICULA = [
+  { id: "NERDC", label: "Nigeria · NERDC · JSS1", stage: "JSS1" },
+  { id: "KS3", label: "England · National Curriculum · Year 7", stage: "Year 7" },
+  { id: "CCSS", label: "United States · Common Core · Grade 7", stage: "Grade 7" }
+];
+const KINDS = [
+  { value: "circles", label: "Number circles / place value" },
+  { value: "numberline", label: "Number line" },
+  { value: "bars", label: "Fraction & part-whole bars" },
+  { value: "tiles", label: "Word / sentence tiles" },
+  { value: "diagram", label: "Labelled diagram" },
+  { value: "axes", label: "Graph with axes" },
+  { value: "timeline", label: "Timeline or sequence" },
+  { value: "stave", label: "Notes on a stave" }
+];
+const VERBS = [
+  { value: "explain", label: "Explain" },
+  { value: "point", label: "Point at" },
+  { value: "trace", label: "Trace across" },
+  { value: "compare", label: "Compare" },
+  { value: "reveal", label: "Reveal" },
+  { value: "ask", label: "Ask the learner" },
+  { value: "listen", label: "Wait for a question" },
+  { value: "praise", label: "Praise" }
+];
+
+function L(id, subject, title, objective, curricula, board, objects, slots, tray, steps, faq) {
+  return { id, subject, title, objective, curricula, board, objects, slots, tray, steps, faq };
+}
+
+const DEMO = [
+  L("place-value", "Mathematics", "Reading large whole numbers", "Read and write whole numbers to 100,000 and state the value of each digit.", ["NERDC", "KS3", "CCSS"],
+    { kind: "circles", heading: "40,632", sub: "Each place is ten times the one on its right" },
+    [
+      { id: "d1", label: "4", sub: "Ten thousands", x: 10, y: 34, shape: "circle" },
+      { id: "d2", label: "0", sub: "Thousands", x: 30, y: 34, shape: "circle" },
+      { id: "d3", label: "6", sub: "Hundreds", x: 50, y: 34, shape: "circle" },
+      { id: "d4", label: "3", sub: "Tens", x: 70, y: 34, shape: "circle" },
+      { id: "d5", label: "2", sub: "Units", x: 90, y: 34, shape: "circle" }
+    ], [], [],
+    [
+      { verb: "explain", say: "Before any rule: a number is a row of places, and each place is worth ten of the place on its right." },
+      { verb: "point", target: "d3", say: "This 6 is not just six. It sits in the hundreds place, so it is worth six hundred." },
+      { verb: "compare", target: ["d3", "d4"], say: "Same shape of digit, different place. One step to the left is worth ten times more." },
+      { verb: "ask", say: "Your turn to find one.", ask: { type: "select", prompt: "Tap the digit in the tens place.", expect: "d4", hint: "Count from the right: units, then tens." } },
+      { verb: "ask", say: "Now say what it is worth.", ask: { type: "type", prompt: "What is the 4 worth?", expect: ["40000", "40,000", "forty thousand"], hint: "It is four ten-thousands." } },
+      { verb: "praise", say: "That is place value. You can now read any number in this range." }
+    ],
+    [{ k: ["zero", "0"], a: "The zero is doing real work: it holds the thousands place open so the 4 stays in ten-thousands." },
+     { k: ["why", "place"], a: "Place exists so we can write any size of number with only ten digits — the position carries the size." }]),
+
+  L("rounding", "Mathematics", "Rounding on a number line", "Round three-digit numbers to the nearest ten using a number line.", ["NERDC", "KS3", "CCSS"],
+    { kind: "numberline", heading: "347", sub: "Which ten is it nearer to?" },
+    [
+      { id: "t340", label: "340", x: 8, y: 62, shape: "label" },
+      { id: "t345", label: "345", x: 50, y: 62, shape: "label" },
+      { id: "t350", label: "350", x: 92, y: 62, shape: "label" },
+      { id: "mark", label: "347", x: 71, y: 34, shape: "pin" }
+    ], [], [],
+    [
+      { verb: "explain", say: "Rounding is not a rule to memorise. It is a question: which ten is this number closer to?" },
+      { verb: "point", target: "mark", say: "Here is 347, sitting between 340 and 350." },
+      { verb: "trace", target: "t345", say: "Halfway is 345. Anything past halfway is nearer the ten above." },
+      { verb: "ask", say: "So which ten wins?", ask: { type: "select", prompt: "Tap the ten that 347 is closer to.", expect: "t350", hint: "347 is past the halfway mark of 345." } },
+      { verb: "ask", say: "Write it down.", ask: { type: "type", prompt: "347 rounded to the nearest ten is…", expect: ["350"], hint: "Past halfway, so round up." } },
+      { verb: "praise", say: "You rounded by reasoning about distance, not by a rule." }
+    ],
+    [{ k: ["halfway", "5", "345"], a: "At exactly halfway we agree to round up, so 345 becomes 350 — a convention, not a fact about distance." }]),
+
+  L("fractions", "Mathematics", "Fractions as parts of a whole", "Name a fraction from a part-whole model and identify equivalent shading.", ["NERDC", "KS3", "CCSS"],
+    { kind: "bars", heading: "One bar, eight equal parts", sub: "The bottom number names the parts; the top counts them" },
+    [
+      { id: "p1", label: "", x: 8, y: 40, w: 11, shape: "bar", on: true },
+      { id: "p2", label: "", x: 20, y: 40, w: 11, shape: "bar", on: true },
+      { id: "p3", label: "", x: 32, y: 40, w: 11, shape: "bar", on: true },
+      { id: "p4", label: "", x: 44, y: 40, w: 11, shape: "bar" },
+      { id: "p5", label: "", x: 56, y: 40, w: 11, shape: "bar" },
+      { id: "p6", label: "", x: 68, y: 40, w: 11, shape: "bar" },
+      { id: "p7", label: "", x: 80, y: 40, w: 11, shape: "bar" },
+      { id: "p8", label: "", x: 92, y: 40, w: 11, shape: "bar" }
+    ], [], [],
+    [
+      { verb: "explain", say: "A fraction only means something once we know the whole. Here the whole is this bar, cut into eight equal parts." },
+      { verb: "point", target: "p1", say: "This is one of eight equal parts — one eighth." },
+      { verb: "trace", target: "p3", say: "Three of them are shaded, so three eighths of the bar is covered." },
+      { verb: "ask", say: "Name it for me.", ask: { type: "type", prompt: "What fraction of the bar is shaded?", expect: ["3/8", "three eighths"], hint: "Count the shaded parts over the total parts." } },
+      { verb: "ask", say: "And the rest?", ask: { type: "select", prompt: "Tap any part that is not shaded.", expect: ["p4", "p5", "p6", "p7", "p8"], hint: "Any of the five pale parts." } },
+      { verb: "praise", say: "Good — the bottom number names the parts, the top number counts them." }
+    ],
+    [{ k: ["equal", "same"], a: "The parts must be equal, otherwise the bottom number no longer describes the size of one part." }]),
+
+  L("sentence", "English", "Parts of a sentence", "Identify the subject, verb and object in a simple sentence.", ["NERDC", "KS3", "CCSS"],
+    { kind: "tiles", heading: "The farmer planted two hundred seeds", sub: "Every sentence has a doer, an action and a thing acted on" },
+    [
+      { id: "w1", label: "The", x: 8, y: 30, shape: "tile" },
+      { id: "w2", label: "farmer", x: 24, y: 30, shape: "tile" },
+      { id: "w3", label: "planted", x: 45, y: 30, shape: "tile" },
+      { id: "w4", label: "two hundred", x: 70, y: 30, shape: "tile" },
+      { id: "w5", label: "seeds", x: 90, y: 30, shape: "tile" }
+    ],
+    [
+      { id: "s_subj", label: "Subject", place: "row" },
+      { id: "s_verb", label: "Verb", place: "row" },
+      { id: "s_obj", label: "Object", place: "row" }
+    ],
+    [{ id: "c_farmer", label: "farmer" }, { id: "c_planted", label: "planted" }, { id: "c_seeds", label: "seeds" }],
+    [
+      { verb: "explain", say: "A sentence is not a list of words. It tells us who did something, what they did, and what it was done to." },
+      { verb: "point", target: "w2", say: "The farmer is the doer — the subject." },
+      { verb: "point", target: "w3", say: "Planted is the action — the verb." },
+      { verb: "ask", say: "Sort the three words for me.", ask: { type: "place", mode: "group", prompt: "Drag each word into its part of the sentence.", expect: { c_farmer: "s_subj", c_planted: "s_verb", c_seeds: "s_obj" }, hint: "Ask: who did it, what did they do, what was it done to?" } },
+      { verb: "ask", say: "Say it back to me.", ask: { type: "type", prompt: "Which word is the verb?", expect: ["planted"], hint: "The action word." } },
+      { verb: "praise", say: "That structure holds for almost every sentence you will meet." }
+    ],
+    [{ k: ["two hundred", "adjective", "number"], a: "Two hundred describes how many seeds, so it belongs with the object rather than being the object itself." }]),
+
+  L("cell", "Science", "Parts of a plant cell", "Locate and name the main structures of a plant cell.", ["NERDC", "KS3", "CCSS"],
+    { kind: "diagram", heading: "Inside a plant cell", sub: "Name each part by what it does", photo: true },
+    [],
+    [
+      { id: "pin_wall", label: "?", x: 74, y: 22, place: "board" },
+      { id: "pin_nuc", label: "?", x: 74, y: 44, place: "board" },
+      { id: "pin_chl", label: "?", x: 74, y: 66, place: "board" },
+      { id: "pin_vac", label: "?", x: 74, y: 88, place: "board" }
+    ],
+    [{ id: "c_wall", label: "Cell wall" }, { id: "c_nuc", label: "Nucleus" }, { id: "c_chl", label: "Chloroplast" }, { id: "c_vac", label: "Vacuole" }],
+    [
+      { verb: "explain", say: "Each part of a cell exists because the cell has a job to do: hold its shape, store water, capture light, keep instructions." },
+      { verb: "point", target: "pin_chl", say: "This one captures light and makes food. Animal cells do not have it." },
+      { verb: "ask", say: "Label the diagram with me.", ask: { type: "place", mode: "match", prompt: "Drag each name onto the part it belongs to.", expect: { c_wall: "pin_wall", c_nuc: "pin_nuc", c_chl: "pin_chl", c_vac: "pin_vac" }, hint: "Start with the outer boundary, then the large store of water." } },
+      { verb: "ask", say: "One in words.", ask: { type: "type", prompt: "Which part holds the cell's instructions?", expect: ["nucleus"], hint: "It is the control centre." } },
+      { verb: "praise", say: "You named the parts by their function, not by memory alone." }
+    ],
+    [{ k: ["animal", "difference"], a: "An animal cell has no cell wall and no chloroplasts, and only a small vacuole — that difference is the point of comparing them." }]),
+
+  L("trade", "Geography", "Ordering events on a timeline", "Place events in chronological order and read a timeline.", ["NERDC", "KS3", "CCSS"],
+    { kind: "timeline", heading: "Four moments in West African trade", sub: "Earliest on the left, latest on the right" },
+    [
+      { id: "e1", label: "1050", sub: "Salt caravans cross the Sahara", x: 12, y: 44, shape: "node" },
+      { id: "e2", label: "1324", sub: "Mansa Musa's pilgrimage", x: 38, y: 44, shape: "node" },
+      { id: "e3", label: "1590", sub: "Songhai trade routes shift", x: 64, y: 44, shape: "node" },
+      { id: "e4", label: "1890", sub: "Rail replaces caravan routes", x: 90, y: 44, shape: "node" }
+    ],
+    [
+      { id: "o1", label: "First", place: "row" }, { id: "o2", label: "Second", place: "row" },
+      { id: "o3", label: "Third", place: "row" }, { id: "o4", label: "Fourth", place: "row" }
+    ],
+    [{ id: "c_rail", label: "Rail replaces caravans" }, { id: "c_salt", label: "Salt caravans" }, { id: "c_songhai", label: "Songhai shift" }, { id: "c_musa", label: "Mansa Musa" }],
+    [
+      { verb: "explain", say: "A timeline turns time into distance, so you can see which events sat close together." },
+      { verb: "trace", target: "e4", say: "Left is earliest, right is latest. The gaps matter as much as the order." },
+      { verb: "ask", say: "Put them in order for me.", ask: { type: "place", mode: "order", prompt: "Drag each event into its position in time.", expect: { c_salt: "o1", c_musa: "o2", c_songhai: "o3", c_rail: "o4" }, hint: "Read the years on the board from left to right." } },
+      { verb: "ask", say: "Read one off the board.", ask: { type: "type", prompt: "In which year did Mansa Musa's pilgrimage take place?", expect: ["1324"], hint: "It is the second node." } },
+      { verb: "praise", say: "You read sequence and interval — both of what a timeline is for." }
+    ],
+    [{ k: ["gap", "interval", "scale"], a: "Equal spacing here is a simplification; a true scale would show the 1050 to 1324 gap as much wider." }]),
+
+  L("coordinates", "Mathematics", "Reading coordinates", "Plot and read points in the first quadrant as ordered pairs.", ["KS3", "CCSS"],
+    { kind: "axes", heading: "Points on a grid", sub: "Across first, then up" },
+    [
+      { id: "pA", label: "A", x: 42, y: 42, shape: "point" },
+      { id: "pB", label: "B", x: 22, y: 22, shape: "point" },
+      { id: "pC", label: "C", x: 62, y: 62, shape: "point" }
+    ], [], [],
+    [
+      { verb: "explain", say: "A point needs two numbers because a flat surface has two directions. We agree to say across first, then up." },
+      { verb: "point", target: "pA", say: "A is three across and two up, so we write it as (3, 2)." },
+      { verb: "ask", say: "Find one for me.", ask: { type: "select", prompt: "Tap the point at (3, 2).", expect: "pA", hint: "Three steps across the bottom, then two steps up." } },
+      { verb: "ask", say: "Now read one off.", ask: { type: "type", prompt: "What are the coordinates of B?", expect: ["(1,4)", "1,4", "(1, 4)"], hint: "Across first, then up." } },
+      { verb: "praise", say: "Across then up — that order is the whole convention." }
+    ],
+    [{ k: ["order", "why across"], a: "The order is a shared agreement; without it (3, 2) and (2, 3) would name the same place and nobody could follow directions." }]),
+
+  L("stave", "Music", "Notes on the stave", "Name notes on the treble stave by their line or space.", ["KS3"],
+    { kind: "stave", heading: "Five lines, four spaces", sub: "A note's name comes from where it sits" },
+    [
+      { id: "n1", label: "", sub: "E", x: 24, y: 64, shape: "note" },
+      { id: "n2", label: "", sub: "B", x: 50, y: 46, shape: "note" },
+      { id: "n3", label: "", sub: "G", x: 76, y: 28, shape: "note" }
+    ], [], [],
+    [
+      { verb: "explain", say: "The stave is a map of pitch. Higher on the page means higher in sound — the names are just labels for positions." },
+      { verb: "point", target: "n1", say: "This note sits on the bottom line. On the treble stave that line is E." },
+      { verb: "ask", say: "Find the middle one.", ask: { type: "select", prompt: "Tap the note sitting on the middle line.", expect: "n2", hint: "Count lines from the bottom: E, G, B." } },
+      { verb: "ask", say: "Name the top one.", ask: { type: "type", prompt: "Which note sits on the top line?", expect: ["f", "F"], hint: "Lines from the bottom: E, G, B, D, F." } },
+      { verb: "praise", say: "You read pitch from position — that is sight reading beginning." }
+    ],
+    [{ k: ["treble", "clef"], a: "The clef at the start tells you which pitches the lines stand for; change the clef and the same line means a different note." }])
+];
+
+const STORE = "tutor-studio-v2";
+const norm = s => String(s).toLowerCase().replace(/[\s,]/g, "").trim();
+const clone = o => JSON.parse(JSON.stringify(o));
+const BX = x => 252 + (x / 100) * 708;
+const BY = y => 42 + (y / 100) * 534;
+
+class Component extends DCLogic {
+  state = {
+    screen: "picker", curriculum: "NERDC", voiceNote: "",
+    lessons: clone(DEMO), lessonId: "place-value",
+    stepIdx: -1, mode: "idle", target: null, caption: "", question: "",
+    placements: {}, typed: "", selectedChip: null, feedback: {},
+    askOpen: false, askText: "", askReply: "", awaiting: null,
+    progress: {}, panelOpen: true, playing: false,
+    pace: 1, rate: 0.82, guide: true, voice: true, voiceChosen: false, showSub: true, voiceName: "", voices: [], speaking: false, listeningMic: false,
+    drag: null, jsonText: "", jsonError: "", addVerb: "point"
+  };
+  waitSeq = 0; playSeq = 0; stepSeq = 0; inPlay = false;
+
+  componentDidMount() {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORE) || "null");
+      if (s) { if (s.voice === false && !s.voiceChosen) delete s.voice; this.setState(s); }
+    } catch (e) {}
+    this.loadVoices();
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = () => this.loadVoices();
+      [250, 800, 1800].forEach(ms => setTimeout(() => this.loadVoices(), ms));
+    } else {
+      this.setState({ voiceNote: "This browser has no speech engine, so the tutor cannot speak here." });
+    }
+    this.unlock = () => {
+      if (this.unlocked || !window.speechSynthesis) return;
+      this.unlocked = true;
+      try {
+        const u = new SpeechSynthesisUtterance(" ");
+        u.volume = 0;
+        window.speechSynthesis.speak(u);
+      } catch (e) {}
+      this.loadVoices();
+      const t = this.pendingSpeech || this.state.caption;
+      this.pendingSpeech = null;
+      if (t) this.speak(t);
+    };
+    window.addEventListener("pointerdown", this.unlock, true);
+    window.addEventListener("keydown", this.unlock, true);
+  }
+
+  loadVoices() {
+    if (!window.speechSynthesis) return;
+    const all = window.speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
+    if (!all.length) return;
+    const pref = ["en-NG", "en-GB", "en-ZA", "en-IN", "en-US"];
+    let chosen = this.state.voiceName;
+    this.setState({ voiceNote: "" });
+    if (!chosen || !all.some(v => v.name === chosen)) {
+      for (const p of pref) { const hit = all.find(v => v.lang === p); if (hit) { chosen = hit.name; break; } }
+      if (!chosen) chosen = all[0].name;
+    }
+    this.setState({ voices: all.map(v => ({ name: v.name, lang: v.lang })), voiceName: chosen });
+  }
+
+  estimate(text) {
+    const words = String(text).trim().split(/\s+/).length;
+    return Math.min(6000, 280 + words * (380 / Math.max(0.5, this.state.rate)));
+  }
+
+  speak(text) { return this.speakAsync(text); }
+
+  speakAsync(text) {
+    if (!this.state.voice || !text) return Promise.resolve();
+    const synth = window.speechSynthesis;
+    if (!synth) { this.setState({ voiceNote: "This browser has no speech engine, so the tutor cannot speak here." }); return Promise.resolve(); }
+    if (!this.unlocked) { this.pendingSpeech = text; this.setState({ voiceNote: "Tap anywhere once to let the browser start the tutor's voice." }); return Promise.resolve(); }
+    return new Promise(resolve => {
+      let settled = false;
+      const done = () => { if (settled) return; settled = true; this.setState({ speaking: false }); resolve(); };
+      this.speakNow(text, done);
+      setTimeout(done, this.estimate(text) * 1.6 + 1200);
+    });
+  }
+
+  speakNow(text, done) {
+    const synth = window.speechSynthesis;
+    try {
+      synth.cancel();
+      if (synth.paused) synth.resume();
+      const u = new SpeechSynthesisUtterance(text);
+      const list = synth.getVoices();
+      const v = list.find(x => x.name === this.state.voiceName) || list.find(x => /^en/i.test(x.lang));
+      if (v) { u.voice = v; u.lang = v.lang; }
+      u.volume = 1;
+      u.rate = this.state.rate;
+      u.pitch = 1.02;
+      u.onstart = () => { this.spoke = true; this.setState({ speaking: true, voiceNote: "" }); };
+      u.onend = () => { this.setState({ speaking: false }); if (done) done(); };
+      u.onerror = e => {
+        const reason = (e && e.error) || "";
+        this.setState({ speaking: false });
+        if (!this.spoke && reason !== "canceled" && reason !== "interrupted") {
+          this.setState({ voiceNote: "The browser blocked the voice here — open this design in its own browser tab to hear it." });
+        }
+        if (done) done();
+      };
+      synth.speak(u);
+      setTimeout(() => {
+        if (!this.spoke && !synth.speaking && !synth.pending) {
+          this.setState({ voiceNote: "No sound yet. Check the tab is not muted, or open this design in its own browser tab." });
+        }
+      }, 2600);
+    } catch (e) {
+      this.setState({ voiceNote: "Voice failed to start: " + e.message });
+      if (done) done();
+    }
+  }
+
+  async sayAndWait(text, extra) {
+    this.setState(Object.assign({ caption: text }, extra || {}));
+    if (this.state.voice && window.speechSynthesis && this.unlocked) await this.speakAsync(text);
+    else await this.wait(this.estimate(text));
+  }
+
+  repeat = () => { this.unlocked = true; this.speak(this.state.caption); };
+  testVoice = () => { this.unlocked = true; this.set({ voice: true }); this.speak("Hello. I am your tutor, and this is the voice I will teach with."); };
+
+  micAnswer = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    const r = new SR();
+    const v = this.state.voices.find(x => x.name === this.state.voiceName);
+    r.lang = (v && v.lang) || "en-GB";
+    r.interimResults = false;
+    r.maxAlternatives = 3;
+    this.setState({ listeningMic: true, mode: "listen" });
+    r.onresult = e => {
+      const said = e.results[0][0].transcript;
+      this.setState({ typed: said, listeningMic: false });
+      setTimeout(() => this.submitTyped(), 150);
+    };
+    r.onerror = () => { this.setState({ listeningMic: false }); this.say("I did not catch that — you can type it instead."); };
+    r.onend = () => this.setState({ listeningMic: false });
+    r.start();
+  };
+  componentWillUnmount() {
+    this.stop(); this.endDrag(true);
+    if (this.unlock) { window.removeEventListener("pointerdown", this.unlock, true); window.removeEventListener("keydown", this.unlock, true); }
+  }
+
+  persist(patch) {
+    const s = Object.assign({}, this.state, patch || {});
+    const keep = { lessons: s.lessons, progress: s.progress, curriculum: s.curriculum, pace: s.pace, guide: s.guide, voice: s.voice, voiceChosen: s.voiceChosen, voiceName: s.voiceName, rate: s.rate, showSub: s.showSub, panelOpen: s.panelOpen };
+    try { localStorage.setItem(STORE, JSON.stringify(keep)); } catch (e) {}
+  }
+  set(patch) { this.setState(patch); this.persist(patch); }
+
+  lesson() { return this.state.lessons.find(l => l.id === this.state.lessonId) || this.state.lessons[0]; }
+  editLesson(fn) {
+    const lessons = clone(this.state.lessons);
+    const l = lessons.find(x => x.id === this.state.lessonId);
+    fn(l);
+    this.set({ lessons, jsonText: "", jsonError: "" });
+  }
+  nodeById(id) {
+    const l = this.lesson();
+    return (l.objects || []).concat(l.slots || []).find(o => o.id === id) || null;
+  }
+
+  wait(ms) { return new Promise(res => setTimeout(res, Math.max(16, ms / this.state.pace))); }
+  stop() {
+    this.playSeq++; this.inPlay = false; this.waitSeq++; this.stepSeq++;
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (this.answerResolve) { this.answerResolve = null; }
+    this.setState({ playing: false, speaking: false });
+  }
+  say(text, extra) {
+    this.setState(Object.assign({ caption: text }, extra || {}));
+    this.speak(text);
+  }
+
+  openLesson(id) {
+    this.stop();
+    this.setState({
+      screen: "board", lessonId: id, stepIdx: -1, mode: "idle", target: null, question: "",
+      placements: {}, typed: "", feedback: {}, selectedChip: null, awaiting: null,
+      askOpen: false, askReply: "", askText: "", jsonText: "", jsonError: "",
+      caption: ""
+    });
+    this.persist({ lessonId: id });
+    const l = this.state.lessons.find(x => x.id === id);
+    this.sayAndWait("Let us learn " + ((l && l.title) || "this objective").toLowerCase() + ". I will teach it aloud, and stop whenever you want to answer or ask.").then(() => {
+      if (this.state.screen === "board" && this.state.lessonId === id && this.state.stepIdx < 0) this.play();
+    });
+  }
+
+  record(patch) {
+    const id = this.state.lessonId;
+    const progress = Object.assign({}, this.state.progress);
+    const p = Object.assign({ asks: 0, independent: 0, guided: 0, hints: 0, reveals: 0, wrong: 0, done: false }, progress[id]);
+    Object.keys(patch).forEach(k => { p[k] = typeof patch[k] === "number" ? p[k] + patch[k] : patch[k]; });
+    progress[id] = p;
+    this.set({ progress });
+  }
+
+  async runStep(i, chained) {
+    const l = this.lesson();
+    const step = l.steps[i];
+    if (!step) return;
+    const gen = ++this.stepSeq;
+    const isAsk = step.verb === "ask" && step.ask;
+    this.setState({
+      stepIdx: i, target: step.target || null, feedback: {},
+      mode: isAsk ? "quiz" : step.verb === "praise" ? "celebrate" : step.verb === "listen" ? "listen" : step.verb === "explain" ? "idle" : step.verb,
+      question: isAsk ? step.ask.prompt : "",
+      typed: "", placements: isAsk && step.ask.type === "place" ? {} : this.state.placements,
+      awaiting: isAsk ? { type: step.ask.type, usedHint: false } : null
+    });
+    if (step.verb === "trace" || step.verb === "compare") {
+      const ids = [].concat(step.target || []);
+      ids.forEach((id, k) => setTimeout(() => { if (gen === this.stepSeq) this.setState({ target: id }); }, k * 900));
+    }
+    await this.sayAndWait(step.say || step.ask.prompt);
+    if (gen !== this.stepSeq) return;
+    if (isAsk) {
+      if (step.say && step.ask.prompt && step.say !== step.ask.prompt) {
+        await this.wait(260);
+        if (gen !== this.stepSeq) return;
+        await this.sayAndWait(step.ask.prompt);
+        if (gen !== this.stepSeq) return;
+      }
+      return new Promise(res => { this.answerResolve = res; });
+    }
+    await this.wait(step.verb === "praise" ? 900 : 550);
+    if (gen !== this.stepSeq) return;
+  }
+
+  next = async () => {
+    const l = this.lesson();
+    const i = this.state.stepIdx + 1;
+    if (i >= l.steps.length) { this.say("That is the end of this objective. Open the progress view, or pick another lesson."); return; }
+    this.stop();
+    await this.runStep(i);
+  };
+
+  play = async () => {
+    if (this.state.playing) { this.stop(); this.say("Paused. Press play when you are ready."); return; }
+    this.stop();
+    const id = ++this.playSeq;
+    this.inPlay = true;
+    this.setState({ playing: true });
+    const alive = () => { if (id === this.playSeq) return true; this.inPlay = false; this.setState({ playing: false }); return false; };
+    const l = this.lesson();
+    const from = this.state.stepIdx + 1 >= l.steps.length ? 0 : this.state.stepIdx + 1;
+    for (let i = from; i < l.steps.length; i++) {
+      if (!alive()) return;
+      await this.runStep(i, true);
+      if (!alive()) return;
+      await this.wait(400);
+      if (!alive()) return;
+    }
+    this.inPlay = false;
+    this.setState({ playing: false });
+    this.record({ done: true });
+    this.say("That is the whole objective. Your progress is recorded by what you did without help.");
+  };
+
+  finishAsk(ok) {
+    const r = this.answerResolve;
+    this.answerResolve = null;
+    this.setState({ awaiting: null, question: "" });
+    if (r) setTimeout(r, ok ? 1300 : 900);
+  }
+
+  tapObject(id) {
+    const a = this.state.awaiting;
+    const step = this.lesson().steps[this.state.stepIdx];
+    if (!a || a.type !== "select") {
+      const n = this.nodeById(id);
+      this.setState({ target: id, mode: "point" });
+      if (n) this.say(n.sub ? n.label + " — " + n.sub : "This one is " + (n.label || "here") + ".");
+      return;
+    }
+    const expect = [].concat(step.ask.expect);
+    const ok = expect.indexOf(id) >= 0;
+    const n = this.nodeById(id);
+    if (ok) {
+      this.setState({ target: id, mode: "nod", feedback: { [id]: "right" } });
+      this.say("Correct. " + (n && n.sub ? n.label + " is in the " + n.sub.toLowerCase() + "." : "That is the one."));
+      this.record(a.usedHint ? { asks: 1, guided: 1 } : { asks: 1, independent: 1 });
+      this.finishAsk(true);
+    } else {
+      this.setState({ target: id, mode: "quiz", feedback: { [id]: "wrong" } });
+      this.say((n && n.sub ? "That is " + n.sub.toLowerCase() + ". " : "Not that one. ") + (step.ask.hint || "Look again at what the question is asking."));
+      this.record({ wrong: 1 });
+    }
+  }
+
+  submitTyped = () => {
+    const a = this.state.awaiting;
+    const step = this.lesson().steps[this.state.stepIdx];
+    if (!a || a.type !== "type") return;
+    const ok = [].concat(step.ask.expect).some(e => norm(e) === norm(this.state.typed));
+    if (ok) {
+      this.setState({ mode: "nod" });
+      this.say("Yes — " + this.state.typed.trim() + " is right.");
+      this.record(a.usedHint ? { asks: 1, guided: 1 } : { asks: 1, independent: 1 });
+      this.finishAsk(true);
+    } else {
+      this.setState({ mode: "quiz" });
+      this.say("Not yet. " + (step.ask.hint || "Try working it out one step at a time."));
+      this.record({ wrong: 1 });
+    }
+  };
+
+  check = () => {
+    const a = this.state.awaiting;
+    const step = this.lesson().steps[this.state.stepIdx];
+    if (!a || a.type !== "place") return;
+    const expect = step.ask.expect;
+    const fb = {};
+    let right = 0, total = 0;
+    Object.keys(expect).forEach(chip => {
+      total++;
+      const got = this.state.placements[chip];
+      if (got === expect[chip]) { right++; fb[chip] = "right"; } else if (got) fb[chip] = "wrong";
+    });
+    this.setState({ feedback: fb });
+    if (right === total) {
+      this.setState({ mode: "nod" });
+      this.say("All placed correctly.");
+      this.record(a.usedHint ? { asks: 1, guided: 1 } : { asks: 1, independent: 1 });
+      this.finishAsk(true);
+    } else {
+      this.setState({ mode: "quiz" });
+      this.say(right + " of " + total + " are in the right place. " + (step.ask.hint || "Move the ones that do not fit."));
+      this.record({ wrong: 1 });
+    }
+  };
+
+  hint = () => {
+    const step = this.lesson().steps[this.state.stepIdx];
+    const a = this.state.awaiting;
+    if (!step) { this.say("Press play and I will start the lesson."); return; }
+    const text = (step.ask && step.ask.hint) || "Ask yourself what the idea is for before applying the rule.";
+    if (a) this.setState({ awaiting: Object.assign({}, a, { usedHint: true }) });
+    this.record({ hints: 1 });
+    this.say("A hint, not the answer: " + text);
+  };
+
+  reveal = () => {
+    const step = this.lesson().steps[this.state.stepIdx];
+    if (!step || !step.ask) return;
+    const ask = step.ask;
+    if (ask.type === "place") {
+      this.setState({ placements: Object.assign({}, ask.expect), feedback: {} });
+      this.say("Here is how they belong. We will come back to this one so you can do it yourself.");
+    } else if (ask.type === "select") {
+      const id = [].concat(ask.expect)[0];
+      const n = this.nodeById(id);
+      this.setState({ target: id, mode: "point" });
+      this.say("This is the one — " + ((n && (n.sub || n.label)) || "here") + ". We will return to it later.");
+    } else {
+      this.setState({ typed: [].concat(ask.expect)[0] });
+      this.say("The answer is " + [].concat(ask.expect)[0] + ". Marked as needing another go.");
+    }
+    this.record({ reveals: 1, asks: 1 });
+    this.finishAsk(false);
+  };
+
+  askSend = () => {
+    const q = this.state.askText.trim();
+    if (!q) return;
+    const l = this.lesson();
+    const hit = (l.faq || []).find(f => f.k.some(k => norm(q).indexOf(norm(k)) >= 0));
+    const reply = hit ? hit.a
+      : "That is outside what this objective covers, so I will not guess. Let us finish this idea, and I will flag it for your teacher.";
+    this.setState({ mode: "listen", askReply: reply });
+    this.say(hit ? "Good question — let me show you." : "Honest answer: that is beyond this lesson.");
+  };
+
+  startDrag(chipId, e) {
+    e.preventDefault();
+    this.setState({ drag: { id: chipId, x: e.clientX, y: e.clientY }, selectedChip: chipId });
+    this.moveHandler = ev => this.setState({ drag: { id: chipId, x: ev.clientX, y: ev.clientY } });
+    this.upHandler = ev => {
+      this.endDrag();
+      const el = document.elementFromPoint(ev.clientX, ev.clientY);
+      const slotEl = el && el.closest ? el.closest("[data-slot]") : null;
+      if (slotEl) this.placeChip(chipId, slotEl.getAttribute("data-slot"));
+    };
+    window.addEventListener("pointermove", this.moveHandler);
+    window.addEventListener("pointerup", this.upHandler, { once: true });
+  }
+  endDrag(silent) {
+    if (this.moveHandler) window.removeEventListener("pointermove", this.moveHandler);
+    this.moveHandler = null;
+    if (!silent) this.setState({ drag: null });
+  }
+  placeChip(chipId, slotId) {
+    const placements = Object.assign({}, this.state.placements);
+    Object.keys(placements).forEach(k => { if (placements[k] === slotId) delete placements[k]; });
+    placements[chipId] = slotId;
+    const fb = Object.assign({}, this.state.feedback);
+    delete fb[chipId];
+    this.setState({ placements, feedback: fb, selectedChip: null, target: slotId, mode: "point" });
+  }
+
+  statusOf(id) {
+    const p = this.state.progress[id];
+    if (!p || !p.asks) return { key: "untouched", label: "Not started" };
+    if (p.independent >= 2 && !p.reveals && p.hints === 0 && p.wrong === 0) return { key: "mastered", label: "Mastered" };
+    if (p.independent + p.guided >= 1 && p.reveals <= 1) return { key: "developing", label: "Developing" };
+    return { key: "support", label: "Needs support" };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const l = this.lesson();
+    const cur = CURRICULA.find(c => c.id === st.curriculum) || CURRICULA[0];
+    const step = l.steps[st.stepIdx];
+    const a = st.awaiting;
+    const objects = l.objects || [];
+    const slots = l.slots || [];
+    const boardSlots = slots.filter(s => s.place === "board");
+    const rowSlots = slots.filter(s => s.place !== "board");
+    const placedIds = Object.keys(st.placements);
+
+    // tutor geometry
+    const tNode = st.target ? this.nodeById([].concat(st.target)[0]) : null;
+    const SX = 150, SY = 402;
+    let rightArm = SX + "," + SY + " " + (SX + 46) + "," + (SY + 40) + " " + (SX + 58) + "," + (SY + 58);
+    let leftArm = SX + "," + SY + " " + (SX - 46) + "," + (SY + 40) + " " + (SX - 58) + "," + (SY + 58);
+    let handX = SX + 58, handY = SY + 58, tx = handX, ty = handY;
+    const pointing = !!tNode && ["point", "trace", "compare", "nod", "reveal", "quiz"].indexOf(st.mode) >= 0;
+    if (pointing) {
+      tx = BX(tNode.x); ty = BY(tNode.y);
+      const ang = Math.atan2(ty - SY, tx - SX), eAng = ang - 0.35;
+      const ex = SX + 62 * Math.cos(eAng), ey = SY + 62 * Math.sin(eAng);
+      handX = ex + 66 * Math.cos(ang); handY = ey + 66 * Math.sin(ang);
+      rightArm = SX + "," + SY + " " + ex.toFixed(1) + "," + ey.toFixed(1) + " " + handX.toFixed(1) + "," + handY.toFixed(1);
+    } else if (st.mode === "celebrate") {
+      rightArm = SX + "," + SY + " " + (SX + 52) + "," + (SY - 34) + " " + (SX + 66) + "," + (SY - 82);
+      leftArm = SX + "," + SY + " " + (SX - 52) + "," + (SY - 34) + " " + (SX - 66) + "," + (SY - 82);
+    }
+
+    // board decor
+    const line = (x1, y1, x2, y2, w, color, dash) => ({ x1: BX(x1), y1: BY(y1), x2: BX(x2), y2: BY(y2), w: w || 3, color: color || "rgba(243,236,220,0.5)", dash: dash || "0" });
+    const kind = l.board.kind;
+    let decorLines = [];
+    if (kind === "numberline") {
+      decorLines.push(line(4, 50, 96, 50, 4, "#eae2cf"));
+      for (let i = 0; i <= 10; i++) { const x = 4 + i * 9.2; decorLines.push(line(x, 46, x, 54, i % 5 === 0 ? 4 : 2, "#cfd8c4")); }
+    } else if (kind === "axes") {
+      decorLines.push(line(12, 82, 94, 82, 4, "#eae2cf"));
+      decorLines.push(line(12, 82, 12, 12, 4, "#eae2cf"));
+      for (let i = 1; i <= 8; i++) { const x = 12 + i * 10; decorLines.push(line(x, 12, x, 82, 1.5, "rgba(243,236,220,0.18)")); }
+      for (let i = 1; i <= 7; i++) { const y = 82 - i * 10; decorLines.push(line(12, y, 94, y, 1.5, "rgba(243,236,220,0.18)")); }
+    } else if (kind === "stave") {
+      for (let i = 0; i < 5; i++) decorLines.push(line(10, 28 + i * 9, 92, 28 + i * 9, 3, "#eae2cf"));
+    } else if (kind === "timeline") {
+      decorLines.push(line(6, 44, 96, 44, 4, "#eae2cf"));
+    } else if (kind === "bars") {
+      decorLines.push(line(2, 30, 98, 30, 2, "rgba(243,236,220,0.35)", "10 10"));
+      decorLines.push(line(2, 50, 98, 50, 2, "rgba(243,236,220,0.35)", "10 10"));
+    }
+
+    const objStyle = (ob, state) => {
+      const ring = state === "target" ? "#f3ecdc" : state === "right" ? "var(--color-accent-2)" : state === "wrong" ? "var(--color-accent-300)" : "rgba(243,236,220,0.45)";
+      const fill = state === "target" ? "var(--color-accent)" : state === "right" ? "var(--color-accent-2)" : "rgba(243,236,220,0.07)";
+      const base = "position: absolute; left: " + ob.x + "%; top: " + ob.y + "%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4cqw; box-sizing: border-box; cursor: pointer; pointer-events: auto; transition: all .3s ease; border-style: solid; border-color: " + ring + "; background: " + fill + "; ";
+      if (ob.shape === "circle") return base + "width: 17cqw; height: 17cqw; border-radius: 999px; border-width: " + (state === "target" ? 4 : 2) + "px;";
+      if (ob.shape === "tile") return base + "padding: 1.4cqw 2.4cqw; border-radius: 999px; border-width: 2px;";
+      if (ob.shape === "bar") return base + "width: " + (ob.w || 10) + "%; height: 14cqw; border-radius: 1.6cqw; border-width: 2px; background: " + (state === "target" ? "var(--color-accent)" : ob.on ? "var(--color-accent-2)" : "rgba(243,236,220,0.07)") + ";";
+      if (ob.shape === "note") return base + "width: 6cqw; height: 6cqw; border-radius: 999px; border-width: 2px; background: " + (state === "target" ? "var(--color-accent)" : "#f3ecdc") + ";";
+      if (ob.shape === "point") return base + "width: 4.5cqw; height: 4.5cqw; border-radius: 999px; border-width: 2px; background: " + (state === "target" ? "var(--color-accent)" : "#f3ecdc") + ";";
+      if (ob.shape === "node") return base + "width: 5cqw; height: 5cqw; border-radius: 999px; border-width: 3px;";
+      return base + "padding: 0.8cqw 1.6cqw; border-radius: 1.2cqw; border-width: 0; background: transparent;";
+    };
+    const objText = (ob, state) => {
+      const ink = state === "target" ? "#2c332d" : state === "right" ? "#2c332d" : "#f3ecdc";
+      const size = ob.shape === "circle" ? 7 : ob.shape === "tile" ? 3 : ob.shape === "node" ? 2 : ob.shape === "point" ? 2.4 : 3;
+      return "font-family: " + (ob.shape === "circle" ? "var(--font-heading)" : "var(--font-body)") + "; font-size: " + size + "cqw; line-height: 1; color: " + ink + ";";
+    };
+
+    const targetIds = [].concat(st.target || []);
+    const boardObjects = objects.map(ob => {
+      const state = targetIds.indexOf(ob.id) >= 0 && pointing ? "target" : st.feedback[ob.id] || "";
+      const sub = ob.shape === "node" ? ob.sub : st.showSub ? ob.sub : "";
+      return {
+        id: ob.id, label: ob.label, sub: sub || "",
+        style: objStyle(ob, state), textStyle: objText(ob, state),
+        subStyle: "font-size: " + (ob.shape === "node" ? 2 : 2.2) + "cqw; max-width: 22cqw; text-align: center; color: " + (state === "target" ? "#2c332d" : "#a9b79b") + ";",
+        onTap: () => this.tapObject(ob.id)
+      };
+    });
+
+    const chipFor = slotId => {
+      const chip = (l.tray || []).find(c => st.placements[c.id] === slotId);
+      return chip ? chip.label : "";
+    };
+    const slotStyleBoard = (s, hot) => "position: absolute; left: " + s.x + "%; top: " + s.y + "%; transform: translate(-50%, -50%); width: 22cqw; min-height: 8cqw; padding: 1cqw; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4cqw; border: 2px dashed " + (hot ? "var(--color-accent-2)" : "rgba(243,236,220,0.5)") + "; border-radius: 2cqw; background: rgba(44,51,45,0.72); pointer-events: auto; text-align: center;" + (hot ? " animation: tutor-invite 1.6s ease-in-out infinite;" : "");
+
+    const placing = !!(a && a.type === "place");
+    const trayChips = (l.tray || []).filter(c => !st.placements[c.id]).map(c => ({
+      id: c.id, label: c.label,
+      style: "padding: 10px 16px; border-radius: 999px; border: 2px solid " + (st.selectedChip === c.id ? "var(--color-accent)" : "var(--color-neutral-300)") + "; background: " + (st.selectedChip === c.id ? "var(--color-accent-100)" : "var(--color-neutral-100)") + "; font-family: var(--font-body); font-size: 15px; color: var(--color-text); cursor: grab; touch-action: none;",
+      onDown: e => this.startDrag(c.id, e),
+      onTap: () => this.setState({ selectedChip: c.id })
+    }));
+
+    const tapSlot = id => () => { if (st.selectedChip) this.placeChip(st.selectedChip, id); };
+    const rowSlotVals = rowSlots.map(s => {
+      const fb = Object.keys(st.feedback).find(k => st.placements[k] === s.id);
+      const mark = fb ? st.feedback[fb] : "";
+      return {
+        id: s.id, label: s.label, filled: chipFor(s.id) || "—",
+        onTap: tapSlot(s.id),
+        style: "min-width: 150px; padding: 12px 16px; border-radius: var(--radius-lg); border: 2px " + (chipFor(s.id) ? "solid" : "dashed") + " " + (mark === "right" ? "var(--color-accent-2)" : mark === "wrong" ? "var(--color-accent)" : "var(--color-neutral-300)") + "; background: " + (mark === "right" ? "var(--color-accent-2-100)" : "var(--color-neutral-100)") + "; display: flex; flex-direction: column; gap: 2px; cursor: pointer;"
+      };
+    });
+
+    const lessonCards = st.lessons.map(x => {
+      const ok = x.curricula.indexOf(st.curriculum) >= 0;
+      const status = this.statusOf(x.id);
+      return {
+        id: x.id, subject: x.subject, title: x.title, objective: x.objective,
+        meta: (KINDS.find(k => k.value === x.board.kind) || {}).label + " · " + x.steps.length + " steps",
+        statusClass: status.key === "mastered" ? "tag tag-accent-2" : status.key === "untouched" ? "tag tag-outline" : "tag tag-accent",
+        statusLabel: status.label,
+        locked: !ok, cta: ok ? "Teach this" : "Not yet available",
+        onOpen: ok ? () => this.openLesson(x.id) : () => {}
+      };
+    });
+
+    const counts = { mastered: 0, developing: 0, support: 0 };
+    st.lessons.forEach(x => { const k = this.statusOf(x.id).key; if (counts[k] !== undefined) counts[k]++; });
+
+    const reportRows = st.lessons.map(x => {
+      const p = st.progress[x.id] || {};
+      const s = this.statusOf(x.id);
+      return {
+        title: x.title, subject: x.subject + " · " + cur.stage,
+        status: s.label,
+        statusClass: s.key === "mastered" ? "tag tag-accent-2" : s.key === "developing" ? "tag tag-accent" : s.key === "support" ? "tag tag-neutral" : "tag tag-outline",
+        independent: p.independent || 0, guided: p.guided || 0, hints: p.hints || 0,
+        next: s.key === "mastered" ? "Move on to the next objective." : s.key === "developing" ? "Repeat independently, without hints." : s.key === "support" ? "Reteach from the visual model." : "Not attempted yet."
+      };
+    });
+
+    const toggleRow = (key, label, on, onText, offText) => ({
+      key, label, state: on ? onText : offText,
+      onToggle: () => this.set(key === "voice" ? { voice: !on, voiceChosen: true } : { [key]: !on }),
+      style: "display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 10px 14px; border-radius: 999px; border: 2px solid " + (on ? "var(--color-accent-2)" : "var(--color-neutral-300)") + "; background: " + (on ? "var(--color-accent-2-100)" : "transparent") + "; font-family: var(--font-body); font-size: 14px; color: var(--color-text); cursor: pointer; text-align: left;",
+      pillStyle: "font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: " + (on ? "var(--color-accent-2-900)" : "var(--color-neutral-600)") + ";"
+    });
+
+    const targetOptions = [{ value: "", label: "no target" }].concat(
+      objects.map(o => ({ value: o.id, label: (o.label || o.sub || o.id) + " (object)" })),
+      slots.map(s => ({ value: s.id, label: s.label + " (slot)" }))
+    );
+
+    return {
+      tabs: [
+        { label: "Lessons", onGo: () => this.setState({ screen: "picker" }), style: st.screen === "picker" ? "background: var(--color-accent-2-100);" : "" },
+        { label: "Board", onGo: () => this.setState({ screen: "board" }), style: st.screen === "board" ? "background: var(--color-accent-2-100);" : "" },
+        { label: "Progress", onGo: () => this.setState({ screen: "report" }), style: st.screen === "report" ? "background: var(--color-accent-2-100);" : "" }
+      ],
+      onPicker: st.screen === "picker", onBoard: st.screen === "board", onReport: st.screen === "report",
+      curricula: CURRICULA, curriculum: st.curriculum, curriculumLine: cur.label,
+      onCurriculum: e => this.set({ curriculum: e.target.value }),
+      lessonCards, reportRows,
+      summary: [
+        { label: "Mastered", count: counts.mastered, color: "var(--color-accent-2-700)", note: "Right without help, twice" },
+        { label: "Developing", count: counts.developing, color: "var(--color-accent-700)", note: "Right with hints or after a slip" },
+        { label: "Needs support", count: counts.support, color: "var(--color-neutral-700)", note: "Answer was shown, or repeated errors" }
+      ],
+      lessonSubject: l.subject + " · " + cur.stage, lessonTitle: l.title, lessonObjective: l.objective,
+      stepLabel: st.stepIdx < 0 ? "Not started" : "Step " + (st.stepIdx + 1) + " of " + l.steps.length,
+      boardHeading: l.board.heading, boardSub: st.showSub ? l.board.sub : "", boardQuestion: st.question,
+      hasPhoto: !!l.board.photo,
+      decorLines, boardObjects,
+      boardSlots: boardSlots.map(s => ({ id: s.id, label: chipFor(s.id) ? "" : s.label, filled: chipFor(s.id), style: slotStyleBoard(s, placing) })),
+      hasTray: (l.tray || []).length > 0, trayTitle: (step && step.ask && step.ask.mode === "order") ? "Put these in order" : "Cards to place",
+      trayChips, trayEmptyOpacity: trayChips.length ? 0 : 1,
+      hasRowSlots: rowSlots.length > 0, rowSlots: rowSlotVals,
+      caption: st.caption, leftArm, rightArm,
+      mouth: st.speaking ? "M132 344 q18 14 36 0 q-18 8 -36 0" : st.mode === "celebrate" ? "M132 346 q18 18 36 0" : st.mode === "listen" ? "M136 348 q14 -6 28 0" : "M134 346 q16 10 32 0",
+      headStyle: st.mode === "nod" ? "animation: tutor-nod 1s ease-in-out; transform-origin: 150px 370px;"
+        : "transform: rotate(" + (st.mode === "listen" ? -7 : st.mode === "quiz" ? 5 : 0) + "deg); transform-origin: 150px 372px; transition: transform .4s ease;",
+      figureStyle: st.mode === "celebrate" ? "animation: tutor-jump .9s ease-in-out infinite;" : "",
+      listening: st.mode === "listen" || st.mode === "quiz" || st.listeningMic, celebrating: st.mode === "celebrate",
+      speaking: st.speaking,
+      guideOpacity: st.guide && pointing ? 0.9 : 0,
+      pointFromX: handX, pointFromY: handY,
+      pointToX: pointing ? tx : handX, pointToY: pointing ? ty : handY,
+      playLabel: st.playing ? "Pause" : st.stepIdx < 0 ? "Play lesson" : "Continue",
+      needsCheck: placing, needsTyped: !!(a && a.type === "type"), waitingAnswer: !!a,
+      typed: st.typed, onTyped: e => this.setState({ typed: e.target.value }),
+      onSubmitTyped: this.submitTyped, onCheck: this.check, onHint: this.hint, onReveal: this.reveal,
+      onRepeat: this.repeat, onTestVoice: this.testVoice, onMic: this.micAnswer,
+      voiceNote: st.voiceNote, voiceNoteOpacity: st.voiceNote ? 1 : 0, hasMic: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+      micLabel: st.listeningMic ? "Listening…" : "Answer out loud",
+      onVoiceToggle: () => { const on = !st.voice; this.set({ voice: on, voiceChosen: true }); if (!on && window.speechSynthesis) window.speechSynthesis.cancel(); else this.speak(st.caption); },
+      voiceBtnLabel: st.voice ? "Voice on" : "Voice off",
+      voiceBtnStyle: st.voice ? "background: var(--color-accent-2-100); border-color: var(--color-accent-2);" : "",
+      voiceOptions: st.voices, voiceName: st.voiceName,
+      onVoicePick: e => { this.set({ voiceName: e.target.value }); setTimeout(() => this.speak("This is the voice I will teach with."), 60); },
+      hasVoices: st.voices.length > 0,
+      onPlay: this.play, onNext: this.next,
+      askOpen: st.askOpen, askText: st.askText, askReply: st.askReply, hasAskReply: !!st.askReply,
+      bridgeLabel: st.stepIdx < 0 ? "Start the lesson" : "Back to step " + (st.stepIdx + 1),
+      onAskToggle: () => this.setState({ askOpen: !st.askOpen, mode: st.askOpen ? st.mode : "listen" }),
+      onAskText: e => this.setState({ askText: e.target.value }),
+      onAskSend: this.askSend,
+      onBridgeBack: () => { this.setState({ askOpen: false, askReply: "", askText: "" }); this.say(step ? step.say || "" : "Let us pick the lesson up again."); },
+      dragging: !!st.drag,
+      dragLabel: st.drag ? ((l.tray || []).find(c => c.id === st.drag.id) || {}).label : "",
+      dragStyle: st.drag ? "position: fixed; left: " + st.drag.x + "px; top: " + st.drag.y + "px; transform: translate(-50%, -50%) rotate(-2deg); padding: 10px 16px; border-radius: 999px; background: var(--color-accent); color: #2c332d; font-size: 15px; box-shadow: var(--shadow-lg); pointer-events: none; z-index: 50;" : "display: none;",
+      panelOpen: st.panelOpen, panelLabel: st.panelOpen ? "Hide teacher setup" : "Teacher setup",
+      onTogglePanel: () => this.set({ panelOpen: !st.panelOpen }),
+      boardKind: l.board.kind, kindOptions: KINDS, verbOptions: VERBS, targetOptions,
+      onEditTitle: e => this.editLesson(x => { x.title = e.target.value; }),
+      onEditObjective: e => this.editLesson(x => { x.objective = e.target.value; }),
+      onEditKind: e => this.editLesson(x => { x.board.kind = e.target.value; }),
+      objectRows: objects.map((ob, i) => ({
+        label: ob.label, x: String(ob.x), y: String(ob.y),
+        onLabel: e => this.editLesson(x => { x.objects[i].label = e.target.value; }),
+        onX: e => this.editLesson(x => { x.objects[i].x = Number(e.target.value) || 0; }),
+        onY: e => this.editLesson(x => { x.objects[i].y = Number(e.target.value) || 0; }),
+        onRemove: () => this.editLesson(x => { x.objects.splice(i, 1); })
+      })),
+      onAddObject: () => this.editLesson(x => {
+        const n = (x.objects || []).length + 1;
+        x.objects = (x.objects || []).concat([{ id: "o" + Date.now(), label: "New " + n, x: 50, y: 50, shape: x.board.kind === "tiles" ? "tile" : x.board.kind === "circles" ? "circle" : "label" }]);
+      }),
+      stepRows: l.steps.map((s, i) => ({
+        n: i + 1, verb: s.verb, target: [].concat(s.target || [""])[0], say: s.say || "",
+        prompt: (s.ask && s.ask.prompt) || "", promptOpacity: s.ask ? 1 : 0.45,
+        bg: i === st.stepIdx ? "var(--color-accent-2-100)" : "var(--color-neutral-100)",
+        onVerb: e => this.editLesson(x => { x.steps[i].verb = e.target.value; }),
+        onTarget: e => this.editLesson(x => { x.steps[i].target = e.target.value || null; }),
+        onSay: e => this.editLesson(x => { x.steps[i].say = e.target.value; }),
+        onPrompt: e => this.editLesson(x => { if (!x.steps[i].ask) x.steps[i].ask = { type: "type", expect: [""] }; x.steps[i].ask.prompt = e.target.value; }),
+        onRemove: () => this.editLesson(x => { x.steps.splice(i, 1); }),
+        onUp: () => { if (!i) return; this.editLesson(x => { const t = x.steps[i - 1]; x.steps[i - 1] = x.steps[i]; x.steps[i] = t; }); }
+      })),
+      addVerb: st.addVerb, onAddVerbPick: e => this.setState({ addVerb: e.target.value }),
+      onAddStep: () => this.editLesson(x => {
+        const v = st.addVerb;
+        x.steps = x.steps.concat([v === "ask"
+          ? { verb: "ask", say: "Your turn.", ask: { type: "type", prompt: "New question", expect: [""], hint: "Add a hint here." } }
+          : { verb: v, say: "New " + v + " step.", target: (x.objects[0] || {}).id || null }]);
+      }),
+      toggles: [
+        toggleRow("guide", "Chalk pointer guide", st.guide, "shown", "hidden"),
+        toggleRow("showSub", "Labels under objects", st.showSub, "shown", "hidden"),
+        toggleRow("voice", "Speak the narration aloud", st.voice, "on", "off")
+      ],
+      pace: st.pace, paceLabel: st.pace < 0.9 ? "unhurried" : st.pace > 1.3 ? "brisk" : "steady",
+      rate: st.rate, rateLabel: st.rate <= 0.72 ? "slow and clear" : st.rate >= 1.0 ? "quick" : "measured",
+      onRate: e => { const r = Number(e.target.value); this.set({ rate: r }); setTimeout(() => { this.unlocked = true; this.speak("This is how fast I will speak."); }, 60); },
+      onPace: e => this.set({ pace: Number(e.target.value) }),
+      jsonText: st.jsonText || JSON.stringify(l, null, 2),
+      jsonError: st.jsonError, jsonErrorOpacity: st.jsonError ? 1 : 0,
+      onJsonText: e => this.setState({ jsonText: e.target.value }),
+      onApplyJson: () => {
+        try {
+          const parsed = JSON.parse(st.jsonText || JSON.stringify(l));
+          if (!parsed.id || !parsed.steps) throw new Error("A lesson needs an id and steps.");
+          const lessons = clone(st.lessons);
+          const i = lessons.findIndex(x => x.id === st.lessonId);
+          lessons[i] = parsed;
+          this.set({ lessons, lessonId: parsed.id, jsonError: "", stepIdx: -1, placements: {}, feedback: {}, question: "", awaiting: null });
+        } catch (err) { this.setState({ jsonError: "Could not apply: " + err.message }); }
+      },
+      onDownload: () => {
+        const blob = new Blob([JSON.stringify(l, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a2 = document.createElement("a");
+        a2.href = url; a2.download = l.id + ".lesson.json";
+        document.body.appendChild(a2); a2.click(); a2.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      },
+      onUpload: e => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const r = new FileReader();
+        r.onload = () => {
+          try {
+            const parsed = JSON.parse(String(r.result));
+            if (!parsed.id || !parsed.steps) throw new Error("A lesson needs an id and steps.");
+            const lessons = clone(this.state.lessons).filter(x => x.id !== parsed.id).concat([parsed]);
+            this.set({ lessons, lessonId: parsed.id, jsonText: "", jsonError: "", stepIdx: -1, placements: {}, feedback: {}, question: "", awaiting: null });
+            this.say("Loaded " + parsed.title + ". Press play to teach it.");
+          } catch (err) { this.setState({ jsonError: "Could not read that file: " + err.message }); }
+        };
+        r.readAsText(file);
+      },
+      onRestore: () => {
+        const demo = DEMO.find(x => x.id === st.lessonId);
+        if (!demo) return;
+        const lessons = clone(st.lessons);
+        lessons[lessons.findIndex(x => x.id === st.lessonId)] = clone(demo);
+        this.set({ lessons, jsonText: "", jsonError: "", stepIdx: -1, placements: {}, feedback: {}, question: "", awaiting: null });
+      },
+      onGoPicker: () => this.setState({ screen: "picker" }),
+      onClearProgress: () => this.set({ progress: {} })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tutor</title>
+  <link rel="stylesheet" href="organic.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top bar -->
+  <header class="nav topbar">
+    <span class="nav-brand">Tutor</span>
+    <nav>
+      <button class="btn btn-ghost tab" data-screen="lessons">Lessons</button>
+      <button class="btn btn-ghost tab" data-screen="board">Board</button>
+      <button class="btn btn-ghost tab" data-screen="progress">Progress</button>
+      <a class="btn btn-ghost" href="notes.html">Demo notes</a>
+    </nav>
+    <div class="spacer"></div>
+    <label class="curriculum">
+      Curriculum
+      <select id="curriculum" class="input"></select>
+    </label>
+  </header>
+
+  <!-- Screen 1: pick a lesson -->
+  <section id="screen-lessons" class="page">
+    <span class="tag tag-accent-2 curriculum-label"></span>
+    <h1>Pick an objective to teach</h1>
+    <p class="lede">The same board, tutor and practice loop teach every one of these. What changes is the picture on the board and the objective behind it.</p>
+    <div id="lesson-grid" class="lesson-grid"></div>
+  </section>
+
+  <!-- Screen 2: the chalkboard lesson -->
+  <section id="screen-board" class="page">
+    <div class="board-head">
+      <div>
+        <span id="lesson-subject" class="tag tag-neutral"></span>
+        <h1 id="lesson-title"></h1>
+        <p id="lesson-objective" class="lede"></p>
+      </div>
+      <span id="step-label" class="tag tag-outline"></span>
+    </div>
+
+    <div class="board-frame">
+      <canvas id="board"></canvas>
+      <!-- What the tutor says, right under the board -->
+      <div class="speech">
+        <div class="card-kicker">Tutor says</div>
+        <div id="caption"></div>
+        <div id="voice-note" class="voice-note"></div>
+      </div>
+    </div>
+
+    <!-- Cards to drag (only for drag-and-drop lessons) -->
+    <div id="tray" class="card tray">
+      <div><span class="card-kicker">Cards to place</span>
+        <span class="muted">Drag a card into place, or tap a card and then tap where it belongs.</span></div>
+      <div id="tray-chips" class="chips"></div>
+      <div id="row-slots" class="chips"></div>
+    </div>
+
+    <!-- Lesson controls -->
+    <div class="card controls">
+      <div class="buttons">
+        <button id="btn-play" class="btn btn-primary">Play lesson</button>
+        <button id="btn-next" class="btn btn-secondary">Next step</button>
+        <button id="btn-hint" class="btn btn-secondary">Hint</button>
+        <button id="btn-repeat" class="btn btn-secondary">Say that again</button>
+        <button id="btn-voice" class="btn btn-secondary">Voice on</button>
+        <button id="btn-test-voice" class="btn btn-secondary">Test voice</button>
+        <button id="btn-ask" class="btn btn-secondary">Ask the tutor</button>
+        <button id="btn-check" class="btn btn-primary">Check my answer</button>
+        <button id="btn-reveal" class="btn btn-ghost">Show me</button>
+      </div>
+    </div>
+
+    <!-- Typed answer -->
+    <form id="answer-form" class="card inline-form">
+      <div class="field grow">
+        <label for="answer-input">Your answer</label>
+        <input id="answer-input" class="input" autocomplete="off" placeholder="Type it here">
+      </div>
+      <button class="btn btn-primary">Send to the tutor</button>
+    </form>
+
+    <!-- Ask a question mid-lesson -->
+    <div id="ask-box" class="card">
+      <div class="card-kicker">Your question (the lesson keeps its place)</div>
+      <form id="ask-form" class="inline-form">
+        <div class="field grow">
+          <label for="ask-input">Ask about this lesson</label>
+          <input id="ask-input" class="input" autocomplete="off" placeholder="e.g. why is there a zero?">
+        </div>
+        <button class="btn btn-primary">Ask</button>
+      </form>
+      <div id="ask-reply" class="ask-reply">
+        <div id="ask-reply-text"></div>
+        <button id="btn-back" class="btn btn-secondary">Back to the lesson</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 3: progress -->
+  <section id="screen-progress" class="page">
+    <span class="tag tag-accent-2 curriculum-label"></span>
+    <h1>Progress by objective</h1>
+    <p class="lede">Not lessons completed: what the learner can do without help. Help-free and helped answers are counted separately.</p>
+    <div id="summary" class="summary"></div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Objective</th><th>Status</th><th>Without help</th><th>With help</th><th>Hints</th><th>Work on next</th></tr></thead>
+        <tbody id="progress-rows"></tbody>
+      </table>
+    </div>
+    <button id="btn-clear" class="btn btn-ghost">Clear this learner's record</button>
+  </section>
+
+  <div id="drag-ghost"></div>
+
+  <script src="lessons.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
