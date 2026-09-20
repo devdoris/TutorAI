@@ -1,513 +1,529 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tutor Board</title>
-  <link rel="stylesheet" href="organic.css">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tutor Board</title>
+    <link rel="stylesheet" href="organic.css">
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <header class="nav topbar">
-    <span class="nav-brand">Tutor</span>
-    <nav>
-      <button class="btn btn-ghost tab" data-screen="lessons">Lessons</button>
-      <button class="btn btn-ghost tab active" data-screen="board">Board</button>
-      <button class="btn btn-ghost tab" data-screen="progress">Progress</button>
-      <a class="btn btn-ghost" href="notes.html">Demo notes</a>
-    </nav>
-    <div class="spacer"></div>
-    <label class="curriculum">
-      Curriculum
-      <select id="curriculum" class="input"></select>
-    </label>
-  </header>
+    <header class="nav topbar">
+        <span class="nav-brand">Tutor</span>
+        <nav>
+            <button class="btn btn-ghost tab" data-screen="lessons">Lessons</button>
+            <button class="btn btn-ghost tab active" data-screen="board">Board</button>
+            <button class="btn btn-ghost tab" data-screen="progress">Progress</button>
+            <a class="btn btn-ghost" href="notes.html">Demo notes</a>
+        </nav>
+        <div class="spacer"></div>
+        <label class="curriculum">
+            Curriculum
+            <select id="curriculum" class="input"></select>
+        </label>
+    </header>
 
-  <section id="screen-board" class="page">
-    <div class="board-head">
-      <div>
-        <span id="lesson-subject" class="tag tag-neutral"></span>
-        <h1 id="lesson-title"></h1>
-        <p id="lesson-objective" class="lede"></p>
-      </div>
-      <span id="step-label" class="tag tag-outline"></span>
-    </div>
-
-    <div class="board-stack">
-      <div class="card import-card upload-shell">
-        <div class="upload-header">
-          <span class="card-kicker">Script</span>
-          <button id="btn-load-sample" class="btn btn-ghost small-btn" type="button">Use story</button>
-          <a id="btn-download-story" class="btn btn-ghost small-btn" href="sample-story-demo.txt" download="sample-story-demo.txt">Download</a>
-        </div>
-
-        <div class="field compact-field">
-          <label for="script-file">Upload</label>
-          <input id="script-file" type="file" class="input file-input" accept=".txt,.md,.csv,.json">
-          <div class="file-name" aria-live="polite">No file chosen</div>
-        </div>
-
-        <div class="upload-actions">
-          <button id="btn-upload-script" class="btn btn-primary">Upload script</button>
-          <button id="btn-play-script" class="btn btn-secondary">Play</button>
-        </div>
-      </div>
-
-      <div class="board-panel">
-        <div class="board-frame">
-          <canvas id="board"></canvas>
-          <div class="speech">
-            <div class="card-kicker">Tutor says</div>
-            <div id="caption"></div>
-            <div id="voice-note" class="voice-note"></div>
-          </div>
-        </div>
-
-        <div id="tray" class="card tray hidden">
-          <div>
-            <span class="card-kicker">Cards to place</span>
-            <span class="muted">Drag a card into place, or tap a card and then tap where it belongs.</span>
-          </div>
-          <div id="tray-chips" class="chips"></div>
-          <div id="row-slots" class="chips"></div>
-        </div>
-
-        <div class="card controls">
-          <div class="buttons">
-            <button id="btn-play" class="btn btn-primary">Play lesson</button>
-            <button id="btn-next" class="btn btn-secondary">Next step</button>
-            <button id="btn-hint" class="btn btn-secondary">Hint</button>
-            <button id="btn-repeat" class="btn btn-secondary">Say that again</button>
-            <button id="btn-voice" class="btn btn-secondary">Voice on</button>
-            <button id="btn-test-voice" class="btn btn-secondary">Test voice</button>
-            <button id="btn-ask" class="btn btn-secondary">Ask the tutor</button>
-            <button id="btn-check" class="btn btn-primary">Check my answer</button>
-            <button id="btn-reveal" class="btn btn-ghost">Show me</button>
-          </div>
-        </div>
-
-        <form id="answer-form" class="card inline-form hidden">
-          <div class="field grow">
-            <label for="answer-input">Your answer</label>
-            <input id="answer-input" class="input" autocomplete="off" placeholder="Type it here">
-          </div>
-          <button class="btn btn-primary">Send to the tutor</button>
-        </form>
-
-        <div id="ask-box" class="card hidden">
-          <div class="card-kicker">Your question (the lesson keeps its place)</div>
-          <form id="ask-form" class="inline-form">
-            <div class="field grow">
-              <label for="ask-input">Ask about this lesson</label>
-              <input id="ask-input" class="input" autocomplete="off" placeholder="e.g. why is there a zero?">
+    <section id="screen-board" class="page">
+        <div class="board-head">
+            <div>
+                <span id="lesson-subject" class="tag tag-neutral"></span>
+                <h1 id="lesson-title"></h1>
+                <p id="lesson-objective" class="lede"></p>
             </div>
-            <button class="btn btn-primary">Ask</button>
-          </form>
-          <div id="ask-reply" class="ask-reply hidden">
-            <div id="ask-reply-text"></div>
-            <button id="btn-back" class="btn btn-secondary">Back to the lesson</button>
-          </div>
+            <span id="step-label" class="tag tag-outline"></span>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <section id="screen-lessons" class="page hidden">
-    <span class="tag tag-accent-2 curriculum-label"></span>
-    <h1>Pick an objective to teach</h1>
-    <p class="lede">The same board, tutor and practice loop teach every one of these. What changes is the picture on the board and the objective behind it.</p>
-    <div id="lesson-grid" class="lesson-grid"></div>
-  </section>
+        <div class="board-stack">
+            <div class="card import-card upload-shell">
+                <div class="upload-header">
+                    <span class="card-kicker">Script</span>
+                    <button id="btn-load-sample" class="btn btn-ghost small-btn" type="button">Use story</button>
+                    <a id="btn-download-story" class="btn btn-ghost small-btn" href="sample-story-demo.txt"
+                        download="sample-story-demo.txt">Download</a>
+                </div>
 
-  <section id="screen-progress" class="page hidden">
-    <span class="tag tag-accent-2 curriculum-label"></span>
-    <h1>Progress by objective</h1>
-    <p class="lede">Not lessons completed: what the learner can do without help. Help-free and helped answers are counted separately.</p>
-    <div id="summary" class="summary"></div>
-    <div class="table-wrap">
-      <table class="table">
-        <thead><tr><th>Objective</th><th>Status</th><th>Without help</th><th>With help</th><th>Hints</th><th>Work on next</th></tr></thead>
-        <tbody id="progress-rows"></tbody>
-      </table>
-    </div>
-    <button id="btn-clear" class="btn btn-ghost">Clear this learner's record</button>
-  </section>
+                <div class="field compact-field">
+                    <label for="script-file">Upload</label>
+                    <input id="script-file" type="file" class="input file-input" accept=".txt,.md,.csv,.json">
+                    <div class="file-name" aria-live="polite">No file chosen</div>
+                </div>
 
-  <div id="drag-ghost"></div>
+                <div class="upload-actions">
+                    <button id="btn-upload-script" class="btn btn-primary">Upload script</button>
+                    <button id="btn-play-script" class="btn btn-secondary">Play</button>
+                </div>
+            </div>
 
-  <script src="lessons.js"></script>
-  <script src="app.js"></script>
-  <script>
-    (function () {
-      const blankLesson = {
-        id: 'blank-board',
-        subject: 'Mathematics',
-        title: 'Blank board',
-        objective: 'Interactive board ready for live teaching.',
-        curricula: ['NERDC', 'KS3', 'CCSS'],
-        board: { kind: 'circles', heading: '', sub: '' },
-        objects: [],
-        slots: [],
-        tray: [],
-        steps: [],
-        faq: []
-      };
+            <div class="board-panel">
+                <div class="board-frame">
+                    <canvas id="board"></canvas>
+                    <div class="speech">
+                        <div class="card-kicker">Tutor says</div>
+                        <div id="caption"></div>
+                        <div id="voice-note" class="voice-note"></div>
+                    </div>
+                </div>
 
-      if (Array.isArray(LESSONS)) {
-        LESSONS.splice(0, LESSONS.length, blankLesson);
-      }
+                <div id="tray" class="card tray hidden">
+                    <div>
+                        <span class="card-kicker">Cards to place</span>
+                        <span class="muted">Drag a card into place, or tap a card and then tap where it belongs.</span>
+                    </div>
+                    <div id="tray-chips" class="chips"></div>
+                    <div id="row-slots" class="chips"></div>
+                </div>
 
-      if (typeof state !== 'undefined') {
-        state.lessonId = blankLesson.id;
-        state.screen = 'board';
-        state.stepIndex = -1;
-        state.mode = 'idle';
-        state.target = null;
-        state.question = '';
-        state.waitingFor = null;
-        state.placements = {};
-        state.feedback = {};
-        state.selectedCard = null;
-        state.caption = 'Press play and I will start the lesson.';
-        state.askOpen = false;
-        state.askReply = '';
-        state.playing = false;
-      }
+                <div class="card controls">
+                    <div class="buttons">
+                        <button id="btn-play" class="btn btn-primary">Play lesson</button>
+                        <button id="btn-next" class="btn btn-secondary">Next step</button>
+                        <button id="btn-hint" class="btn btn-secondary">Hint</button>
+                        <button id="btn-repeat" class="btn btn-secondary">Say that again</button>
+                        <button id="btn-voice" class="btn btn-secondary">Voice on</button>
+                        <button id="btn-test-voice" class="btn btn-secondary">Test voice</button>
+                        <button id="btn-ask" class="btn btn-secondary">Ask the tutor</button>
+                        <button id="btn-check" class="btn btn-primary">Check my answer</button>
+                        <button id="btn-reveal" class="btn btn-ghost">Show me</button>
+                    </div>
+                </div>
 
-      const scriptFile = document.getElementById('script-file');
-      const uploadScriptBtn = document.getElementById('btn-upload-script');
-      const playScriptBtn = document.getElementById('btn-play-script');
-      const sampleBtn = document.getElementById('btn-load-sample');
-      const sampleScript = `The government says, "We are fixing everything," and the Nigerian people answer, "Ah, same as before — just more traffic and more promises." In Nigeria, culture teaches patience, the government teaches speeches, and both still end with a prayer.`;
-      let scriptQueue = [];
-      let scriptIndex = 0;
-      let activeScriptTimer = null;
-      let currentUtterance = null;
-      let scriptPaused = false;
-      let isPlaying = false;
-      let resumeCharIndex = 0;
-      window.__boardScriptState = {
-        text: 'Upload a script to begin.',
-        activeWordIndex: 0,
-        targetX: 0,
-        targetY: 0,
-        visible: false,
-        lines: []
-      };
+                <form id="answer-form" class="card inline-form hidden">
+                    <div class="field grow">
+                        <label for="answer-input">Your answer</label>
+                        <input id="answer-input" class="input" autocomplete="off" placeholder="Type it here">
+                    </div>
+                    <button class="btn btn-primary">Send to the tutor</button>
+                </form>
 
-      function splitScript(text) {
-        return String(text || '').split(/(?<=[.!?])\s+|\n+/).map(part => part.trim()).filter(Boolean);
-      }
+                <div id="ask-box" class="card hidden">
+                    <div class="card-kicker">Your question (the lesson keeps its place)</div>
+                    <form id="ask-form" class="inline-form">
+                        <div class="field grow">
+                            <label for="ask-input">Ask about this lesson</label>
+                            <input id="ask-input" class="input" autocomplete="off"
+                                placeholder="e.g. why is there a zero?">
+                        </div>
+                        <button class="btn btn-primary">Ask</button>
+                    </form>
+                    <div id="ask-reply" class="ask-reply hidden">
+                        <div id="ask-reply-text"></div>
+                        <button id="btn-back" class="btn btn-secondary">Back to the lesson</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-      function wrapScriptWords(words, maxWordsPerLine = 6) {
-        const lines = [];
-        for (let i = 0; i < words.length; i += maxWordsPerLine) {
-          lines.push(words.slice(i, i + maxWordsPerLine));
-        }
-        return lines.length ? lines : [['Upload', 'a', 'script', 'to', 'begin.']];
-      }
+    <section id="screen-lessons" class="page hidden">
+        <span class="tag tag-accent-2 curriculum-label"></span>
+        <h1>Pick an objective to teach</h1>
+        <p class="lede">The same board, tutor and practice loop teach every one of these. What changes is the picture on
+            the board and the objective behind it.</p>
+        <div id="lesson-grid" class="lesson-grid"></div>
+    </section>
 
-      function wordRangesForSegment(segment) {
-        const text = String(segment || '');
-        const matches = [...text.matchAll(/\S+/g)];
-        return matches.map((match, index) => ({
-          index,
-          word: match[0],
-          start: match.index,
-          end: match.index + match[0].length
-        }));
-      }
+    <section id="screen-progress" class="page hidden">
+        <span class="tag tag-accent-2 curriculum-label"></span>
+        <h1>Progress by objective</h1>
+        <p class="lede">Not lessons completed: what the learner can do without help. Help-free and helped answers are
+            counted separately.</p>
+        <div id="summary" class="summary"></div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Objective</th>
+                        <th>Status</th>
+                        <th>Without help</th>
+                        <th>With help</th>
+                        <th>Hints</th>
+                        <th>Work on next</th>
+                    </tr>
+                </thead>
+                <tbody id="progress-rows"></tbody>
+            </table>
+        </div>
+        <button id="btn-clear" class="btn btn-ghost">Clear this learner's record</button>
+    </section>
 
-      function computeActiveWordIndex(segment, charIndex) {
-        if (!segment) return 0;
-        const safeCharIndex = Math.max(0, Math.min(Number(charIndex) || 0, segment.length));
-        const ranges = wordRangesForSegment(segment);
-        if (!ranges.length) return 0;
-        const match = ranges.find(range => safeCharIndex >= range.start && safeCharIndex <= range.end) || ranges[ranges.length - 1];
-        return match ? match.index : 0;
-      }
+    <div id="drag-ghost"></div>
 
-      function getCharIndexForWord(segment, wordIndex) {
-        const words = (segment || '').split(/\s+/).filter(Boolean);
-        if (!words.length) return 0;
-        let cursor = 0;
-        for (let i = 0; i < Math.min(wordIndex, words.length - 1); i += 1) {
-          cursor += words[i].length + 1;
-        }
-        return cursor;
-      }
+    <script src="lessons.js"></script>
+    <script src="app.js"></script>
+    <script>
+        (function () {
+            const blankLesson = {
+                id: 'blank-board',
+                subject: 'Mathematics',
+                title: 'Blank board',
+                objective: 'Interactive board ready for live teaching.',
+                curricula: ['NERDC', 'KS3', 'CCSS'],
+                board: { kind: 'circles', heading: '', sub: '' },
+                objects: [],
+                slots: [],
+                tray: [],
+                steps: [],
+                faq: []
+            };
 
-      function setBoardScriptState(text, activeWordIndex = 0) {
-        const stateForBoard = window.__boardScriptState;
-        const words = String(text || '').trim().split(/\s+/).filter(Boolean);
-        const safeWords = words.length ? words : ['Upload', 'a', 'script', 'to', 'begin.'];
-        const lines = wrapScriptWords(safeWords, 6);
-        stateForBoard.text = words.length ? text : 'Upload a script to begin.';
-        stateForBoard.activeWordIndex = Math.min(Math.max(activeWordIndex, 0), Math.max(safeWords.length - 1, 0));
-        stateForBoard.visible = words.length > 0;
-        stateForBoard.lines = lines;
+            if (Array.isArray(LESSONS)) {
+                LESSONS.splice(0, LESSONS.length, blankLesson);
+            }
 
-        let lineIndex = 0;
-        let wordIndexInLine = 0;
-        let wordCounter = 0;
-        for (let i = 0; i < lines.length; i += 1) {
-          const lineWords = lines[i];
-          if (stateForBoard.activeWordIndex >= wordCounter && stateForBoard.activeWordIndex < wordCounter + lineWords.length) {
-            lineIndex = i;
-            wordIndexInLine = stateForBoard.activeWordIndex - wordCounter;
-            break;
-          }
-          wordCounter += lineWords.length;
-        }
+            if (typeof state !== 'undefined') {
+                state.lessonId = blankLesson.id;
+                state.screen = 'board';
+                state.stepIndex = -1;
+                state.mode = 'idle';
+                state.target = null;
+                state.question = '';
+                state.waitingFor = null;
+                state.placements = {};
+                state.feedback = {};
+                state.selectedCard = null;
+                state.caption = 'Press play and I will start the lesson.';
+                state.askOpen = false;
+                state.askReply = '';
+                state.playing = false;
+            }
 
-        const activeLineWords = lines[lineIndex] || safeWords.slice(0, 1);
-        const boardX = 252;
-        const boardY = 42;
-        const boardW = 708;
-        const boardH = 534;
-        const centerX = boardX + boardW * 0.5;
-        const lineStartY = boardY + boardH * 0.44 + lineIndex * 52;
+            const scriptFile = document.getElementById('script-file');
+            const uploadScriptBtn = document.getElementById('btn-upload-script');
+            const playScriptBtn = document.getElementById('btn-play-script');
+            const sampleBtn = document.getElementById('btn-load-sample');
+            const sampleScript = `The government says, "We are fixing everything," and the Nigerian people answer, "Ah, same as before — just more traffic and more promises." In Nigeria, culture teaches patience, the government teaches speeches, and both still end with a prayer.`;
+            let scriptQueue = [];
+            let scriptIndex = 0;
+            let activeScriptTimer = null;
+            let currentUtterance = null;
+            let scriptPaused = false;
+            let isPlaying = false;
+            let resumeCharIndex = 0;
+            window.__boardScriptState = {
+                text: 'Upload a script to begin.',
+                activeWordIndex: 0,
+                targetX: 0,
+                targetY: 0,
+                visible: false,
+                lines: []
+            };
 
-        const tmp = document.createElement('canvas');
-        const tmpCtx = tmp.getContext('2d');
-        tmpCtx.font = '28px "Figtree", system-ui, sans-serif';
-        let lineWidth = 0;
-        activeLineWords.forEach((word) => {
-          lineWidth += tmpCtx.measureText(word).width + 18;
-        });
-        lineWidth -= 18;
+            function splitScript(text) {
+                return String(text || '').split(/(?<=[.!?])\s+|\n+/).map(part => part.trim()).filter(Boolean);
+            }
 
-        let x = centerX - lineWidth / 2;
-        for (let i = 0; i < wordIndexInLine; i += 1) {
-          x += tmpCtx.measureText(activeLineWords[i]).width + 18;
-        }
-        const activeWordWidth = tmpCtx.measureText(activeLineWords[wordIndexInLine] || activeLineWords[0]).width;
-        stateForBoard.targetX = x + activeWordWidth / 2;
-        stateForBoard.targetY = lineStartY;
-      }
+            function wrapScriptWords(words, maxWordsPerLine = 6) {
+                const lines = [];
+                for (let i = 0; i < words.length; i += maxWordsPerLine) {
+                    lines.push(words.slice(i, i + maxWordsPerLine));
+                }
+                return lines.length ? lines : [['Upload', 'a', 'script', 'to', 'begin.']];
+            }
 
-      function drawBoardScriptText() {
-        const script = window.__boardScriptState || { text: '', activeWordIndex: 0, visible: false, targetX: 0, targetY: 0, lines: [] };
-        if (!script.visible || !script.lines || !script.lines.length) return;
+            function wordRangesForSegment(segment) {
+                const text = String(segment || '');
+                const matches = [...text.matchAll(/\S+/g)];
+                return matches.map((match, index) => ({
+                    index,
+                    word: match[0],
+                    start: match.index,
+                    end: match.index + match[0].length
+                }));
+            }
 
-        const boardX = 252;
-        const boardY = 42;
-        const boardW = 708;
-        const boardH = 534;
-        const centerX = boardX + boardW / 2;
-        const baseY = boardY + boardH * 0.44;
-        const lineSpacing = 52;
+            function computeActiveWordIndex(segment, charIndex) {
+                if (!segment) return 0;
+                const safeCharIndex = Math.max(0, Math.min(Number(charIndex) || 0, segment.length));
+                const ranges = wordRangesForSegment(segment);
+                if (!ranges.length) return 0;
+                const match = ranges.find(range => safeCharIndex >= range.start && safeCharIndex <= range.end) || ranges[ranges.length - 1];
+                return match ? match.index : 0;
+            }
 
-        ctx.save();
-        ctx.textBaseline = 'middle';
+            function getCharIndexForWord(segment, wordIndex) {
+                const words = (segment || '').split(/\s+/).filter(Boolean);
+                if (!words.length) return 0;
+                let cursor = 0;
+                for (let i = 0; i < Math.min(wordIndex, words.length - 1); i += 1) {
+                    cursor += words[i].length + 1;
+                }
+                return cursor;
+            }
 
-        let globalIndex = 0;
-        script.lines.forEach((lineWords, lineIndex) => {
-          let lineWidth = 0;
-          lineWords.forEach((word) => {
-            ctx.font = '28px "Figtree", system-ui, sans-serif';
-            lineWidth += ctx.measureText(word).width + 18;
-          });
-          lineWidth -= 18;
+            function setBoardScriptState(text, activeWordIndex = 0) {
+                const stateForBoard = window.__boardScriptState;
+                const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+                const safeWords = words.length ? words : ['Upload', 'a', 'script', 'to', 'begin.'];
+                const lines = wrapScriptWords(safeWords, 6);
+                stateForBoard.text = words.length ? text : 'Upload a script to begin.';
+                stateForBoard.activeWordIndex = Math.min(Math.max(activeWordIndex, 0), Math.max(safeWords.length - 1, 0));
+                stateForBoard.visible = words.length > 0;
+                stateForBoard.lines = lines;
 
-          let x = centerX - lineWidth / 2;
-          const y = baseY + lineIndex * lineSpacing;
+                let lineIndex = 0;
+                let wordIndexInLine = 0;
+                let wordCounter = 0;
+                for (let i = 0; i < lines.length; i += 1) {
+                    const lineWords = lines[i];
+                    if (stateForBoard.activeWordIndex >= wordCounter && stateForBoard.activeWordIndex < wordCounter + lineWords.length) {
+                        lineIndex = i;
+                        wordIndexInLine = stateForBoard.activeWordIndex - wordCounter;
+                        break;
+                    }
+                    wordCounter += lineWords.length;
+                }
 
-          lineWords.forEach((word, index) => {
-            const wordIndex = globalIndex + index;
-            const active = wordIndex === script.activeWordIndex;
-            ctx.font = active ? '700 28px "Figtree", system-ui, sans-serif' : '28px "Figtree", system-ui, sans-serif';
-            ctx.fillStyle = active ? '#f7c37d' : '#f3ecdc';
-            ctx.textAlign = 'left';
-            ctx.fillText(word, x, y);
-            x += ctx.measureText(word).width + 18;
-          });
+                const activeLineWords = lines[lineIndex] || safeWords.slice(0, 1);
+                const boardX = 252;
+                const boardY = 42;
+                const boardW = 708;
+                const boardH = 534;
+                const centerX = boardX + boardW * 0.5;
+                const lineStartY = boardY + boardH * 0.44 + lineIndex * 52;
 
-          globalIndex += lineWords.length;
-        });
+                const tmp = document.createElement('canvas');
+                const tmpCtx = tmp.getContext('2d');
+                tmpCtx.font = '28px "Figtree", system-ui, sans-serif';
+                let lineWidth = 0;
+                activeLineWords.forEach((word) => {
+                    lineWidth += tmpCtx.measureText(word).width + 18;
+                });
+                lineWidth -= 18;
 
-        ctx.restore();
-      }
+                let x = centerX - lineWidth / 2;
+                for (let i = 0; i < wordIndexInLine; i += 1) {
+                    x += tmpCtx.measureText(activeLineWords[i]).width + 18;
+                }
+                const activeWordWidth = tmpCtx.measureText(activeLineWords[wordIndexInLine] || activeLineWords[0]).width;
+                stateForBoard.targetX = x + activeWordWidth / 2;
+                stateForBoard.targetY = lineStartY;
+            }
 
-      function pauseScriptPlayback() {
-        if (activeScriptTimer) window.clearTimeout(activeScriptTimer);
-        if (currentUtterance) {
-          window.speechSynthesis.cancel();
-          currentUtterance = null;
-        }
-        scriptPaused = true;
-        isPlaying = false;
-        playScriptBtn.textContent = 'Play';
-        const segment = scriptQueue[scriptIndex] || '';
-        const activeWordIndex = window.__boardScriptState && typeof window.__boardScriptState.activeWordIndex === 'number'
-          ? window.__boardScriptState.activeWordIndex
-          : 0;
-        if (segment) {
-          setBoardScriptState(segment, activeWordIndex);
-          if (typeof state !== 'undefined') {
-            state.caption = 'Paused. Press play to continue.';
-            if (typeof renderBoardScreen === 'function') renderBoardScreen();
-          }
-        }
-      }
+            function drawBoardScriptText() {
+                const script = window.__boardScriptState || { text: '', activeWordIndex: 0, visible: false, targetX: 0, targetY: 0, lines: [] };
+                if (!script.visible || !script.lines || !script.lines.length) return;
 
-      function resumeScriptPlayback() {
-        if (!scriptQueue.length) return;
-        const segment = scriptQueue[scriptIndex] || scriptQueue[0];
-        const startIndex = Math.max(0, resumeCharIndex || 0);
-        const startWordIndex = computeActiveWordIndex(segment, startIndex);
-        scriptPaused = false;
-        isPlaying = true;
-        playScriptBtn.textContent = 'Pause';
-        setBoardScriptState(segment, startWordIndex);
-        if (typeof state !== 'undefined') {
-          state.caption = segment;
-          if (typeof renderBoardScreen === 'function') renderBoardScreen();
-        }
-        speakSegment(segment, startIndex);
-      }
+                const boardX = 252;
+                const boardY = 42;
+                const boardW = 708;
+                const boardH = 534;
+                const centerX = boardX + boardW / 2;
+                const baseY = boardY + boardH * 0.44;
+                const lineSpacing = 52;
 
-      function speakSegment(segment, startOffset = 0) {
-        const textToSpeak = segment && startOffset > 0 ? segment.slice(startOffset) : (segment || '');
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        const preferredVoice = (window.speechSynthesis && typeof pickVoice === 'function') ? pickVoice() : null;
-        if (preferredVoice) {
-          utterance.voice = preferredVoice;
-          utterance.lang = preferredVoice.lang;
-        }
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-        utterance.volume = 1;
-        currentUtterance = utterance;
+                ctx.save();
+                ctx.textBaseline = 'middle';
 
-        utterance.onboundary = function (event) {
-          if (!segment) return;
-          const absoluteCharIndex = startOffset + (event.charIndex || 0);
-          const activeWordIndex = computeActiveWordIndex(segment, absoluteCharIndex);
-          resumeCharIndex = absoluteCharIndex;
-          setBoardScriptState(segment, activeWordIndex);
-          if (typeof state !== 'undefined') {
-            state.caption = segment;
-            if (typeof renderBoardScreen === 'function') renderBoardScreen();
-          }
-        };
+                let globalIndex = 0;
+                script.lines.forEach((lineWords, lineIndex) => {
+                    let lineWidth = 0;
+                    lineWords.forEach((word) => {
+                        ctx.font = '28px "Figtree", system-ui, sans-serif';
+                        lineWidth += ctx.measureText(word).width + 18;
+                    });
+                    lineWidth -= 18;
 
-        utterance.onend = function () {
-          if (scriptPaused) return;
-          scriptIndex += 1;
-          if (scriptIndex < scriptQueue.length) {
-            activeScriptTimer = window.setTimeout(function () {
-              const nextSegment = scriptQueue[scriptIndex] || scriptQueue[0];
-              if (nextSegment) {
+                    let x = centerX - lineWidth / 2;
+                    const y = baseY + lineIndex * lineSpacing;
+
+                    lineWords.forEach((word, index) => {
+                        const wordIndex = globalIndex + index;
+                        const active = wordIndex === script.activeWordIndex;
+                        ctx.font = active ? '700 28px "Figtree", system-ui, sans-serif' : '28px "Figtree", system-ui, sans-serif';
+                        ctx.fillStyle = active ? '#f7c37d' : '#f3ecdc';
+                        ctx.textAlign = 'left';
+                        ctx.fillText(word, x, y);
+                        x += ctx.measureText(word).width + 18;
+                    });
+
+                    globalIndex += lineWords.length;
+                });
+
+                ctx.restore();
+            }
+
+            function pauseScriptPlayback() {
+                if (activeScriptTimer) window.clearTimeout(activeScriptTimer);
+                if (currentUtterance) {
+                    window.speechSynthesis.cancel();
+                    currentUtterance = null;
+                }
+                scriptPaused = true;
+                isPlaying = false;
+                playScriptBtn.textContent = 'Play';
+                const segment = scriptQueue[scriptIndex] || '';
+                const activeWordIndex = window.__boardScriptState && typeof window.__boardScriptState.activeWordIndex === 'number'
+                    ? window.__boardScriptState.activeWordIndex
+                    : 0;
+                if (segment) {
+                    setBoardScriptState(segment, activeWordIndex);
+                    if (typeof state !== 'undefined') {
+                        state.caption = 'Paused. Press play to continue.';
+                        if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                    }
+                }
+            }
+
+            function resumeScriptPlayback() {
+                if (!scriptQueue.length) return;
+                const segment = scriptQueue[scriptIndex] || scriptQueue[0];
+                const startIndex = Math.max(0, resumeCharIndex || 0);
+                const startWordIndex = computeActiveWordIndex(segment, startIndex);
+                scriptPaused = false;
+                isPlaying = true;
+                playScriptBtn.textContent = 'Pause';
+                setBoardScriptState(segment, startWordIndex);
+                if (typeof state !== 'undefined') {
+                    state.caption = segment;
+                    if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                }
+                speakSegment(segment, startIndex);
+            }
+
+            function speakSegment(segment, startOffset = 0) {
+                const textToSpeak = segment && startOffset > 0 ? segment.slice(startOffset) : (segment || '');
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                const preferredVoice = (window.speechSynthesis && typeof pickVoice === 'function') ? pickVoice() : null;
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                    utterance.lang = preferredVoice.lang;
+                }
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                currentUtterance = utterance;
+
+                utterance.onboundary = function (event) {
+                    if (!segment) return;
+                    const absoluteCharIndex = startOffset + (event.charIndex || 0);
+                    const activeWordIndex = computeActiveWordIndex(segment, absoluteCharIndex);
+                    resumeCharIndex = absoluteCharIndex;
+                    setBoardScriptState(segment, activeWordIndex);
+                    if (typeof state !== 'undefined') {
+                        state.caption = segment;
+                        if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                    }
+                };
+
+                utterance.onend = function () {
+                    if (scriptPaused) return;
+                    scriptIndex += 1;
+                    if (scriptIndex < scriptQueue.length) {
+                        activeScriptTimer = window.setTimeout(function () {
+                            const nextSegment = scriptQueue[scriptIndex] || scriptQueue[0];
+                            if (nextSegment) {
+                                resumeCharIndex = 0;
+                                setBoardScriptState(nextSegment, 0);
+                                speakSegment(nextSegment, 0);
+                            }
+                        }, 350);
+                    } else {
+                        activeScriptTimer = window.setTimeout(function () {
+                            isPlaying = false;
+                            scriptPaused = false;
+                            scriptQueue = [];
+                            scriptIndex = 0;
+                            resumeCharIndex = 0;
+                            playScriptBtn.textContent = 'Play';
+                            setBoardScriptState('Script complete. Press play to continue.');
+                            if (typeof state !== 'undefined') {
+                                state.caption = 'Script complete. Press play to continue.';
+                                if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                            }
+                        }, 500);
+                    }
+                };
+
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            }
+
+            function speakNextSegment() {
+                if (!scriptQueue.length) {
+                    setBoardScriptState('Upload a script to begin.');
+                    return;
+                }
+
+                if (scriptIndex >= scriptQueue.length) {
+                    scriptIndex = 0;
+                }
+
+                const segment = scriptQueue[scriptIndex];
+                isPlaying = true;
+                scriptPaused = false;
+                playScriptBtn.textContent = 'Pause';
+                if (typeof state !== 'undefined') {
+                    state.caption = segment;
+                    if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                }
                 resumeCharIndex = 0;
-                setBoardScriptState(nextSegment, 0);
-                speakSegment(nextSegment, 0);
-              }
-            }, 350);
-          } else {
-            activeScriptTimer = window.setTimeout(function () {
-              isPlaying = false;
-              scriptPaused = false;
-              scriptQueue = [];
-              scriptIndex = 0;
-              resumeCharIndex = 0;
-              playScriptBtn.textContent = 'Play';
-              setBoardScriptState('Script complete. Press play to continue.');
-              if (typeof state !== 'undefined') {
-                state.caption = 'Script complete. Press play to continue.';
-                if (typeof renderBoardScreen === 'function') renderBoardScreen();
-              }
-            }, 500);
-          }
-        };
+                setBoardScriptState(segment, 0);
+                speakSegment(segment, 0);
+            }
 
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-      }
+            function loadScriptText(text) {
+                const pared = String(text || '').trim();
+                if (!pared) return;
+                scriptQueue = splitScript(pared);
+                scriptIndex = 0;
+                scriptPaused = false;
+                isPlaying = false;
+                resumeCharIndex = 0;
+                playScriptBtn.textContent = 'Play';
+                setBoardScriptState(scriptQueue[0] || 'Upload a script to begin.', 0);
+                if (typeof state !== 'undefined') {
+                    state.caption = 'Press play to continue.';
+                    if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                }
+            }
 
-      function speakNextSegment() {
-        if (!scriptQueue.length) {
-          setBoardScriptState('Upload a script to begin.');
-          return;
-        }
+            uploadScriptBtn.addEventListener('click', function () {
+                const text = (scriptFile && scriptFile.files && scriptFile.files[0]) ? (scriptFile.dataset.content || '') : '';
+                if (text) {
+                    loadScriptText(text);
+                }
+            });
 
-        if (scriptIndex >= scriptQueue.length) {
-          scriptIndex = 0;
-        }
+            scriptFile.addEventListener('change', function (event) {
+                const file = event.target.files && event.target.files[0];
+                if (!file) return;
 
-        const segment = scriptQueue[scriptIndex];
-        isPlaying = true;
-        scriptPaused = false;
-        playScriptBtn.textContent = 'Pause';
-        if (typeof state !== 'undefined') {
-          state.caption = segment;
-          if (typeof renderBoardScreen === 'function') renderBoardScreen();
-        }
-        resumeCharIndex = 0;
-        setBoardScriptState(segment, 0);
-        speakSegment(segment, 0);
-      }
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const content = e.target && e.target.result ? String(e.target.result) : '';
+                    scriptFile.dataset.content = content;
+                    const label = scriptFile.nextElementSibling;
+                    if (label && label.classList && label.classList.contains('file-name')) {
+                        label.textContent = file.name;
+                    }
+                };
+                reader.readAsText(file);
+            });
 
-      function loadScriptText(text) {
-        const pared = String(text || '').trim();
-        if (!pared) return;
-        scriptQueue = splitScript(pared);
-        scriptIndex = 0;
-        scriptPaused = false;
-        isPlaying = false;
-        resumeCharIndex = 0;
-        playScriptBtn.textContent = 'Play';
-        setBoardScriptState(scriptQueue[0] || 'Upload a script to begin.', 0);
-        if (typeof state !== 'undefined') {
-          state.caption = 'Press play to continue.';
-          if (typeof renderBoardScreen === 'function') renderBoardScreen();
-        }
-      }
+            sampleBtn.addEventListener('click', function () {
+                scriptFile.dataset.content = sampleScript;
+                loadScriptText(sampleScript);
+            });
 
-      uploadScriptBtn.addEventListener('click', function () {
-        const text = (scriptFile && scriptFile.files && scriptFile.files[0]) ? (scriptFile.dataset.content || '') : '';
-        if (text) {
-          loadScriptText(text);
-        }
-      });
+            playScriptBtn.addEventListener('click', function () {
+                if (!scriptQueue.length) return;
+                if (isPlaying) {
+                    pauseScriptPlayback();
+                    return;
+                }
+                if (scriptPaused) {
+                    resumeScriptPlayback();
+                    return;
+                }
+                speakNextSegment();
+            });
 
-      scriptFile.addEventListener('change', function (event) {
-        const file = event.target.files && event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const content = e.target && e.target.result ? String(e.target.result) : '';
-          scriptFile.dataset.content = content;
-          const label = scriptFile.nextElementSibling;
-          if (label && label.classList && label.classList.contains('file-name')) {
-            label.textContent = file.name;
-          }
-        };
-        reader.readAsText(file);
-      });
-
-      sampleBtn.addEventListener('click', function () {
-        scriptFile.dataset.content = sampleScript;
-        loadScriptText(sampleScript);
-      });
-
-      playScriptBtn.addEventListener('click', function () {
-        if (!scriptQueue.length) return;
-        if (isPlaying) {
-          pauseScriptPlayback();
-          return;
-        }
-        if (scriptPaused) {
-          resumeScriptPlayback();
-          return;
-        }
-        speakNextSegment();
-      });
-
-      if (typeof render === 'function') render();
-      if (typeof renderBoardScreen === 'function') renderBoardScreen();
-    })();
-  </script>
+            if (typeof render === 'function') render();
+            if (typeof renderBoardScreen === 'function') renderBoardScreen();
+        })();
+    </script>
 </body>
+
 </html>
