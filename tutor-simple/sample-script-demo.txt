@@ -1,0 +1,16 @@
+Now we are going to explore a number pattern together.
+
+First, look at the sequence: 2, 4, 6, 8, 10.
+Each number increases by 2.
+This is an even number pattern.
+Watch the board as the tutor explains the rule.
+Then answer the question by saying what comes next.
+
+The pattern is growing by two each time.
+So the next number after 10 is 12.
+After 12 comes 14.
+Then 16 and 18.
+
+This helps us understand how patterns work in mathematics.
+We can keep counting by 2s to predict the next value.
+When you hear the prompt, respond with the next number in the sequence.

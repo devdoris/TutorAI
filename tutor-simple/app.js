@@ -75,6 +75,10 @@ let speaking = false;
 
 function pickVoice() {
   const voices = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
+
+  const femaleVoice = voices.find(v => /female|woman|girl|samantha|zira|aria|jenny|victoria|susan|hazel|rose|karen|samantha/i.test(v.name + " " + v.lang));
+  if (femaleVoice) return femaleVoice;
+
   for (const lang of ["en-NG", "en-GB", "en-ZA", "en-US"]) {
     const v = voices.find(v => v.lang === lang);
     if (v) return v;
@@ -500,6 +504,8 @@ function draw(now) {
   text(lesson.board.sub, BX(3), BY(14), 2.5 * U, "#cfd8c4", BODY, "left");
   if (state.question) text(state.question, BX(3), BY(95), 2.6 * U, C.accentLight, BODY, "left");
 
+  if (window.__boardScriptState && window.__boardScriptState.visible) drawBoardScriptText();
+
   (lesson.slots || []).filter(s => s.place === "board").forEach(drawBoardSlot);
   (lesson.objects || []).forEach(drawObject);
 
@@ -645,6 +651,58 @@ function isPointing() {
   return !!state.target && !!findThing(state.target) && ["point", "trace", "compare", "nod", "quiz"].includes(state.mode);
 }
 
+function drawBoardScriptText() {
+  const script = window.__boardScriptState || { text: '', activeWordIndex: 0, visible: false, targetX: 0, targetY: 0, lines: [] };
+  if (!script.visible) return;
+
+  const words = String(script.text || '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return;
+
+  const lines = Array.isArray(script.lines) && script.lines.length ? script.lines : (() => {
+    const parsed = [];
+    for (let i = 0; i < words.length; i += 6) parsed.push(words.slice(i, i + 6));
+    return parsed.length ? parsed : [words];
+  })();
+
+  const boardX = 252;
+  const boardY = 42;
+  const boardW = 708;
+  const boardH = 534;
+  const centerX = boardX + boardW / 2;
+  const baseY = boardY + boardH * 0.44;
+  const lineSpacing = 52;
+
+  ctx.save();
+  ctx.textBaseline = 'middle';
+
+  let globalIndex = 0;
+  lines.forEach((lineWords, lineIndex) => {
+    let lineWidth = 0;
+    lineWords.forEach((word) => {
+      ctx.font = '28px "Figtree", system-ui, sans-serif';
+      lineWidth += ctx.measureText(word).width + 18;
+    });
+    lineWidth -= 18;
+
+    let x = centerX - lineWidth / 2;
+    const y = baseY + lineIndex * lineSpacing;
+
+    lineWords.forEach((word, index) => {
+      const wordIndex = globalIndex + index;
+      const active = wordIndex === script.activeWordIndex;
+      ctx.font = active ? '700 28px "Figtree", system-ui, sans-serif' : '28px "Figtree", system-ui, sans-serif';
+      ctx.fillStyle = active ? '#f7c37d' : '#f3ecdc';
+      ctx.textAlign = 'left';
+      ctx.fillText(word, x, y);
+      x += ctx.measureText(word).width + 18;
+    });
+
+    globalIndex += lineWords.length;
+  });
+
+  ctx.restore();
+}
+
 // The stick-figure tutor.
 function drawTutor(now) {
   const SX = 150, SY = 402;   // shoulders
@@ -652,7 +710,12 @@ function drawTutor(now) {
   let leftUp = false;
   let target = null;
 
-  if (isPointing()) {
+  if (window.__boardScriptState && window.__boardScriptState.visible) {
+    target = { x: window.__boardScriptState.targetX || 480, y: window.__boardScriptState.targetY || 260 };
+    const angle = Math.atan2(target.y - SY, target.x - SX);
+    const ex = SX + 62 * Math.cos(angle - 0.35), ey = SY + 62 * Math.sin(angle - 0.35);
+    goal = { elbowX: ex, elbowY: ey, handX: ex + 66 * Math.cos(angle), handY: ey + 66 * Math.sin(angle) };
+  } else if (isPointing()) {
     const t = findThing(state.target);
     target = { x: BX(t.x), y: BY(t.y) };
     const angle = Math.atan2(target.y - SY, target.x - SX);
