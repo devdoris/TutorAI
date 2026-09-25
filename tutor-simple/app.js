@@ -76,11 +76,22 @@ let speaking = false;
 function pickVoice() {
   const voices = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
 
-  const femaleVoice = voices.find(v => /female|woman|girl|samantha|zira|aria|jenny|victoria|susan|hazel|rose|karen|samantha/i.test(v.name + " " + v.lang));
+  const preferredNames = [
+    "samantha", "victoria", "zira", "aria", "jenny", "susan", "hazel", "rose",
+    "karen", "female", "woman", "girl"
+  ];
+
+  const calmFemaleVoice = voices.find(v => {
+    const candidate = (v.name + " " + v.lang).toLowerCase();
+    return preferredNames.some(name => candidate.includes(name)) && /^en/i.test(v.lang);
+  });
+  if (calmFemaleVoice) return calmFemaleVoice;
+
+  const femaleVoice = voices.find(v => /(female|woman|girl)/i.test(v.name + " " + v.lang));
   if (femaleVoice) return femaleVoice;
 
-  for (const lang of ["en-NG", "en-GB", "en-ZA", "en-US"]) {
-    const v = voices.find(v => v.lang === lang);
+  for (const lang of ["en-NG", "en-GB", "en-ZA", "en-US", "en-AU"]) {
+    const v = voices.find(vo => vo.lang === lang);
     if (v) return v;
   }
   return voices.find(v => /^en/i.test(v.lang)) || null;
@@ -124,7 +135,8 @@ function speakWithBrowser(text) {
     const u = new SpeechSynthesisUtterance(text);
     const voice = pickVoice();
     if (voice) { u.voice = voice; u.lang = voice.lang; }
-    u.rate = 0.9;
+    u.rate = 0.68;
+    u.pitch = 0.84;
     u.volume = 1;
     currentUtterance = u;   // keep a reference so Chrome does not throw it away mid-sentence
 

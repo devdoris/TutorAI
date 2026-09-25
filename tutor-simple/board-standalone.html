@@ -39,15 +39,11 @@
             <div class="card import-card upload-shell">
                 <div class="upload-header">
                     <span class="card-kicker">Script</span>
-                    <button id="btn-load-sample" class="btn btn-ghost small-btn" type="button">Use story</button>
-                    <a id="btn-download-story" class="btn btn-ghost small-btn" href="sample-story-demo.txt"
-                        download="sample-story-demo.txt">Download</a>
                 </div>
 
                 <div class="field compact-field">
                     <label for="script-file">Upload</label>
                     <input id="script-file" type="file" class="input file-input" accept=".txt,.md,.csv,.json">
-                    <div class="file-name" aria-live="polite">No file chosen</div>
                 </div>
 
                 <div class="upload-actions">
@@ -59,6 +55,7 @@
             <div class="board-panel">
                 <div class="board-frame">
                     <canvas id="board"></canvas>
+                    <div id="script-media" class="hidden" style="position:absolute; top:80px; left:50%; transform:translateX(-50%); width:360px; height:224px; z-index:2; display:none; align-items:center; justify-content:center; pointer-events:none; overflow:hidden; border-radius:14px; background:rgba(8,15,17,0.3); box-shadow:0 18px 38px rgba(0,0,0,0.26); border:1px solid rgba(255,255,255,0.12);"></div>
                     <div class="speech">
                         <div class="card-kicker">Tutor says</div>
                         <div id="caption"></div>
@@ -192,29 +189,33 @@
             const scriptFile = document.getElementById('script-file');
             const uploadScriptBtn = document.getElementById('btn-upload-script');
             const playScriptBtn = document.getElementById('btn-play-script');
-            const sampleBtn = document.getElementById('btn-load-sample');
-            const sampleScript = `The government says, "We are fixing everything," and the Nigerian people answer, "Ah, same as before — just more traffic and more promises." In Nigeria, culture teaches patience, the government teaches speeches, and both still end with a prayer.`;
+            const mediaHost = document.getElementById('script-media');
             let scriptQueue = [];
             let scriptIndex = 0;
             let activeScriptTimer = null;
             let currentUtterance = null;
+            let currentMedia = null;
             let scriptPaused = false;
             let isPlaying = false;
             let resumeCharIndex = 0;
+            let scriptPointTarget = null;
             window.__boardScriptState = {
                 text: 'Upload a script to begin.',
                 activeWordIndex: 0,
                 targetX: 0,
                 targetY: 0,
                 visible: false,
-                lines: []
+                lines: [],
+                scene: null,
+                sceneTitle: '',
+                prompt: ''
             };
 
             function splitScript(text) {
                 return String(text || '').split(/(?<=[.!?])\s+|\n+/).map(part => part.trim()).filter(Boolean);
             }
 
-            function wrapScriptWords(words, maxWordsPerLine = 6) {
+            function wrapScriptWords(words, maxWordsPerLine = 5) {
                 const lines = [];
                 for (let i = 0; i < words.length; i += maxWordsPerLine) {
                     lines.push(words.slice(i, i + maxWordsPerLine));
@@ -242,82 +243,198 @@
                 return match ? match.index : 0;
             }
 
-            function getCharIndexForWord(segment, wordIndex) {
-                const words = (segment || '').split(/\s+/).filter(Boolean);
-                if (!words.length) return 0;
-                let cursor = 0;
-                for (let i = 0; i < Math.min(wordIndex, words.length - 1); i += 1) {
-                    cursor += words[i].length + 1;
-                }
-                return cursor;
+            function normalizeScriptText(value) {
+                return String(value || '').replace(/\s+/g, ' ').trim();
             }
 
-            function setBoardScriptState(text, activeWordIndex = 0) {
-                const stateForBoard = window.__boardScriptState;
-                const words = String(text || '').trim().split(/\s+/).filter(Boolean);
-                const safeWords = words.length ? words : ['Upload', 'a', 'script', 'to', 'begin.'];
-                const lines = wrapScriptWords(safeWords, 6);
-                stateForBoard.text = words.length ? text : 'Upload a script to begin.';
-                stateForBoard.activeWordIndex = Math.min(Math.max(activeWordIndex, 0), Math.max(safeWords.length - 1, 0));
-                stateForBoard.visible = words.length > 0;
-                stateForBoard.lines = lines;
-
-                let lineIndex = 0;
-                let wordIndexInLine = 0;
-                let wordCounter = 0;
-                for (let i = 0; i < lines.length; i += 1) {
-                    const lineWords = lines[i];
-                    if (stateForBoard.activeWordIndex >= wordCounter && stateForBoard.activeWordIndex < wordCounter + lineWords.length) {
-                        lineIndex = i;
-                        wordIndexInLine = stateForBoard.activeWordIndex - wordCounter;
-                        break;
+            function parseInlineConfig(value) {
+                const result = {};
+                const entries = String(value || '').split(/[;\n]+/).map(part => part.trim()).filter(Boolean);
+                entries.forEach((entry) => {
+                    const match = entry.match(/^([A-Za-z0-9_-]+)\s*[:=]\s*(.+)$/);
+                    if (!match) return;
+                    const key = match[1].trim().toLowerCase();
+                    let raw = match[2].trim();
+                    if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+                        raw = raw.slice(1, -1);
                     }
-                    wordCounter += lineWords.length;
+                    result[key] = raw;
+                });
+                return result;
+            }
+
+            function parseAction(kind, value) {
+                const trimmedValue = String(value || '').trim();
+                if (!trimmedValue) {
+                    return { kind: 'pause', ms: 300 };
                 }
 
-                const activeLineWords = lines[lineIndex] || safeWords.slice(0, 1);
+                if (kind === 'narration') {
+                    return { kind: 'narration', text: normalizeScriptText(trimmedValue) };
+                }
+
+                if (kind === 'pause') {
+                    const ms = Number(trimmedValue) || 400;
+                    return { kind: 'pause', ms };
+                }
+
+                if (kind === 'stickman') {
+                    const config = parseInlineConfig(trimmedValue);
+                    const action = config.action || config.pose || config.command || 'point';
+                    return {
+                        kind: 'stickman',
+                        action,
+                        target: config.target || config.id || config.name || null,
+                        pause: Number(config.pause || config.wait || config.delay || 500),
+                        text: config.note || action
+                    };
+                }
+
+                if (kind === 'display' || kind === 'highlight') {
+                    const config = parseInlineConfig(trimmedValue);
+                    const title = config.title || config.label || '';
+                    const prompt = config.prompt || config.question || config.description || '';
+                    const mediaUrl = config.video || config.media || config.src || config.image || config.picture || config.scene || '';
+                    const mediaType = config.mediaType || config.type || (config.video ? 'video' : 'image');
+                    const text = config.text || config.message || config.content || config.value || prompt || title || trimmedValue;
+                    return {
+                        kind: 'display',
+                        text: normalizeScriptText(text),
+                        title: title,
+                        prompt: prompt,
+                        image: mediaUrl,
+                        video: config.video || config.media || config.src || '',
+                        mediaType,
+                        x: Number(config.x || config.left || 50),
+                        y: Number(config.y || config.top || 45),
+                        pause: Number(config.pause || config.wait || config.delay || 500),
+                        color: config.color || '#f7c37d',
+                        highlight: config.highlight || config.target || null
+                    };
+                }
+
+                return { kind: 'narration', text: normalizeScriptText(trimmedValue) };
+            }
+
+            function parseStructuredScript(text) {
+                const raw = String(text || '').trim();
+                if (!raw) return [];
+                const tagPattern = /\{(narration|stickman|display|pause|highlight)\}([\s\S]*?)\{\/\1\}/gi;
+                const matches = [...raw.matchAll(tagPattern)];
+                if (matches.length) {
+                    const actions = [];
+                    let cursor = 0;
+                    matches.forEach((match) => {
+                        const before = raw.slice(cursor, match.index).trim();
+                        if (before) {
+                            actions.push({ kind: 'narration', text: normalizeScriptText(before) });
+                        }
+                        actions.push(parseAction(match[1].toLowerCase(), match[2]));
+                        cursor = match.index + match[0].length;
+                    });
+                    const tail = raw.slice(cursor).trim();
+                    if (tail) {
+                        actions.push({ kind: 'narration', text: normalizeScriptText(tail) });
+                    }
+                    return actions;
+                }
+
+                const linePattern = /^(narration|stickman|display|pause|highlight)\s*[:=]\s*(.+)$/gim;
+                const lines = raw.split(/\n+/).map(part => part.trim()).filter(Boolean);
+                if (lines.some(line => linePattern.test(line))) {
+                    return lines.map((line) => {
+                        const match = line.match(/^(narration|stickman|display|pause|highlight)\s*[:=]\s*(.+)$/i);
+                        if (!match) {
+                            return { kind: 'narration', text: normalizeScriptText(line) };
+                        }
+                        return parseAction(match[1].toLowerCase(), match[2]);
+                    }).filter(Boolean);
+                }
+
+                return splitScript(raw).map(part => ({ kind: 'narration', text: normalizeScriptText(part) }));
+            }
+
+            function getScriptLayout(text, activeWordIndex = 0) {
+                const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+                const safeWords = words.length ? words : ['Upload', 'a', 'script', 'to', 'begin.'];
+                const lines = wrapScriptWords(safeWords, 4);
                 const boardX = 252;
                 const boardY = 42;
                 const boardW = 708;
                 const boardH = 534;
                 const centerX = boardX + boardW * 0.5;
-                const lineStartY = boardY + boardH * 0.44 + lineIndex * 52;
+                const baseY = boardY + boardH * 0.44;
+                const lineSpacing = 42;
 
+                let activeLineIndex = 0;
+                let activeWordInLine = 0;
+                let cursor = 0;
+
+                for (let i = 0; i < lines.length; i += 1) {
+                    const lineWords = lines[i];
+                    if (activeWordIndex >= cursor && activeWordIndex < cursor + lineWords.length) {
+                        activeLineIndex = i;
+                        activeWordInLine = activeWordIndex - cursor;
+                        break;
+                    }
+                    cursor += lineWords.length;
+                }
+
+                const activeLine = lines[activeLineIndex] || safeWords.slice(0, 1);
                 const tmp = document.createElement('canvas');
                 const tmpCtx = tmp.getContext('2d');
                 tmpCtx.font = '28px "Figtree", system-ui, sans-serif';
+
                 let lineWidth = 0;
-                activeLineWords.forEach((word) => {
+                activeLine.forEach((word) => {
                     lineWidth += tmpCtx.measureText(word).width + 18;
                 });
                 lineWidth -= 18;
 
                 let x = centerX - lineWidth / 2;
-                for (let i = 0; i < wordIndexInLine; i += 1) {
-                    x += tmpCtx.measureText(activeLineWords[i]).width + 18;
+                for (let i = 0; i < activeWordInLine; i += 1) {
+                    x += tmpCtx.measureText(activeLine[i]).width + 18;
                 }
-                const activeWordWidth = tmpCtx.measureText(activeLineWords[wordIndexInLine] || activeLineWords[0]).width;
-                stateForBoard.targetX = x + activeWordWidth / 2;
-                stateForBoard.targetY = lineStartY;
+                const activeWordWidth = tmpCtx.measureText(activeLine[activeWordInLine] || activeLine[0]).width;
+
+                return {
+                    lines,
+                    safeWords,
+                    centerX,
+                    baseY,
+                    lineSpacing,
+                    activeLineIndex,
+                    activeWordInLine,
+                    targetX: x + activeWordWidth / 2,
+                    targetY: baseY + activeLineIndex * lineSpacing,
+                };
+            }
+
+            function setBoardScriptState(text, activeWordIndex = 0) {
+                const stateForBoard = window.__boardScriptState;
+                const layout = getScriptLayout(text, activeWordIndex);
+                stateForBoard.text = String(text || '').trim() || 'Upload a script to begin.';
+                stateForBoard.activeWordIndex = Math.min(Math.max(activeWordIndex, 0), Math.max(layout.safeWords.length - 1, 0));
+                stateForBoard.visible = String(text || '').trim().length > 0;
+                stateForBoard.lines = layout.lines;
+                stateForBoard.targetX = layout.targetX;
+                stateForBoard.targetY = layout.targetY;
             }
 
             function drawBoardScriptText() {
-                const script = window.__boardScriptState || { text: '', activeWordIndex: 0, visible: false, targetX: 0, targetY: 0, lines: [] };
+                const script = window.__boardScriptState || { text: '', activeWordIndex: 0, visible: false, targetX: 0, targetY: 0, lines: [], scene: null };
+                if (!script.visible && !script.scene) return;
+                if (script.scene) drawBoardDisplayScene(script.scene);
                 if (!script.visible || !script.lines || !script.lines.length) return;
 
-                const boardX = 252;
-                const boardY = 42;
-                const boardW = 708;
-                const boardH = 534;
-                const centerX = boardX + boardW / 2;
-                const baseY = boardY + boardH * 0.44;
-                const lineSpacing = 52;
+                const layout = getScriptLayout(script.text, script.activeWordIndex);
+                const { baseY, lineSpacing, centerX, lines } = layout;
 
                 ctx.save();
                 ctx.textBaseline = 'middle';
 
                 let globalIndex = 0;
-                script.lines.forEach((lineWords, lineIndex) => {
+                lines.forEach((lineWords, lineIndex) => {
                     let lineWidth = 0;
                     lineWords.forEach((word) => {
                         ctx.font = '28px "Figtree", system-ui, sans-serif';
@@ -344,42 +461,390 @@
                 ctx.restore();
             }
 
+            function ensureSceneImage(scene) {
+                if (!scene || !scene.imageUrl) return scene;
+                if (!scene.image) {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = function () {
+                        scene.image = img;
+                        if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                    };
+                    img.onerror = function () {
+                        scene.image = null;
+                    };
+                    img.src = scene.imageUrl;
+                    scene.image = img;
+                }
+                return scene;
+            }
+
+            function wrapCanvasText(ctx2d, text, maxWidth) {
+                const words = String(text || '').split(/\s+/).filter(Boolean);
+                if (!words.length) return [''];
+                const lines = [];
+                let current = words[0];
+
+                for (let i = 1; i < words.length; i += 1) {
+                    const word = words[i];
+                    const candidate = current + ' ' + word;
+                    if (ctx2d.measureText(candidate).width <= maxWidth) {
+                        current = candidate;
+                    } else {
+                        lines.push(current);
+                        current = word;
+                    }
+                }
+                lines.push(current);
+                return lines;
+            }
+
+            function drawBoardDisplayScene(scene) {
+                const readyScene = ensureSceneImage(scene);
+                if (!readyScene) return;
+
+                const boardX = 252;
+                const boardY = 42;
+                const boardW = 708;
+                const frameW = 330;
+                const frameH = 210;
+                const padX = 18;
+                const padY = 18;
+                const clampedX = Math.min(boardX + boardW - frameW - 20, Math.max(boardX + 20, boardX + (boardW - frameW) / 2));
+                const clampedY = Math.min(boardY + boardH - frameH - 30, Math.max(boardY + 22, boardY + 54));
+                const cardX = clampedX;
+                const cardY = clampedY;
+                const xOffset = Number(readyScene.x ?? 50) - 50;
+                const yOffset = Number(readyScene.y ?? 45) - 45;
+                const cardW = Math.min(frameW + (xOffset * 0.7), boardW - 56);
+                const cardH = Math.min(frameH + (yOffset * 0.65), boardH - 88);
+
+                ctx.save();
+                roundRect(cardX, cardY, cardW, cardH, 26, 'rgba(18, 39, 33, 0.88)', '#dfeae2', 2, false);
+
+                if (readyScene.image && readyScene.image.complete && readyScene.image.width > 0) {
+                    const img = readyScene.image;
+                    const ratio = Math.min((cardW - padX * 2) / img.width, (cardH - 72) / img.height);
+                    const width = img.width * ratio;
+                    const height = img.height * ratio;
+                    const x = cardX + (cardW - width) / 2;
+                    const y = cardY + 30 + (cardH - 78 - height) / 2;
+                    ctx.drawImage(img, x, y, width, height);
+                } else {
+                    const blank = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardH);
+                    blank.addColorStop(0, '#243c3d');
+                    blank.addColorStop(1, '#2f4b52');
+                    ctx.fillStyle = blank;
+                    ctx.fillRect(cardX + 4, cardY + 4, cardW - 8, cardH - 8);
+                }
+
+                const title = (readyScene && readyScene.title) || 'Picture prompt';
+                const prompt = (readyScene && readyScene.prompt) || 'Describe what you see.';
+                const textMaxWidth = Math.max(180, cardW - 30);
+                ctx.fillStyle = 'rgba(243, 236, 220, 0.92)';
+                ctx.font = '18px "Figtree", system-ui, sans-serif';
+                ctx.textAlign = 'left';
+
+                const titleLines = wrapCanvasText(ctx, title, textMaxWidth);
+                titleLines.forEach((line, index) => {
+                    const y = cardY + 22 + index * 18;
+                    ctx.fillText(line, cardX + 18, y);
+                });
+
+                ctx.font = '15px "Figtree", system-ui, sans-serif';
+                const promptLines = wrapCanvasText(ctx, prompt, textMaxWidth);
+                promptLines.forEach((line, index) => {
+                    const y = cardY + 52 + index * 18;
+                    ctx.fillText(line, cardX + 18, y);
+                });
+
+                ctx.restore();
+            }
+
+            function clearScriptMedia() {
+                if (mediaHost) {
+                    mediaHost.replaceChildren();
+                    mediaHost.classList.add('hidden');
+                    mediaHost.style.display = 'none';
+                }
+                currentMedia = null;
+                const scriptState = window.__boardScriptState || {};
+                scriptState.scene = null;
+                scriptState.sceneTitle = '';
+                scriptState.prompt = '';
+            }
+
+            function showScriptMedia(src, declaredType) {
+                if (!mediaHost) return;
+                mediaHost.replaceChildren();
+                currentMedia = null;
+                if (!src) {
+                    mediaHost.classList.add('hidden');
+                    mediaHost.style.display = 'none';
+                    return;
+                }
+                const isVideo = /\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(String(src || '')) || String(declaredType || '').toLowerCase().includes('video');
+                const element = document.createElement(isVideo ? 'video' : 'img');
+                element.src = src;
+                element.alt = 'Script teaching visual';
+                element.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover;background:#121f1e;';
+                if (isVideo) {
+                    element.controls = false;
+                    element.playsInline = true;
+                    element.muted = true;
+                    element.loop = false;
+                    element.preload = 'metadata';
+                    element.autoplay = true;
+                    element.addEventListener('loadeddata', () => { element.play().catch(() => {}); }, { once: true });
+                }
+                mediaHost.style.top = '80px';
+                mediaHost.style.left = '50%';
+                mediaHost.style.right = 'auto';
+                mediaHost.style.transform = 'translateX(-50%)';
+                mediaHost.style.width = '360px';
+                mediaHost.style.height = '224px';
+                mediaHost.appendChild(element);
+                mediaHost.classList.remove('hidden');
+                mediaHost.style.display = 'flex';
+                currentMedia = element;
+            }
+
+            function showDisplayAction(action) {
+                const text = action && action.text ? String(action.text) : '';
+                const displayState = window.__boardScriptState || {};
+                const mediaUrl = (action && (action.video || action.media || action.src || action.image || action.picture || action.scene)) ? String(action.video || action.media || action.src || action.image || action.picture || action.scene) : '';
+                const mediaType = String(action && (action.mediaType || action.type || (action.video ? 'video' : 'image')) || 'image').toLowerCase();
+                showScriptMedia(mediaUrl, mediaType);
+                const scene = mediaUrl ? {
+                    id: 'dynamic-scene',
+                    title: action.title || 'Picture prompt',
+                    prompt: action.prompt || 'Describe what you see.',
+                    imageUrl: mediaUrl,
+                    image: null,
+                    x: Number(action.x ?? 50),
+                    y: Number(action.y ?? 45)
+                } : null;
+                displayState.text = text || (scene && scene.prompt) || (scene && scene.title) || 'Picture prompt';
+                displayState.visible = false;
+                displayState.activeWordIndex = 0;
+                displayState.lines = [];
+                displayState.scene = scene;
+                displayState.sceneTitle = scene && scene.title ? scene.title : '';
+                displayState.prompt = scene && scene.prompt ? scene.prompt : '';
+                if (typeof state !== 'undefined') {
+                    state.caption = text || (scene && scene.prompt) || 'Picture prompt';
+                    if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                }
+            }
+
+            function performStickmanAction(action) {
+                if (!action) return;
+                const actionName = String(action.action || 'point').toLowerCase();
+                const motionMap = {
+                    wave: 'nod',
+                    nod: 'nod',
+                    stop: 'idle',
+                    idle: 'idle',
+                    listen: 'listen',
+                    quiz: 'quiz',
+                    celebrate: 'celebrate',
+                    praise: 'celebrate',
+                    point: 'point',
+                    trace: 'trace',
+                    compare: 'compare'
+                };
+                state.mode = motionMap[actionName] || 'point';
+                state.target = action.target || null;
+                if (typeof state !== 'undefined') {
+                    state.caption = action.text || 'The tutor is following the script.';
+                    if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                }
+            }
+
+            function advanceScriptSteps() {
+                if (!scriptQueue.length) {
+                    clearScriptMedia();
+                    isPlaying = false;
+                    scriptPaused = false;
+                    playScriptBtn.textContent = 'Play';
+                    setBoardScriptState('Script complete. Press play to continue.');
+                    if (typeof state !== 'undefined') {
+                        state.caption = 'Script complete. Press play to continue.';
+                        state.mode = 'celebrate';
+                        if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                    }
+                    return;
+                }
+
+                if (scriptIndex >= scriptQueue.length) {
+                    clearScriptMedia();
+                    scriptQueue = [];
+                    scriptIndex = 0;
+                    isPlaying = false;
+                    scriptPaused = false;
+                    playScriptBtn.textContent = 'Play';
+                    setBoardScriptState('Script complete. Press play to continue.');
+                    if (typeof state !== 'undefined') {
+                        state.caption = 'Script complete. Press play to continue.';
+                        state.mode = 'celebrate';
+                        if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                    }
+                    return;
+                }
+
+                const step = scriptQueue[scriptIndex];
+                if (!step) {
+                    advanceScriptSteps();
+                    return;
+                }
+
+                if (typeof step === 'string') {
+                    const text = step;
+                    scriptIndex += 1;
+                    clearScriptMedia();
+                    isPlaying = true;
+                    scriptPaused = false;
+                    playScriptBtn.textContent = 'Pause';
+                    setBoardScriptState(text, 0);
+                    if (typeof state !== 'undefined') {
+                        state.caption = text;
+                        if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                    }
+                    speakSegment(text, 0);
+                    return;
+                }
+
+                if (step.kind === 'pause') {
+                    scriptIndex += 1;
+                    activeScriptTimer = window.setTimeout(function () {
+                        if (!scriptPaused) {
+                            advanceScriptSteps();
+                        }
+                    }, Number(step.ms || 400));
+                    return;
+                }
+
+                if (step.kind === 'display') {
+                    scriptIndex += 1;
+                    showDisplayAction(step);
+                    activeScriptTimer = window.setTimeout(function () {
+                        if (!scriptPaused) {
+                            clearScriptMedia();
+                            advanceScriptSteps();
+                        }
+                    }, Number(step.pause || 500));
+                    return;
+                }
+
+                if (step.kind === 'stickman') {
+                    scriptIndex += 1;
+                    performStickmanAction(step);
+                    activeScriptTimer = window.setTimeout(function () {
+                        if (!scriptPaused) {
+                            advanceScriptSteps();
+                        }
+                    }, Number(step.pause || 500));
+                    return;
+                }
+
+                if (step.kind === 'narration') {
+                    const text = step.text || '';
+                    scriptIndex += 1;
+                    clearScriptMedia();
+                    isPlaying = true;
+                    scriptPaused = false;
+                    playScriptBtn.textContent = 'Pause';
+                    setBoardScriptState(text, 0);
+                    if (typeof state !== 'undefined') {
+                        state.caption = text;
+                        if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                    }
+                    speakSegment(text, 0);
+                    return;
+                }
+
+                scriptIndex += 1;
+                advanceScriptSteps();
+            }
+
             function pauseScriptPlayback() {
                 if (activeScriptTimer) window.clearTimeout(activeScriptTimer);
                 if (currentUtterance) {
                     window.speechSynthesis.cancel();
                     currentUtterance = null;
                 }
+                speaking = false;
                 scriptPaused = true;
                 isPlaying = false;
                 playScriptBtn.textContent = 'Play';
-                const segment = scriptQueue[scriptIndex] || '';
+                if (typeof state !== 'undefined') {
+                    state.mode = 'idle';
+                    state.target = null;
+                }
+
+                const step = scriptQueue[scriptIndex] || scriptQueue[0] || null;
+                const currentText = typeof step === 'string'
+                    ? step
+                    : (step && step.kind === 'narration' ? step.text : (window.__boardScriptState && window.__boardScriptState.text ? window.__boardScriptState.text : ''));
                 const activeWordIndex = window.__boardScriptState && typeof window.__boardScriptState.activeWordIndex === 'number'
                     ? window.__boardScriptState.activeWordIndex
                     : 0;
-                if (segment) {
-                    setBoardScriptState(segment, activeWordIndex);
+
+                if (currentText) {
+                    setBoardScriptState(currentText, activeWordIndex);
                     if (typeof state !== 'undefined') {
-                        state.caption = 'Paused. Press play to continue.';
+                        state.caption = currentText;
                         if (typeof renderBoardScreen === 'function') renderBoardScreen();
                     }
+                }
+
+                if (typeof setVoiceNote === 'function') {
+                    setVoiceNote('Paused. Press play to continue.');
                 }
             }
 
             function resumeScriptPlayback() {
                 if (!scriptQueue.length) return;
-                const segment = scriptQueue[scriptIndex] || scriptQueue[0];
-                const startIndex = Math.max(0, resumeCharIndex || 0);
-                const startWordIndex = computeActiveWordIndex(segment, startIndex);
+                const step = scriptQueue[scriptIndex] || scriptQueue[0];
                 scriptPaused = false;
                 isPlaying = true;
                 playScriptBtn.textContent = 'Pause';
-                setBoardScriptState(segment, startWordIndex);
-                if (typeof state !== 'undefined') {
-                    state.caption = segment;
-                    if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                if (typeof setVoiceNote === 'function') setVoiceNote('');
+
+                if (typeof step === 'string') {
+                    const startIndex = Math.max(0, resumeCharIndex || 0);
+                    const startWordIndex = computeActiveWordIndex(step, startIndex);
+                    setBoardScriptState(step, startWordIndex);
+                    if (typeof state !== 'undefined') {
+                        state.caption = step;
+                        if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                    }
+                    speakSegment(step, startIndex);
+                    return;
                 }
-                speakSegment(segment, startIndex);
+                if (step && step.kind === 'narration') {
+                    const text = step.text || '';
+                    const startIndex = Math.max(0, resumeCharIndex || 0);
+                    const startWordIndex = computeActiveWordIndex(text, startIndex);
+                    setBoardScriptState(text, startWordIndex);
+                    if (typeof state !== 'undefined') {
+                        state.caption = text;
+                        if (typeof renderBoardScreen === 'function') renderBoardScreen();
+                    }
+                    speakSegment(text, startIndex);
+                    return;
+                }
+                if (step && step.kind === 'display') {
+                    showDisplayAction(step);
+                    activeScriptTimer = window.setTimeout(function () {
+                        if (!scriptPaused) {
+                            clearScriptMedia();
+                            advanceScriptSteps();
+                        }
+                    }, Number(step.pause || 500));
+                    return;
+                }
+                advanceScriptSteps();
             }
 
             function speakSegment(segment, startOffset = 0) {
@@ -390,10 +855,11 @@
                     utterance.voice = preferredVoice;
                     utterance.lang = preferredVoice.lang;
                 }
-                utterance.rate = 0.9;
-                utterance.pitch = 1;
+                utterance.rate = 0.68;
+                utterance.pitch = 0.84;
                 utterance.volume = 1;
                 currentUtterance = utterance;
+                speaking = true;
 
                 utterance.onboundary = function (event) {
                     if (!segment) return;
@@ -408,28 +874,31 @@
                 };
 
                 utterance.onend = function () {
+                    speaking = false;
+                    if (typeof state !== 'undefined') {
+                        state.mode = 'idle';
+                        state.target = null;
+                    }
                     if (scriptPaused) return;
-                    scriptIndex += 1;
-                    if (scriptIndex < scriptQueue.length) {
+                    if (scriptQueue.length && scriptIndex < scriptQueue.length) {
                         activeScriptTimer = window.setTimeout(function () {
-                            const nextSegment = scriptQueue[scriptIndex] || scriptQueue[0];
-                            if (nextSegment) {
-                                resumeCharIndex = 0;
-                                setBoardScriptState(nextSegment, 0);
-                                speakSegment(nextSegment, 0);
+                            if (!scriptPaused) {
+                                advanceScriptSteps();
                             }
-                        }, 350);
+                        }, 250);
                     } else {
                         activeScriptTimer = window.setTimeout(function () {
-                            isPlaying = false;
-                            scriptPaused = false;
+                            clearScriptMedia();
                             scriptQueue = [];
                             scriptIndex = 0;
+                            isPlaying = false;
+                            scriptPaused = false;
                             resumeCharIndex = 0;
                             playScriptBtn.textContent = 'Play';
                             setBoardScriptState('Script complete. Press play to continue.');
                             if (typeof state !== 'undefined') {
                                 state.caption = 'Script complete. Press play to continue.';
+                                state.mode = 'idle';
                                 if (typeof renderBoardScreen === 'function') renderBoardScreen();
                             }
                         }, 500);
@@ -440,43 +909,28 @@
                 window.speechSynthesis.speak(utterance);
             }
 
-            function speakNextSegment() {
-                if (!scriptQueue.length) {
-                    setBoardScriptState('Upload a script to begin.');
-                    return;
-                }
-
-                if (scriptIndex >= scriptQueue.length) {
-                    scriptIndex = 0;
-                }
-
-                const segment = scriptQueue[scriptIndex];
-                isPlaying = true;
-                scriptPaused = false;
-                playScriptBtn.textContent = 'Pause';
-                if (typeof state !== 'undefined') {
-                    state.caption = segment;
-                    if (typeof renderBoardScreen === 'function') renderBoardScreen();
-                }
-                resumeCharIndex = 0;
-                setBoardScriptState(segment, 0);
-                speakSegment(segment, 0);
-            }
-
-            function loadScriptText(text) {
+            function setScriptQueueFromText(text) {
                 const pared = String(text || '').trim();
                 if (!pared) return;
-                scriptQueue = splitScript(pared);
+                clearScriptMedia();
+                const structured = parseStructuredScript(pared);
+                scriptQueue = structured.length ? structured : splitScript(pared).map(part => ({ kind: 'narration', text: normalizeScriptText(part) }));
                 scriptIndex = 0;
                 scriptPaused = false;
                 isPlaying = false;
                 resumeCharIndex = 0;
                 playScriptBtn.textContent = 'Play';
-                setBoardScriptState(scriptQueue[0] || 'Upload a script to begin.', 0);
+                const preview = scriptQueue[0];
+                const previewText = typeof preview === 'string' ? preview : (preview && preview.text ? preview.text : 'Upload a script to begin.');
+                setBoardScriptState(previewText, 0);
                 if (typeof state !== 'undefined') {
                     state.caption = 'Press play to continue.';
                     if (typeof renderBoardScreen === 'function') renderBoardScreen();
                 }
+            }
+
+            function loadScriptText(text) {
+                setScriptQueueFromText(text);
             }
 
             uploadScriptBtn.addEventListener('click', function () {
@@ -502,11 +956,6 @@
                 reader.readAsText(file);
             });
 
-            sampleBtn.addEventListener('click', function () {
-                scriptFile.dataset.content = sampleScript;
-                loadScriptText(sampleScript);
-            });
-
             playScriptBtn.addEventListener('click', function () {
                 if (!scriptQueue.length) return;
                 if (isPlaying) {
@@ -517,7 +966,7 @@
                     resumeScriptPlayback();
                     return;
                 }
-                speakNextSegment();
+                advanceScriptSteps();
             });
 
             if (typeof render === 'function') render();

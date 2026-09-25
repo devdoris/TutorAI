@@ -1,0 +1,20 @@
+{narration}The Wi‑Fi went down in the middle of the meeting.{/narration}
+{narration}The room suddenly felt like a comedy of errors.{/narration}
+{display}title: The meeting starts; prompt: The team stays calm while the internet disappears mid-discussion.; image: assets/meeting-scene.jpg; x: 50; y: 46; pause: 5000{/display}
+{stickman}action: listen; text: Everyone leans in and stays calm while the Wi‑Fi drops.; pause: 900{/stickman}
+{narration}One person said, “Maybe it is just the Wi‑Fi.”{/narration}
+{pause}900{/pause}
+{narration}Then the printer joined in with a dramatic sound.{/narration}
+{display}title: The printer enters; prompt: The printer makes a noisy entrance right when the team needs focus.; image: https://media1.tenor.com/m/GuToXb1oV8sAAAAd/struggle-work.gif; x: 50; y: 46; pause: 5200{/display}
+{stickman}action: wave; text: The team laughs while the printer steals the moment.; pause: 900{/stickman}
+{narration}Everyone started asking the same question at once.{/narration}
+{narration}Then someone said, “Let us do it the old-fashioned way.”{/narration}
+{pause}1200{/pause}
+{narration}The team stayed calm and solved it together.{/narration}
+{display}title: Team recovery; prompt: The group regrouped and found a practical fix together.; image: assets/solution-scene.jpg; x: 50; y: 46; pause: 5400{/display}
+{stickman}action: point; text: The team finds the fix together.; pause: 900{/stickman}
+{narration}Most problems are not about the technology.{/narration}
+{narration}The good news is we fixed it.{/narration}
+{display}title: Celebration time; prompt: The team laughs and celebrates after handling the chaos well.; image: assets/celebration-scene.jpg; x: 50; y: 46; pause: 5400{/display}
+{stickman}action: celebrate; text: The team smiles and laughs after the fix.; pause: 1000{/stickman}
+{narration}That is the kind of story people remember.{/narration}
