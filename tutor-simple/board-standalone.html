@@ -55,7 +55,9 @@
             <div class="board-panel">
                 <div class="board-frame">
                     <canvas id="board"></canvas>
-                    <div id="script-media" class="hidden" style="position:absolute; top:80px; left:50%; transform:translateX(-50%); width:360px; height:224px; z-index:2; display:none; align-items:center; justify-content:center; pointer-events:none; overflow:hidden; border-radius:14px; background:rgba(8,15,17,0.3); box-shadow:0 18px 38px rgba(0,0,0,0.26); border:1px solid rgba(255,255,255,0.12);"></div>
+                    <div id="script-media" class="hidden"
+                        style="position:absolute; top:80px; left:50%; transform:translateX(-50%); width:360px; height:224px; z-index:2; display:none; align-items:center; justify-content:center; pointer-events:none; overflow:hidden; border-radius:14px; background:rgba(8,15,17,0.3); box-shadow:0 18px 38px rgba(0,0,0,0.26); border:1px solid rgba(255,255,255,0.12);">
+                    </div>
                     <div class="speech">
                         <div class="card-kicker">Tutor says</div>
                         <div id="caption"></div>
@@ -595,7 +597,7 @@
                     element.loop = false;
                     element.preload = 'metadata';
                     element.autoplay = true;
-                    element.addEventListener('loadeddata', () => { element.play().catch(() => {}); }, { once: true });
+                    element.addEventListener('loadeddata', () => { element.play().catch(() => { }); }, { once: true });
                 }
                 mediaHost.style.top = '80px';
                 mediaHost.style.left = '50%';
