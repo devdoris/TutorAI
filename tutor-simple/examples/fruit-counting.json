@@ -1,0 +1,128 @@
+{
+  "id": "fruit-counting",
+  "title": "Counting what is in the basket",
+  "subject": "Mathematics",
+  "objective": "Add two groups of objects by counting them together.",
+  "level": 1,
+  "concept": "adding-groups",
+  "curricula": [
+    "NERDC"
+  ],
+  "board": {
+    "kind": "blank",
+    "heading": "",
+    "sub": ""
+  },
+  "steps": [
+    {
+      "do": "board",
+      "heading": "What is in the basket",
+      "text": "Your mother sent you to the market twice today."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "first",
+          "icon": "orange",
+          "count": 3,
+          "label": "3 oranges",
+          "x": 28,
+          "y": 30,
+          "size": 9
+        },
+        {
+          "id": "second",
+          "icon": "orange",
+          "count": 2,
+          "label": "2 oranges",
+          "x": 72,
+          "y": 30,
+          "size": 9
+        }
+      ],
+      "at": [
+        "first",
+        "second"
+      ],
+      "text": "The first time you brought three oranges. The second time you brought two oranges."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "first",
+        "second"
+      ],
+      "text": "Three oranges, and two oranges."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "all",
+          "icon": "orange",
+          "count": 5,
+          "label": "5 oranges altogether",
+          "x": 50,
+          "y": 60,
+          "size": 8
+        }
+      ],
+      "at": [
+        "all"
+      ],
+      "text": "Put them in one basket and count again. Five oranges altogether."
+    },
+    {
+      "do": "mark",
+      "id": "ringall",
+      "kind": "ring",
+      "at": [
+        "all"
+      ],
+      "text": "Three and two make five."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "apples",
+          "icon": "apple",
+          "count": 4,
+          "label": "4 apples",
+          "x": 30,
+          "y": 86,
+          "size": 7
+        },
+        {
+          "id": "bread",
+          "icon": "bread",
+          "count": 2,
+          "label": "2 loaves",
+          "x": 72,
+          "y": 86,
+          "size": 7
+        }
+      ],
+      "at": [
+        "apples",
+        "bread"
+      ],
+      "text": "It works for apples, and it works for bread."
+    },
+    {
+      "do": "ask",
+      "text": "Now you.",
+      "ask": {
+        "type": "type",
+        "prompt": "Four apples and two loaves. How many things is that?",
+        "expect": "6",
+        "hint": "Count every one of them, apples first."
+      }
+    },
+    {
+      "do": "praise",
+      "text": "Correct. You can count anything now."
+    }
+  ]
+}

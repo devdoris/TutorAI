@@ -1,0 +1,48 @@
+{
+  "id": "my-first-lesson",
+  "title": "Sharing sweets fairly",
+  "subject": "Mathematics",
+  "objective": "Tell an odd number from an even one by sharing it out.",
+  "level": 2,
+  "concept": "odd-even",
+  "curricula": ["NERDC", "KS3", "CCSS"],
+  "board": { "kind": "circles", "heading": "", "sub": "" },
+
+  "steps": [
+    { "do": "say", "text": "Some numbers share out fairly between two friends. Some always leave one behind." },
+
+    { "do": "show",
+      "objects": [{ "id": "six", "label": "6", "shape": "circle", "sub": "Even" }],
+      "at": ["six"],
+      "text": "Six sweets. Three each. Nobody is left out." },
+
+    { "do": "show",
+      "objects": [{ "id": "seven", "label": "7", "shape": "circle", "sub": "Odd" }],
+      "at": ["seven"],
+      "text": "Seven sweets. Three each, and one sweet nobody can have." },
+
+    { "do": "compare", "at": ["six", "seven"], "cues": ["Six", "Seven"],
+      "text": "Six shares out fairly. Seven always leaves one behind." },
+
+    { "do": "ask", "text": "Your turn.",
+      "ask": { "type": "select",
+               "prompt": "Tap the number that cannot be shared fairly.",
+               "expect": "seven",
+               "hint": "The one that leaves a sweet over." } },
+
+    { "do": "ask", "text": "And in words.",
+      "ask": { "type": "type",
+               "prompt": "Is 10 odd or even?",
+               "expect": ["even"],
+               "hint": "Can you give five to each friend?" } },
+
+    { "do": "praise", "text": "That is what odd and even means. Nothing to memorise." }
+  ],
+
+  "faq": [
+    { "k": ["zero", "0"],
+      "a": "Zero is even. Share nothing between two friends and they still get the same: nothing each, with none left over." },
+    { "k": ["why", "matter"],
+      "a": "Once you can see which numbers split in two, halving stops being a rule you memorise and becomes something you can check." }
+  ]
+}

@@ -67,3 +67,126 @@ html, body, #root { min-height: 100%; }
   .app-nav, .page { padding-left: 16px; padding-right: 16px; }
   .setup-panel { min-width: 0; flex-basis: 100%; }
 }
+
+/* ── Engine additions ─────────────────────────────────────────────────────── */
+@keyframes tutor-appear { from { opacity: 0; transform: translate(-50%, -50%) scale(.82) } to { opacity: 1; transform: translate(-50%, -50%) scale(1) } }
+
+.interject-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  padding: 10px 16px; border-radius: var(--radius-lg);
+  background: var(--color-accent-2-100); border: 1px solid var(--color-accent-2);
+  font-size: 14.5px;
+}
+
+.step-list { display: flex; flex-direction: column; gap: 6px; max-height: 46vh; overflow-y: auto; padding-right: 4px; }
+.step-row-btn { border: 0; cursor: pointer; width: 100%; font: inherit; text-align: left; }
+.step-row-btn:hover { outline: 1px solid var(--color-accent-2); }
+
+.channel-note { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; line-height: 1.5; color: var(--color-neutral-700); }
+.channel-note code { font-family: ui-monospace, monospace; font-size: 11.5px; background: var(--color-neutral-100); padding: 1px 5px; border-radius: 5px; word-break: break-all; }
+
+.intake-row { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--color-neutral-200); }
+.intake-row:last-child { border-bottom: 0; }
+
+/* A place name sits under its digit rather than being squeezed inside it. */
+.under-label { position: absolute; top: 108%; left: 50%; transform: translateX(-50%); font-size: 2.2cqw; line-height: 1.15; white-space: nowrap; font-family: var(--font-body); color: #a9b79b; }
+/* The board is dark, so the highlighted state goes lighter, not darker. */
+.under-label-on { color: #f3ecdc; font-weight: 600; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   THE BLACKBOARD.
+   A board is not a slide. Writing arrives at the speed of a hand, it is never
+   quite straight, the chalk is dusty and slightly transparent, and what is
+   written stays until somebody rubs it out. Everything below is in service of
+   that and nothing else.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Whatever handwriting this machine has. The last resort is the body font,
+   which still reads fine — it just stops looking hand-written. */
+:root {
+  --font-chalk: "Chalkboard SE", "Chalkboard", "Bradley Hand", "Segoe Print",
+                "Comic Sans MS", "Marker Felt", var(--font-body);
+  --chalk: #f3ecdc;
+  --chalk-dust: 0 0 1px rgba(243,236,220,.55), 0 0 6px rgba(243,236,220,.18);
+}
+
+/* Chalk sits ON the board: slightly soft edges, never pure white, and the
+   grain of the surface shows through it. */
+.board-surface .board-heading,
+.board-surface .board-sub,
+.board-surface .board-question,
+.board-surface .under-label,
+.board-surface .side-label,
+.board-surface .chalk-text {
+  font-family: var(--font-chalk);
+  text-shadow: var(--chalk-dust);
+  letter-spacing: .01em;
+}
+.board-surface .board-heading { font-weight: 400; }
+
+/* Each thing written on the board is set down at a very slightly different
+   angle, because a hand cannot help it. */
+.board-obj { animation: chalk-write .5s cubic-bezier(.2,.7,.3,1) both; }
+@keyframes chalk-write {
+  from { clip-path: inset(0 100% 0 0); opacity: .45; }
+  to   { clip-path: inset(0 -8% 0 0); opacity: 1; }
+}
+
+/* Marks the teacher makes over the work: rings, underlines, crossings out.
+   They draw themselves on, left to right, the way they were made. */
+.chalk-marks { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+/* The dash that draws a mark on is set per path, in script, because only the
+   path knows how long it is. */
+.chalk-mark { fill: none; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 2px rgba(243,236,220,.35)); }
+
+/* The rough work: a pad the teacher pulls out beside the board to work
+   something through, then puts away again. It never covers the working. */
+.rough-pad {
+  position: absolute; right: 2.5%; bottom: 3%; width: 42%;
+  padding: 1.6cqw 1.9cqw; box-sizing: border-box;
+  border: 2px solid rgba(242,208,107,.75); border-radius: 1.6cqw;
+  background: rgba(20,26,21,.88);
+  box-shadow: 0 1cqw 2.4cqw rgba(0,0,0,.35);
+  font-family: var(--font-chalk); color: var(--chalk);
+  transform-origin: bottom right;
+  transition: transform .42s cubic-bezier(.2,.8,.3,1), opacity .32s ease;
+}
+/* Pulled out with one movement, put away with another. */
+.rough-pad-in  { animation: rough-out-in .44s cubic-bezier(.2,.8,.3,1) both; }
+.rough-pad-out { transform: translateX(118%) rotate(4deg); opacity: 0; }
+@keyframes rough-out-in {
+  from { transform: translateX(118%) rotate(4deg); opacity: 0; }
+  to   { transform: translateX(0) rotate(-.6deg); opacity: 1; }
+}
+.rough-title {
+  font-size: 2cqw; color: #f2d06b; letter-spacing: .04em;
+  border-bottom: 1px solid rgba(242,208,107,.4); padding-bottom: .5cqw; margin-bottom: .8cqw;
+}
+.rough-line {
+  font-size: 2.3cqw; line-height: 1.5; text-shadow: var(--chalk-dust);
+  animation: chalk-write .42s ease-out both;
+}
+
+/* Rubbing the board out: one sweep across, the way an arm moves. */
+.board-wipe {
+  position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background: linear-gradient(100deg, transparent 0%, rgba(233,238,228,.30) 42%, rgba(233,238,228,.42) 56%, transparent 72%);
+  animation: board-wipe .62s ease-in-out forwards;
+}
+@keyframes board-wipe { from { transform: translateX(-108%) } to { transform: translateX(108%) } }
+
+/* The teacher steps in to the board to point, and back out to explain. */
+.tutor-body { transition: transform .55s cubic-bezier(.3,.7,.3,1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .board-obj, .rough-line { animation: none; clip-path: none; opacity: 1; }
+  .chalk-mark { transition: none !important; stroke-dashoffset: 0 !important; }
+  .board-wipe { display: none; }
+  .tutor-body, .rough-pad { transition: none; }
+}
+
+/* Chalk drawings of things: an outline in chalk, never a filled sticker. */
+.chalk-icon { fill: none; stroke: #f3ecdc; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 2px rgba(243,236,220,.4)); overflow: visible; }
+.board-obj[data-state="target"] .chalk-icon { stroke: #2c332d; filter: none; }

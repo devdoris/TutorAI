@@ -16,6 +16,7 @@
       <button class="btn btn-ghost tab" data-screen="lessons">Lessons</button>
       <button class="btn btn-ghost tab" data-screen="board">Board</button>
       <button class="btn btn-ghost tab" data-screen="progress">Progress</button>
+      <a class="btn btn-ghost" href="record.html">Record</a>
       <a class="btn btn-ghost" href="notes.html">Demo notes</a>
     </nav>
     <div class="spacer"></div>
@@ -29,7 +30,7 @@
   <section id="screen-lessons" class="page">
     <span class="tag tag-accent-2 curriculum-label"></span>
     <h1>Pick an objective to teach</h1>
-    <p class="lede">The same board, tutor and practice loop teach every one of these. What changes is the picture on the board and the objective behind it.</p>
+    <p class="lede">Every one of these is a script. The tutor, the board and the practice loop are one engine that plays whatever script it is handed: from this library, from a file, or written on the spot to answer a question.</p>
     <div id="lesson-grid" class="lesson-grid"></div>
   </section>
 
@@ -41,7 +42,16 @@
         <h1 id="lesson-title"></h1>
         <p id="lesson-objective" class="lede"></p>
       </div>
-      <span id="step-label" class="tag tag-outline"></span>
+      <div class="head-tags">
+        <span id="step-label" class="tag tag-outline"></span>
+        <span id="source-label" class="tag tag-outline" title="Which layer wrote the script now playing"></span>
+      </div>
+    </div>
+
+    <!-- Shown while an answer script is playing over the top of the lesson -->
+    <div id="interject-bar" class="interject-bar hidden">
+      <span id="interject-text"></span>
+      <button id="btn-back" class="btn btn-primary">Back to the lesson</button>
     </div>
 
     <div class="board-frame">
@@ -69,9 +79,16 @@
         <button id="btn-next" class="btn btn-secondary">Next step</button>
         <button id="btn-hint" class="btn btn-secondary">Hint</button>
         <button id="btn-repeat" class="btn btn-secondary">Say that again</button>
+        <button id="btn-simpler" class="btn btn-secondary">Explain it simpler</button>
+        <button id="btn-deeper" class="btn btn-secondary">Go deeper</button>
         <button id="btn-voice" class="btn btn-secondary">Voice on</button>
         <button id="btn-test-voice" class="btn btn-secondary">Test voice</button>
+        <label class="voice-pick-wrap hidden">
+          <span>Voice</span>
+          <select id="voice-pick" class="input"></select>
+        </label>
         <button id="btn-ask" class="btn btn-secondary">Ask the tutor</button>
+        <button id="btn-intake" class="btn btn-secondary">Script intake</button>
         <button id="btn-check" class="btn btn-primary">Check my answer</button>
         <button id="btn-reveal" class="btn btn-ghost">Show me</button>
       </div>
@@ -86,20 +103,47 @@
       <button class="btn btn-primary">Send to the tutor</button>
     </form>
 
-    <!-- Ask a question mid-lesson -->
+    <!-- Ask a question mid-lesson. The answer is a script the tutor plays. -->
     <div id="ask-box" class="card">
-      <div class="card-kicker">Your question (the lesson keeps its place)</div>
+      <div class="card-kicker">Your question — the tutor writes a script to answer it, then comes back here</div>
       <form id="ask-form" class="inline-form">
         <div class="field grow">
           <label for="ask-input">Ask about this lesson</label>
-          <input id="ask-input" class="input" autocomplete="off" placeholder="e.g. why is there a zero?">
+          <input id="ask-input" class="input" autocomplete="off" placeholder="e.g. why is there a comma?">
         </div>
         <button class="btn btn-primary">Ask</button>
       </form>
-      <div id="ask-reply" class="ask-reply">
-        <div id="ask-reply-text"></div>
-        <button id="btn-back" class="btn btn-secondary">Back to the lesson</button>
+    </div>
+
+    <!-- Send the engine a script from anywhere -->
+    <div id="intake-box" class="card">
+      <div class="card-kicker">Intake — the engine will play any script that matches the format</div>
+      <textarea id="script-json" class="input json-box" spellcheck="false"
+        placeholder='{ "title": "…", "steps": [ { "do": "say", "text": "Hello" } ] }'></textarea>
+      <div class="buttons">
+        <button id="btn-run-script" class="btn btn-primary">Run it</button>
+        <button id="btn-run-over" class="btn btn-secondary">Run over this lesson</button>
+        <button id="btn-load-current" class="btn btn-ghost">Load current</button>
+        <button id="btn-prepare-all" class="btn btn-secondary" title="Render every lesson's audio now, so nothing waits during a demo">Prepare every lesson</button>
+        <label class="btn btn-secondary file-button">
+          Upload .json
+          <input id="script-file" type="file" accept=".json,application/json" hidden>
+        </label>
       </div>
+      <div id="intake-error" class="voice-note"></div>
+      <div class="channel-note">
+        <div>New to this? Start from <code>examples/starter-lesson.json</code> — change the words and load it back.</div>
+        <div>Objects with no <code>x</code> are placed by the board, spread evenly along their row.</div>
+        <div>The tutor can draw: <code>{ "do": "mark", "kind": "ring" | "cross" | "underline" | "arrow", "at": [...] }</code></div>
+        <div>Divide the board: <code>{ "do": "layout", "grid": "2x2", "panels": ["…"] }</code>, then give objects <code>"panel": "tl"</code>. Bring one forward: <code>{ "do": "focus", "at": ["id"] }</code>. Change scene: <code>{ "do": "transition", "kind": "wipe" | "fade" | "sweep" }</code>.</div>
+        <div>Icons from the internet: <code>"icon": "simple-icons:whatsapp"</code> (any collection on icon-sets.iconify.design). An object with <code>"explain": [...]</code> comes forward when tapped. Try <code>examples/divided-board.json</code>.</div>
+        <div>Drop a <code>.json</code> file anywhere on this page.</div>
+        <div>From another window: <code>win.postMessage({ type: "tutor:script", script }, "*")</code></div>
+        <div>From the console: <code>TutorEngine.run(script)</code></div>
+        <div>From a service: <code>?script=https://…/lesson.json</code></div>
+      </div>
+      <div class="card-kicker">What has arrived</div>
+      <div id="intake-log"></div>
     </div>
   </section>
 
@@ -120,7 +164,12 @@
 
   <div id="drag-ghost"></div>
 
+  <!-- The two layers, then the view that joins them. -->
+  <script src="icons.js"></script>
+  <script src="engine.js"></script>
   <script src="lessons.js"></script>
+  <script src="generate.js"></script>
+  <script src="voice-lines.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

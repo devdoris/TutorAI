@@ -1,0 +1,108 @@
+{
+  "id": "halves-of-things",
+  "title": "Half of what you are holding",
+  "subject": "Mathematics",
+  "objective": "Find half of a small even number by sharing it into two equal groups.",
+  "level": 1,
+  "concept": "halving",
+  "curricula": [
+    "NERDC"
+  ],
+  "board": {
+    "kind": "blank",
+    "heading": "",
+    "sub": ""
+  },
+  "steps": [
+    {
+      "do": "board",
+      "heading": "Sharing with one person",
+      "text": "You have six sweets and your sister is looking at you. We both know how this ends."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "sweets",
+          "label": "🍬🍬🍬🍬🍬🍬",
+          "x": 50,
+          "y": 30,
+          "size": 4
+        }
+      ],
+      "at": [
+        "sweets"
+      ],
+      "text": "Six sweets. Count them with me."
+    },
+    {
+      "do": "say",
+      "text": "To be fair, you two must end up with the same number. Not one more for you."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "you",
+          "label": "🍬🍬🍬",
+          "x": 30,
+          "y": 55,
+          "size": 4,
+          "sub": "you"
+        },
+        {
+          "id": "sis",
+          "label": "🍬🍬🍬",
+          "x": 70,
+          "y": 55,
+          "size": 4,
+          "sub": "your sister"
+        }
+      ],
+      "at": [
+        "you",
+        "sis"
+      ],
+      "text": "Three for you, three for your sister."
+    },
+    {
+      "do": "compare",
+      "at": [
+        "you",
+        "sis"
+      ],
+      "text": "Same size. Nobody is going to cry."
+    },
+    {
+      "do": "rough",
+      "title": "rough work",
+      "lines": [
+        "6 shared into 2  =  3"
+      ],
+      "text": "On the pad: six shared into two is three."
+    },
+    {
+      "do": "mark",
+      "id": "ringhalf",
+      "kind": "ring",
+      "at": [
+        "you"
+      ],
+      "text": "That three is half of six."
+    },
+    {
+      "do": "ask",
+      "text": "Your turn.",
+      "ask": {
+        "type": "type",
+        "prompt": "So what is half of eight?",
+        "expect": "4",
+        "hint": "Share eight into two equal piles and count one pile."
+      }
+    },
+    {
+      "do": "praise",
+      "text": "That is it. You can share anything now."
+    }
+  ]
+}

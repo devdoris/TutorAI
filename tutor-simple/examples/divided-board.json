@@ -1,0 +1,58 @@
+{
+  "id": "four-apps",
+  "title": "Four apps, four parts of the board",
+  "subject": "Mathematics",
+  "objective": "Read a number in the millions from each part of a divided board.",
+  "level": 2,
+  "concept": "millions",
+  "curricula": ["NERDC", "KS3", "CCSS"],
+  "board": { "kind": "blank", "heading": "", "sub": "" },
+
+  "steps": [
+    { "do": "board", "heading": "Four apps", "text": "Four apps, and how many people use each one." },
+
+    { "do": "layout", "grid": "2x2", "panels": ["WhatsApp", "TikTok", "Snapchat", "Telegram"],
+      "text": "I will divide the board into four parts. Top left, top right, bottom left, bottom right." },
+
+    { "do": "show", "at": ["wa"],
+      "objects": [{ "id": "wa", "icon": "simple-icons:whatsapp", "label": "2,000,000,000", "panel": "tl", "size": 8, "name": "WhatsApp",
+                    "explain": ["Two billion. A two, then nine zeros. Three commas." ] }],
+      "text": "WhatsApp. Two billion people." },
+
+    { "do": "show", "at": ["tt"],
+      "objects": [{ "id": "tt", "icon": "simple-icons:tiktok", "label": "1,600,000,000", "panel": "tr", "size": 8, "name": "TikTok",
+                    "explain": ["One billion, six hundred million. Still ten digits."] }],
+      "text": "TikTok. One billion, six hundred million." },
+
+    { "do": "show", "at": ["sc"],
+      "objects": [{ "id": "sc", "icon": "simple-icons:snapchat", "label": "850,000,000", "panel": "bl", "size": 8, "name": "Snapchat",
+                    "explain": ["Eight hundred and fifty million. Nine digits, so no billion group."] }],
+      "text": "Snapchat. Eight hundred and fifty million." },
+
+    { "do": "show", "at": ["tg"],
+      "objects": [{ "id": "tg", "icon": "simple-icons:telegram", "label": "950,000,000", "panel": "br", "size": 8, "name": "Telegram",
+                    "explain": [{ "say": "Nine hundred and fifty million. Split it at the commas.", "write": "950 | 000 | 000" },
+                                "Two commas, so millions. Nine hundred and fifty of them."] }],
+      "text": "And Telegram. Nine hundred and fifty million." },
+
+    { "do": "trace", "at": ["tl", "tr", "bl", "br"], "cues": ["WhatsApp", "TikTok", "Snapchat", "Telegram"],
+      "text": "WhatsApp. TikTok. Snapchat. Telegram. Tap any of them and it will come forward." },
+
+    { "do": "focus", "at": ["sc"], "text": "Let me bring Snapchat forward. The others step back." },
+    { "do": "show", "objects": [{ "id": "w1", "label": "850 | 000 | 000", "size": 4 }], "at": ["w1"],
+      "text": "Split it at the commas. Eight hundred and fifty, then two groups of zeros." },
+    { "do": "show", "objects": [{ "id": "w2", "label": "850 million", "size": 3.6, "row": "answer" }], "at": ["w2"],
+      "text": "Two commas means millions. Eight hundred and fifty million." },
+    { "do": "hide", "ids": ["w1", "w2"] },
+    { "do": "transition", "kind": "sweep", "text": "Back to all four." },
+    { "do": "unfocus" },
+
+    { "do": "ask", "text": "Your turn.",
+      "ask": { "type": "select", "prompt": "Tap the app with the fewest users.", "expect": "sc",
+               "hint": "Look for the smallest first group before the commas." } },
+    { "do": "ask", "text": "And in figures.",
+      "ask": { "type": "type", "prompt": "How many zeros are in one million?", "expect": ["6", "six"],
+               "hint": "Two commas, three zeros after each." } },
+    { "do": "praise", "text": "That is reading millions. Count the commas first." }
+  ]
+}

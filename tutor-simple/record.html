@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tutor · Record your own voice</title>
+  <link rel="stylesheet" href="organic.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .rec { max-width: 1000px; margin: 0 auto; padding: 24px 24px 80px; display: flex; flex-direction: column; gap: 18px; }
+    .rec h1 { font-size: 36px; margin: 0; }
+    .rec .setup { display: flex; flex-direction: row; flex-wrap: wrap; gap: 14px; align-items: flex-end; justify-content: flex-start; padding: 18px 20px; }
+    .rec .setup .field { min-width: 190px; flex: 0 1 auto; }
+    .rec .setup .btn { flex: 0 0 auto; }
+    .bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+           padding: 12px 18px; background: var(--color-accent-2-100); border: 1px solid var(--color-accent-2);
+           border-radius: var(--radius-lg); }
+    .bar .count { font-family: var(--font-heading); font-size: 20px; }
+    .meter { flex: 1 1 120px; height: 10px; border-radius: 999px; background: var(--color-neutral-200); overflow: hidden; min-width: 100px; }
+    .meter span { display: block; height: 100%; width: 0; background: var(--color-accent-2-700); transition: width .25s ease; }
+    .line { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center;
+            padding: 11px 14px; border-radius: var(--radius-lg); background: var(--color-neutral-100); }
+    .line.done { background: var(--color-accent-2-100); }
+    .line.active { outline: 2px solid var(--color-accent); }
+    .line .n { font-family: var(--font-heading); color: var(--color-neutral-600); font-size: 14px; }
+    .line .words { font-size: 15px; line-height: 1.4; }
+    .line .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+    .line .btn { padding: 6px 12px; font-size: 13px; }
+    .recording { animation: pulse 1s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .55 } }
+    .hintbox { padding: 16px 18px; font-size: 15px; line-height: 1.6; }
+    .hintbox ol { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
+  </style>
+</head>
+<body>
+
+  <header class="nav topbar">
+    <span class="nav-brand">Tutor</span>
+    <nav>
+      <a class="btn btn-ghost tab" href="index.html">Lessons</a>
+      <a class="btn btn-ghost tab" href="index.html#board">Board</a>
+      <a class="btn btn-ghost tab" href="notes.html">Demo notes</a>
+      <a class="btn btn-ghost tab active" href="record.html">Record</a>
+    </nav>
+  </header>
+
+  <main class="rec">
+    <div>
+      <span class="tag tag-accent-2">Your own voice</span>
+      <h1>Teach in your voice</h1>
+      <p class="lede">The tutor plays a file for every line it says. Record those lines yourself and it teaches in your voice instead — no model, no training, nothing sent anywhere. Lines you have not recorded fall back to the Nigerian voice, so you can do a few at a time.</p>
+    </div>
+
+    <div class="card hintbox">
+      <strong>Before you start</strong>
+      <ol>
+        <li>Somewhere quiet. A headset microphone beats a laptop one.</li>
+        <li>Read the line as if a child is in front of you. A short pause before and after is fine — silence is trimmed automatically.</li>
+        <li>Press <strong>Record the lot</strong> to go line by line without touching the mouse: it records, saves, and moves on.</li>
+        <li>Then pick your name in the <strong>Voice</strong> picker on the Board.</li>
+      </ol>
+      <p style="margin:12px 0 0; font-size:14px; color:var(--color-neutral-700)">
+        This is your recording played back, not a model imitating you, so it always sounds exactly like you
+        and needs nothing but this laptop. A cloned voice — one that could read a line you never recorded —
+        is a separate job: it needs a speech model, and these same recordings are what it would learn from.
+        Twenty or thirty lines is already enough reference audio for that later.
+      </p>
+    </div>
+
+    <div class="card setup">
+      <div class="field">
+        <label for="voice-name">Call this voice</label>
+        <input id="voice-name" class="input" value="my-voice" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="which">Lines to record</label>
+        <select id="which" class="input"></select>
+      </div>
+      <button id="btn-load" class="btn btn-primary">Load the lines</button>
+      <span id="setup-note" class="voice-note"></span>
+    </div>
+
+    <div class="bar">
+      <span class="count" id="count">—</span>
+      <div class="meter"><span id="meter-fill"></span></div>
+      <button id="btn-all" class="btn btn-primary">Record the lot</button>
+      <button id="btn-stop" class="btn btn-secondary hidden">Stop</button>
+      <span id="status" class="muted" style="margin:0"></span>
+    </div>
+
+    <div id="lines" class="chips" style="flex-direction: column; align-items: stretch; gap: 8px;"></div>
+  </main>
+
+  <!-- The two layers, the line list, then the recorder. -->
+  <script src="engine.js"></script>
+  <script src="lessons.js"></script>
+  <script src="generate.js"></script>
+  <script src="voice-lines.js"></script>
+  <script src="record.js"></script>
+</body>
+</html>

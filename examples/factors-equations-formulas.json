@@ -1,0 +1,1256 @@
+{
+  "id": "factors-equations-formulas",
+  "title": "Factors, equations and formulas",
+  "subject": "Mathematics",
+  "objective": "Find the factors of a number by sharing, solve a simple equation by undoing, and use a formula by putting numbers in.",
+  "level": 2,
+  "concept": "factors-equations-formulas",
+  "curricula": [
+    "NERDC",
+    "KS3",
+    "CCSS"
+  ],
+  "board": {
+    "kind": "blank",
+    "heading": "",
+    "sub": ""
+  },
+  "faq": [
+    {
+      "k": [
+        "factor"
+      ],
+      "a": "A factor of a number shares it out with nothing left over. Two is a factor of twelve, because twelve oranges between two people is six each and none left. Five is not."
+    },
+    {
+      "k": [
+        "prime"
+      ],
+      "a": "A prime number has only two factors, one and itself. Seven is prime: only one person or seven people can share seven with nothing left over."
+    },
+    {
+      "k": [
+        "equation"
+      ],
+      "a": "An equation is a sentence with an equals sign. The equals sign says the two sides are the same size, like a balance."
+    },
+    {
+      "k": [
+        "x",
+        "letter",
+        "box",
+        "bag"
+      ],
+      "a": "x is not a letter from the alphabet. It is a closed bag with a number hidden inside. Solving the equation means opening the bag."
+    },
+    {
+      "k": [
+        "formula",
+        "formulas",
+        "formulae"
+      ],
+      "a": "A formula is a rule written with letters, so that it works every time, not just once. Area equals length times width works for every room in the world."
+    },
+    {
+      "k": [
+        "area"
+      ],
+      "a": "Area is how many tiles it takes to cover a floor. Length times width."
+    },
+    {
+      "k": [
+        "perimeter"
+      ],
+      "a": "Perimeter is the distance all the way round the edge. Walk round the room and add up every side."
+    }
+  ],
+  "steps": [
+    {
+      "do": "board",
+      "heading": "Three words",
+      "text": "Hello. Today you learn three words that you will hear in every mathematics class for the rest of your life. Factors. Equations. Formulas."
+    },
+    {
+      "do": "say",
+      "text": "Do not worry about the words yet. We take them one at a time, slowly, and by the end you will use them the way you use the word football."
+    },
+    {
+      "do": "board",
+      "heading": "Factors",
+      "sub": "Word one",
+      "text": "Word one. Factors. Forget the word for a moment. Let us share some oranges."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "all",
+          "icon": "orange",
+          "count": 12,
+          "label": "12 oranges",
+          "x": 50,
+          "y": 30,
+          "size": 5
+        }
+      ],
+      "at": [
+        "all"
+      ],
+      "text": "Here are twelve oranges. Count them with me. One, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve."
+    },
+    {
+      "do": "say",
+      "text": "You and one friend. Two people. Can you share twelve oranges so that both of you get exactly the same, and no orange is left over?"
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "p1",
+          "icon": "orange",
+          "count": 6,
+          "label": "you: 6",
+          "x": 30,
+          "y": 60,
+          "size": 5
+        },
+        {
+          "id": "p2",
+          "icon": "orange",
+          "count": 6,
+          "label": "your friend: 6",
+          "x": 70,
+          "y": 60,
+          "size": 5
+        }
+      ],
+      "at": [
+        "p1",
+        "p2"
+      ],
+      "cues": [
+        "you",
+        "friend"
+      ],
+      "text": "Yes. Six for you, and six for your friend."
+    },
+    {
+      "do": "compare",
+      "at": [
+        "p1",
+        "p2"
+      ],
+      "cues": [
+        "Six",
+        "six"
+      ],
+      "text": "Six on this side. Six on that side. Nothing left over. Nobody is cheated."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "f2",
+          "label": "2",
+          "x": 26,
+          "y": 86,
+          "shape": "circle"
+        }
+      ],
+      "at": [
+        "f2"
+      ],
+      "text": "So we say: two is a factor of twelve. A factor shares the number out with nothing left over. I will write the two down here."
+    },
+    {
+      "do": "say",
+      "text": "Now three people. You and two friends."
+    },
+    {
+      "do": "hide",
+      "ids": [
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "q1",
+          "icon": "orange",
+          "count": 4,
+          "label": "4",
+          "x": 22,
+          "y": 60,
+          "size": 5
+        },
+        {
+          "id": "q2",
+          "icon": "orange",
+          "count": 4,
+          "label": "4",
+          "x": 50,
+          "y": 60,
+          "size": 5
+        },
+        {
+          "id": "q3",
+          "icon": "orange",
+          "count": 4,
+          "label": "4",
+          "x": 78,
+          "y": 60,
+          "size": 5
+        }
+      ],
+      "at": [
+        "q1",
+        "q2",
+        "q3"
+      ],
+      "cues": [
+        "Four",
+        "four",
+        "four"
+      ],
+      "text": "Four each. Four, four, four. Twelve altogether, and nothing left over."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "f3",
+          "label": "3",
+          "x": 42,
+          "y": 86,
+          "shape": "circle"
+        }
+      ],
+      "at": [
+        "f3"
+      ],
+      "text": "So three is a factor of twelve too. I write it next to the two."
+    },
+    {
+      "do": "say",
+      "text": "Now five people. Careful. Watch what happens."
+    },
+    {
+      "do": "hide",
+      "ids": [
+        "q1",
+        "q2",
+        "q3"
+      ]
+    },
+    {
+      "do": "show",
+      "at": [
+        "r1",
+        "r2",
+        "r3",
+        "r4",
+        "r5"
+      ],
+      "cues": [
+        "Two",
+        "two",
+        "two",
+        "two",
+        "two"
+      ],
+      "objects": [
+        {
+          "id": "r1",
+          "icon": "orange",
+          "count": 2,
+          "label": "2",
+          "x": 14,
+          "y": 50,
+          "size": 5
+        },
+        {
+          "id": "r2",
+          "icon": "orange",
+          "count": 2,
+          "label": "2",
+          "x": 32,
+          "y": 50,
+          "size": 5
+        },
+        {
+          "id": "r3",
+          "icon": "orange",
+          "count": 2,
+          "label": "2",
+          "x": 50,
+          "y": 50,
+          "size": 5
+        },
+        {
+          "id": "r4",
+          "icon": "orange",
+          "count": 2,
+          "label": "2",
+          "x": 68,
+          "y": 50,
+          "size": 5
+        },
+        {
+          "id": "r5",
+          "icon": "orange",
+          "count": 2,
+          "label": "2",
+          "x": 86,
+          "y": 50,
+          "size": 5
+        }
+      ],
+      "text": "Two each. Two, two, two, two, two. That is ten oranges given out."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "left",
+          "icon": "orange",
+          "count": 2,
+          "label": "left over",
+          "x": 50,
+          "y": 66,
+          "size": 5
+        }
+      ],
+      "at": [
+        "left"
+      ],
+      "text": "But we had twelve. Two oranges are left over, and nobody can have them without somebody getting more than the others."
+    },
+    {
+      "do": "mark",
+      "id": "xleft",
+      "kind": "cross",
+      "at": [
+        "left"
+      ],
+      "text": "Left over. So five is not a factor of twelve. Five does not go in. I do not write it down."
+    },
+    {
+      "do": "say",
+      "text": "That is the whole test. Share the number out. Nothing left over: it is a factor. Something left over: it is not."
+    },
+    {
+      "do": "ask",
+      "text": "Your turn.",
+      "ask": {
+        "type": "type",
+        "prompt": "Share 12 oranges between 4 friends. How many does each friend get?",
+        "expect": [
+          "3",
+          "three"
+        ],
+        "hint": "Give them out one at a time, round and round, until the oranges finish."
+      }
+    },
+    {
+      "do": "hide",
+      "ids": [
+        "r1",
+        "r2",
+        "r3",
+        "r4",
+        "r5",
+        "left"
+      ],
+      "unmark": [
+        "xleft"
+      ]
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "f4",
+          "label": "4",
+          "x": 58,
+          "y": 86,
+          "shape": "circle"
+        }
+      ],
+      "at": [
+        "f4"
+      ],
+      "text": "Three each, nothing left over. So four is a factor of twelve. Down it goes."
+    },
+    {
+      "do": "say",
+      "text": "Six people? Twelve shared by six is two each. Nothing left over."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "f6",
+          "label": "6",
+          "x": 74,
+          "y": 86,
+          "shape": "circle"
+        }
+      ],
+      "at": [
+        "f6"
+      ],
+      "text": "Six is a factor."
+    },
+    {
+      "do": "say",
+      "text": "Twelve people? One orange each. Nothing left over."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "f12",
+          "label": "12",
+          "x": 90,
+          "y": 86,
+          "shape": "circle"
+        }
+      ],
+      "at": [
+        "f12"
+      ],
+      "text": "Twelve is a factor of itself. Every number is."
+    },
+    {
+      "do": "say",
+      "text": "And one person? That person takes all twelve oranges. Nothing left over."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "f1",
+          "label": "1",
+          "x": 10,
+          "y": 86,
+          "shape": "circle"
+        }
+      ],
+      "at": [
+        "f1"
+      ],
+      "text": "One is a factor of twelve. One is a factor of every number there is."
+    },
+    {
+      "do": "hide",
+      "ids": [
+        "all"
+      ]
+    },
+    {
+      "do": "trace",
+      "at": [
+        "f1",
+        "f2",
+        "f3",
+        "f4",
+        "f6",
+        "f12"
+      ],
+      "cues": [
+        "One",
+        "Two",
+        "Three",
+        "Four",
+        "Six",
+        "Twelve"
+      ],
+      "text": "One. Two. Three. Four. Six. Twelve. These six numbers are the factors of twelve."
+    },
+    {
+      "do": "board",
+      "sub": "A factor shares the number out with nothing left over",
+      "text": "Say it with me. A factor shares the number out with nothing left over."
+    },
+    {
+      "do": "ask",
+      "text": "Find one for me.",
+      "ask": {
+        "type": "select",
+        "prompt": "Tap the biggest factor of 12.",
+        "expect": "f12",
+        "hint": "A number is always its own biggest factor."
+      }
+    },
+    {
+      "do": "ask",
+      "text": "Now think.",
+      "ask": {
+        "type": "type",
+        "prompt": "Is 7 a factor of 12? Answer yes or no.",
+        "expect": [
+          "no",
+          "no.",
+          "not"
+        ],
+        "hint": "Share twelve oranges among seven people. One each is seven. Are any left over?"
+      }
+    },
+    {
+      "do": "ask",
+      "text": "A new number, on your own.",
+      "ask": {
+        "type": "type",
+        "prompt": "What are the factors of 10? Type them with commas.",
+        "expect": [
+          "1,2,5,10",
+          "10,5,2,1",
+          "1 2 5 10"
+        ],
+        "hint": "Try sharing ten between 1, 2, 3, 4, 5 people and so on. Keep the ones with nothing left over."
+      }
+    },
+    {
+      "do": "praise",
+      "text": "Factors. You can find them for any number now. Share it out and watch for leftovers."
+    },
+    {
+      "do": "clear",
+      "heading": "Equations",
+      "sub": "Word two",
+      "text": "Let me clean the board. Word two."
+    },
+    {
+      "do": "say",
+      "text": "Equation. An equation is a sentence with an equals sign in it."
+    },
+    {
+      "do": "say",
+      "text": "The equals sign is the important part. It says: this side and that side are the same size. Like a balance at the market. Same weight on both pans."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "e0",
+          "label": "x + 3 = 7",
+          "x": 50,
+          "y": 30,
+          "size": 6
+        }
+      ],
+      "at": [
+        "e0"
+      ],
+      "text": "Here is one. x plus three equals seven."
+    },
+    {
+      "do": "say",
+      "text": "What is that x? It is not a letter from the alphabet. It is a bag. Somebody put some oranges in the bag and closed it. Our job is to find out how many."
+    },
+    {
+      "do": "show",
+      "at": [
+        "bag",
+        "plus",
+        "three",
+        "eq",
+        "seven"
+      ],
+      "cues": [
+        "bag",
+        "plus",
+        "three",
+        "makes",
+        "seven"
+      ],
+      "objects": [
+        {
+          "id": "bag",
+          "icon": "tabler:shopping-bag",
+          "label": "x",
+          "x": 13,
+          "y": 60,
+          "size": 9,
+          "labelSize": 3.4
+        },
+        {
+          "id": "plus",
+          "label": "+",
+          "x": 26,
+          "y": 58,
+          "size": 5
+        },
+        {
+          "id": "three",
+          "icon": "orange",
+          "count": 3,
+          "label": "3",
+          "x": 39,
+          "y": 60,
+          "size": 4
+        },
+        {
+          "id": "eq",
+          "label": "=",
+          "x": 53,
+          "y": 58,
+          "size": 5
+        },
+        {
+          "id": "seven",
+          "icon": "orange",
+          "count": 7,
+          "label": "7",
+          "x": 76,
+          "y": 60,
+          "size": 4
+        }
+      ],
+      "text": "A closed bag, plus three oranges, makes seven oranges."
+    },
+    {
+      "do": "point",
+      "at": [
+        "bag"
+      ],
+      "text": "How many oranges are inside the bag? Do not guess. Think."
+    },
+    {
+      "do": "point",
+      "at": [
+        "seven"
+      ],
+      "text": "Seven altogether on this side."
+    },
+    {
+      "do": "point",
+      "at": [
+        "three"
+      ],
+      "text": "Three of them are outside the bag, where we can see them."
+    },
+    {
+      "do": "say",
+      "text": "So the rest must be inside the bag. Seven take away three."
+    },
+    {
+      "do": "rough",
+      "title": "open the bag",
+      "lines": [
+        "7 − 3 = 4"
+      ],
+      "text": "On the pad. Seven take away three is four."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "bag",
+          "label": "x = 4"
+        }
+      ],
+      "at": [
+        "bag"
+      ],
+      "text": "Four oranges in the bag. x is four."
+    },
+    {
+      "do": "say",
+      "text": "Check it. Four in the bag, plus three outside, is seven. Yes. The equation is happy. Both sides the same."
+    },
+    {
+      "do": "rough",
+      "close": true
+    },
+    {
+      "do": "hide",
+      "ids": [
+        "bag",
+        "plus",
+        "three",
+        "eq",
+        "seven"
+      ]
+    },
+    {
+      "do": "say",
+      "text": "Now the rule you just used, so you can use it every time. Whatever you do to one side of the equals sign, you must do to the other side too. Or the balance tips."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "e1",
+          "label": "x + 3 − 3 = 7 − 3",
+          "x": 50,
+          "y": 54,
+          "size": 4.4
+        }
+      ],
+      "at": [
+        "e1"
+      ],
+      "text": "We took three away from the left side. So we take three away from the right side as well."
+    },
+    {
+      "do": "point",
+      "at": [
+        "e1"
+      ],
+      "text": "On the left, plus three and take away three cancel each other. They are gone. Only x is left."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "e2",
+          "label": "x = 4",
+          "x": 50,
+          "y": 78,
+          "size": 5
+        }
+      ],
+      "at": [
+        "e2"
+      ],
+      "text": "On the right, seven take away three is four. x equals four. Same answer as the bag."
+    },
+    {
+      "do": "mark",
+      "id": "ring-e2",
+      "kind": "ring",
+      "at": [
+        "e2"
+      ],
+      "text": "Ring the answer. Always."
+    },
+    {
+      "do": "ask",
+      "text": "You try one.",
+      "ask": {
+        "type": "type",
+        "prompt": "Solve x + 5 = 9. What is x?",
+        "expect": [
+          "4",
+          "x=4",
+          "x = 4",
+          "four"
+        ],
+        "hint": "Nine oranges, five outside the bag. How many inside?"
+      }
+    },
+    {
+      "do": "clear",
+      "heading": "Equations",
+      "sub": "Word two",
+      "keepHeading": true
+    },
+    {
+      "do": "say",
+      "text": "One more kind. Sometimes the x is multiplied. Two x means two times x. Two bags, with the same number in each."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "m0",
+          "label": "2x = 10",
+          "x": 50,
+          "y": 30,
+          "size": 6
+        }
+      ],
+      "at": [
+        "m0"
+      ],
+      "text": "Two x equals ten. Two bags, and ten oranges altogether."
+    },
+    {
+      "do": "show",
+      "at": [
+        "b1",
+        "b2"
+      ],
+      "cues": [
+        "one",
+        "two"
+      ],
+      "objects": [
+        {
+          "id": "b1",
+          "icon": "tabler:shopping-bag",
+          "label": "x",
+          "x": 36,
+          "y": 60,
+          "size": 9,
+          "labelSize": 3.4
+        },
+        {
+          "id": "b2",
+          "icon": "tabler:shopping-bag",
+          "label": "x",
+          "x": 64,
+          "y": 60,
+          "size": 9,
+          "labelSize": 3.4
+        }
+      ],
+      "text": "Bag one, bag two. Ten oranges shared between the two bags."
+    },
+    {
+      "do": "say",
+      "text": "Ten shared by two. That is sharing again, like the oranges. Five each."
+    },
+    {
+      "do": "rough",
+      "title": "share the ten",
+      "lines": [
+        "10 ÷ 2 = 5"
+      ],
+      "text": "On the pad. Ten shared by two is five."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "b1",
+          "label": "5"
+        },
+        {
+          "id": "b2",
+          "label": "5"
+        }
+      ],
+      "at": [
+        "b1",
+        "b2"
+      ],
+      "cues": [
+        "Five",
+        "five"
+      ],
+      "text": "Five in this bag, five in that bag."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "m1",
+          "label": "x = 5",
+          "x": 50,
+          "y": 84,
+          "size": 5
+        }
+      ],
+      "at": [
+        "m1"
+      ],
+      "text": "So x is five."
+    },
+    {
+      "do": "say",
+      "text": "Check it. Two times five is ten. Happy."
+    },
+    {
+      "do": "rough",
+      "close": true
+    },
+    {
+      "do": "ask",
+      "text": "Your turn.",
+      "ask": {
+        "type": "type",
+        "prompt": "Solve 3x = 12. What is x?",
+        "expect": [
+          "4",
+          "x=4",
+          "x = 4",
+          "four"
+        ],
+        "hint": "Three bags share twelve oranges. How many in each bag?"
+      }
+    },
+    {
+      "do": "say",
+      "text": "Did you notice? Three bags sharing twelve. That is factors. Three is a factor of twelve, so it shares out with nothing left over. Factors and equations are cousins."
+    },
+    {
+      "do": "praise",
+      "text": "Equations. Open the bag. Do the same to both sides. Check the answer."
+    },
+    {
+      "do": "clear",
+      "heading": "Formulas",
+      "sub": "Word three",
+      "text": "Clean board. Word three."
+    },
+    {
+      "do": "say",
+      "text": "Formula. A formula is a rule written with letters, and it works every time. Not for one room. For every room in the world."
+    },
+    {
+      "do": "say",
+      "text": "Think of the floor of your room. Your mother wants to put tiles on it. How many tiles? To know that, you need the area."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "floor",
+          "icon": "tabler:rectangle",
+          "x": 40,
+          "y": 52,
+          "size": 30
+        }
+      ],
+      "at": [
+        "floor"
+      ],
+      "text": "Here is the floor of the room, looking down from above."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "len",
+          "label": "8 tiles",
+          "x": 40,
+          "y": 27,
+          "size": 3.2,
+          "sub": "long"
+        }
+      ],
+      "at": [
+        "len"
+      ],
+      "text": "It is eight tiles long. Along the top."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "wid",
+          "label": "5 tiles",
+          "x": 66,
+          "y": 52,
+          "size": 3.2,
+          "sub": "wide"
+        }
+      ],
+      "at": [
+        "wid"
+      ],
+      "text": "And five tiles wide. Down the side."
+    },
+    {
+      "do": "say",
+      "text": "Area means how many tiles cover the whole floor. Eight tiles in a row, and five rows of them."
+    },
+    {
+      "do": "rough",
+      "title": "count the tiles",
+      "lines": [
+        "8 + 8 + 8 + 8 + 8 = 40",
+        "8 × 5 = 40"
+      ],
+      "text": "Five rows of eight. Eight, plus eight, plus eight, plus eight, plus eight. Forty. Or the short way: eight times five. Forty."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "area",
+          "label": "40 tiles",
+          "x": 40,
+          "y": 52,
+          "size": 5,
+          "sub": "area"
+        }
+      ],
+      "at": [
+        "area"
+      ],
+      "text": "Forty tiles. That is the area of the floor."
+    },
+    {
+      "do": "rough",
+      "close": true
+    },
+    {
+      "do": "say",
+      "text": "Now, the next room will not be eight by five. So instead of eight and five, we write letters. That is all a formula is."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "fw",
+          "label": "Area = length × width",
+          "x": 50,
+          "y": 82,
+          "size": 3.6
+        }
+      ],
+      "at": [
+        "fw"
+      ],
+      "text": "Area equals length times width. That is the formula. It works for every room."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "fw",
+          "label": "A = l × w"
+        }
+      ],
+      "at": [
+        "fw"
+      ],
+      "text": "In short: A for area, l for length, w for width. A equals l times w."
+    },
+    {
+      "do": "say",
+      "text": "Using a formula is three moves. Write it down. Put your numbers in. Work it out."
+    },
+    {
+      "do": "rough",
+      "title": "three moves",
+      "lines": [
+        "A = l × w",
+        "A = 8 × 5",
+        "A = 40"
+      ],
+      "text": "Write it. A equals l times w. Put the numbers in. A equals eight times five. Work it out. Forty."
+    },
+    {
+      "do": "rough",
+      "close": true
+    },
+    {
+      "do": "ask",
+      "text": "A new room.",
+      "ask": {
+        "type": "type",
+        "prompt": "A room is 6 tiles long and 4 tiles wide. What is its area?",
+        "expect": [
+          "24",
+          "twenty four",
+          "twenty-four",
+          "24 tiles"
+        ],
+        "hint": "Write the formula, put in six and four, then multiply."
+      }
+    },
+    {
+      "do": "say",
+      "text": "One more formula. Perimeter. That is the distance all the way round the edge. Imagine walking round the room, touching the wall."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "len",
+        "wid",
+        "len",
+        "wid"
+      ],
+      "cues": [
+        "Eight",
+        "five",
+        "eight",
+        "five"
+      ],
+      "text": "Eight along the top, five down the side, eight along the bottom, five back up."
+    },
+    {
+      "do": "rough",
+      "title": "walk round",
+      "lines": [
+        "8 + 5 + 8 + 5 = 26"
+      ],
+      "text": "Eight plus five plus eight plus five. Twenty-six."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "fp",
+          "label": "P = 2 × (l + w)",
+          "x": 50,
+          "y": 92,
+          "size": 3.2
+        }
+      ],
+      "at": [
+        "fp"
+      ],
+      "text": "The formula for that: two times, length plus width. Because every side comes twice."
+    },
+    {
+      "do": "rough",
+      "title": "three moves",
+      "lines": [
+        "P = 2 × (l + w)",
+        "P = 2 × (8 + 5)",
+        "P = 2 × 13 = 26"
+      ],
+      "text": "Write it. Put the numbers in: two times, eight plus five. Work it out: two times thirteen. Twenty-six. Same answer as walking."
+    },
+    {
+      "do": "rough",
+      "close": true
+    },
+    {
+      "do": "ask",
+      "text": "Your turn.",
+      "ask": {
+        "type": "type",
+        "prompt": "What is the perimeter of the 6 by 4 room?",
+        "expect": [
+          "20",
+          "twenty"
+        ],
+        "hint": "Two times, six plus four."
+      }
+    },
+    {
+      "do": "praise",
+      "text": "Formulas. Write it, put the numbers in, work it out. Three moves, every time."
+    },
+    {
+      "do": "clear",
+      "heading": "Three words",
+      "sub": "",
+      "layout": "3x1",
+      "panels": [
+        "Factors",
+        "Equations",
+        "Formulas"
+      ],
+      "text": "Now the three words together, side by side. Tap any of them and I will go through it again."
+    },
+    {
+      "do": "show",
+      "at": [
+        "s12"
+      ],
+      "objects": [
+        {
+          "id": "s12",
+          "label": "12",
+          "panel": "l",
+          "size": 6,
+          "sub": "1, 2, 3, 4, 6, 12",
+          "name": "the factors of twelve",
+          "explain": [
+            "Share twelve oranges out. Two people get six each. Three people get four each. Nothing left over.",
+            {
+              "say": "Five people get two each, and two oranges are left over. So five is not a factor.",
+              "write": "12 ÷ 5 = 2, and 2 left over"
+            },
+            {
+              "say": "The ones with nothing left over are the factors. One, two, three, four, six, twelve.",
+              "write": "1, 2, 3, 4, 6, 12"
+            }
+          ]
+        }
+      ],
+      "text": "Factors. Share the number out with nothing left over. Twelve has six of them."
+    },
+    {
+      "do": "show",
+      "at": [
+        "seq"
+      ],
+      "objects": [
+        {
+          "id": "seq",
+          "label": "x + 3 = 7",
+          "panel": "m",
+          "size": 4.4,
+          "sub": "x = 4",
+          "name": "the equation",
+          "explain": [
+            "x is a closed bag. Seven oranges altogether, and three of them are outside the bag.",
+            {
+              "say": "Take three away from both sides. Seven take away three is four.",
+              "write": "7 − 3 = 4"
+            },
+            {
+              "say": "So there are four in the bag. x equals four. Check it: four plus three is seven.",
+              "write": "x = 4"
+            }
+          ]
+        }
+      ],
+      "text": "Equations. Open the bag. Do the same to both sides."
+    },
+    {
+      "do": "show",
+      "at": [
+        "sfa"
+      ],
+      "objects": [
+        {
+          "id": "sfa",
+          "label": "A = l × w",
+          "panel": "r",
+          "size": 4.2,
+          "sub": "8 × 5 = 40",
+          "name": "the area formula",
+          "explain": [
+            "Area is how many tiles cover the floor. Length times width.",
+            {
+              "say": "Write the formula. Put the numbers in. Eight times five.",
+              "write": "A = 8 × 5"
+            },
+            {
+              "say": "Work it out. Forty tiles. And it works for every room, because the letters stand for any numbers.",
+              "write": "A = 40"
+            }
+          ]
+        }
+      ],
+      "text": "Formulas. Write it, put the numbers in, work it out."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "l",
+        "m",
+        "r"
+      ],
+      "cues": [
+        "Factors",
+        "Equations",
+        "Formulas"
+      ],
+      "text": "Factors share a number out. Equations open the bag. Formulas are rules that work every time."
+    },
+    {
+      "do": "say",
+      "text": "And they hold hands. Sharing ten between two bags is factors inside an equation. And a formula is just an equation with names in it instead of one bag."
+    },
+    {
+      "do": "ask",
+      "text": "Last one.",
+      "ask": {
+        "type": "select",
+        "prompt": "Tap the equation.",
+        "expect": "seq",
+        "hint": "The one with the bag, x, in it."
+      }
+    },
+    {
+      "do": "praise",
+      "text": "Factors, equations, formulas. Three words, and you own all three now."
+    },
+    {
+      "do": "say",
+      "text": "Tap the twelve, the equation, or the formula whenever you like, and I will go through it again from the start."
+    }
+  ]
+}

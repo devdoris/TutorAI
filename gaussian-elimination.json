@@ -1,0 +1,1980 @@
+{
+  "id": "gaussian-elimination",
+  "title": "Two receipts, one price list",
+  "subject": "Mathematics",
+  "objective": "Solve a system of linear equations by row-reducing its augmented matrix and substituting back.",
+  "level": 2,
+  "concept": "gaussian-elimination",
+  "curricula": [
+    "NERDC",
+    "KS3",
+    "CCSS"
+  ],
+  "board": {
+    "kind": "blank",
+    "heading": "",
+    "sub": ""
+  },
+  "steps": [
+    {
+      "do": "board",
+      "heading": "",
+      "sub": "",
+      "text": "Hello. Today you are going to work out the price of something nobody ever told you. By the end you will know a method called Gaussian elimination, and you will be able to do it yourself, not just watch me do it."
+    },
+    {
+      "do": "say",
+      "text": "Forget mathematics for one minute. Let us go to the market."
+    },
+    {
+      "do": "board",
+      "sub": "Two people come back from the market",
+      "text": "Two friends go shopping. Each comes back with a receipt, and neither can remember the prices."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "ada",
+          "label": "Ada:  2 oranges  +  3 bread  =  1300",
+          "x": 50,
+          "y": 34,
+          "size": 3.4
+        }
+      ],
+      "at": [
+        "ada"
+      ],
+      "text": "Ada bought two oranges and three loaves of bread. She paid one thousand three hundred naira."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "obi",
+          "label": "Obi:  1 orange  +  1 bread  =  500",
+          "x": 50,
+          "y": 50,
+          "size": 3.4
+        }
+      ],
+      "at": [
+        "obi"
+      ],
+      "text": "Obi bought one orange and one loaf. He paid five hundred naira."
+    },
+    {
+      "do": "say",
+      "text": "Here is the question. What does one orange cost, and what does one loaf cost?"
+    },
+    {
+      "do": "point",
+      "at": [
+        "obi"
+      ],
+      "text": "Obi's receipt alone cannot tell you. One orange and one bread came to five hundred, but that could be four hundred and one hundred, or two fifty and two fifty."
+    },
+    {
+      "do": "compare",
+      "at": [
+        "ada",
+        "obi"
+      ],
+      "cues": [
+        "one",
+        "other"
+      ],
+      "text": "But hold one receipt against the other, and there is only one price list in the world that fits them both."
+    },
+    {
+      "do": "say",
+      "text": "Everything we do from here is only a tidier way of holding those two receipts against each other."
+    },
+    {
+      "do": "board",
+      "sub": "The receipts, written as a grid",
+      "text": "Writing the words orange and bread over and over is slow, and the words never change. So we leave them out, and keep every number in its own column."
+    },
+    {
+      "do": "hide",
+      "ids": [
+        "ada",
+        "obi"
+      ],
+      "text": "Watch. Nothing is thrown away except the words."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "hx",
+          "label": "oranges",
+          "x": 33,
+          "y": 24,
+          "size": 2.8
+        },
+        {
+          "id": "hy",
+          "label": "bread",
+          "x": 47,
+          "y": 24,
+          "size": 2.8
+        },
+        {
+          "id": "hc",
+          "label": "paid",
+          "x": 70,
+          "y": 24,
+          "size": 2.8
+        }
+      ],
+      "at": [
+        "hx"
+      ],
+      "text": "A column for oranges, a column for bread, and a column for what was paid."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "r1",
+          "label": "Ada",
+          "x": 17,
+          "y": 38,
+          "size": 3
+        }
+      ],
+      "at": [
+        "r1"
+      ],
+      "text": "Ada's receipt along the top."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "a11",
+          "label": "2",
+          "x": 33,
+          "y": 38,
+          "size": 4.6
+        }
+      ],
+      "at": [
+        "a11"
+      ],
+      "text": "Two oranges."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "a12",
+          "label": "3",
+          "x": 47,
+          "y": 38,
+          "size": 4.6
+        }
+      ],
+      "at": [
+        "a12"
+      ],
+      "text": "Three bread."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "bar1",
+          "label": "|",
+          "x": 58,
+          "y": 38,
+          "size": 6
+        }
+      ],
+      "at": [
+        "bar1"
+      ],
+      "text": "This line is the equals sign. Shopping on the left, money on the right."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "b1",
+          "label": "1300",
+          "x": 70,
+          "y": 38,
+          "size": 4.6
+        }
+      ],
+      "at": [
+        "b1"
+      ],
+      "text": "One thousand three hundred naira."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "r2",
+          "label": "Obi",
+          "x": 17,
+          "y": 54,
+          "size": 3
+        }
+      ],
+      "at": [
+        "r2"
+      ],
+      "text": "And Obi's underneath."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "a21",
+          "label": "1",
+          "x": 33,
+          "y": 54,
+          "size": 4.6
+        },
+        {
+          "id": "a22",
+          "label": "1",
+          "x": 47,
+          "y": 54,
+          "size": 4.6
+        },
+        {
+          "id": "bar2",
+          "label": "|",
+          "x": 58,
+          "y": 54,
+          "size": 6
+        },
+        {
+          "id": "b2",
+          "label": "500",
+          "x": 70,
+          "y": 54,
+          "size": 4.6
+        }
+      ],
+      "at": [
+        "a21"
+      ],
+      "text": "One orange, one bread, five hundred naira."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "a11",
+        "a12",
+        "b1"
+      ],
+      "cues": [
+        "two",
+        "three",
+        "thirteen"
+      ],
+      "text": "So the top row reads two, three, thirteen hundred. Still Ada's receipt. Nothing lost."
+    },
+    {
+      "do": "say",
+      "text": "A grid like this is called an augmented matrix. Matrix means the grid. Augmented means the money came along too, on the other side of the line."
+    },
+    {
+      "do": "say",
+      "text": "Hold on to one sentence. Every row is a receipt."
+    },
+    {
+      "do": "board",
+      "sub": "Three things you may do to a receipt",
+      "text": "Now the rules. Three things are allowed, and every one of them makes sense at the market."
+    },
+    {
+      "do": "say",
+      "text": "One. Swap two receipts round. The prices in the market do not care which one you read first."
+    },
+    {
+      "do": "say",
+      "text": "Two. Multiply a whole receipt. If Obi had bought twice as much, he would have paid twice as much. Still a true receipt, even though nobody bought it."
+    },
+    {
+      "do": "say",
+      "text": "Three. Take one receipt away from another. Lift Obi's shopping out of Ada's bag, take his money off her money, and what is left still matches."
+    },
+    {
+      "do": "say",
+      "text": "Swap, multiply, take away. Not one of them can change what an orange costs. That is why they are safe, and why there are only three."
+    },
+    {
+      "do": "board",
+      "sub": "Watch me do the whole thing once",
+      "text": "Now watch me do the whole thing, start to finish. Do not worry about remembering it yet. I will give you the rule afterwards."
+    },
+    {
+      "do": "point",
+      "at": [
+        "a11"
+      ],
+      "text": "We always begin at the top-left corner. There is a two there. Two oranges."
+    },
+    {
+      "do": "point",
+      "at": [
+        "a21"
+      ],
+      "text": "And a one just below it. One item is easier to work with than two, so I want that one in the corner."
+    },
+    {
+      "do": "say",
+      "text": "First move. Swap the receipts."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "r1",
+          "label": "Obi",
+          "x": 17,
+          "y": 38,
+          "size": 3
+        },
+        {
+          "id": "a11",
+          "label": "1",
+          "x": 33,
+          "y": 38,
+          "size": 4.6
+        },
+        {
+          "id": "a12",
+          "label": "1",
+          "x": 47,
+          "y": 38,
+          "size": 4.6
+        },
+        {
+          "id": "b1",
+          "label": "500",
+          "x": 70,
+          "y": 38,
+          "size": 4.6
+        }
+      ],
+      "at": [
+        "a11"
+      ],
+      "text": "Obi comes up to the top."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "r2",
+          "label": "Ada",
+          "x": 17,
+          "y": 54,
+          "size": 3
+        },
+        {
+          "id": "a21",
+          "label": "2",
+          "x": 33,
+          "y": 54,
+          "size": 4.6
+        },
+        {
+          "id": "a22",
+          "label": "3",
+          "x": 47,
+          "y": 54,
+          "size": 4.6
+        },
+        {
+          "id": "b2",
+          "label": "1300",
+          "x": 70,
+          "y": 54,
+          "size": 4.6
+        }
+      ],
+      "at": [
+        "a21"
+      ],
+      "text": "And Ada goes underneath. Same receipts, same market, different order."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "a11",
+          "label": "1",
+          "x": 33,
+          "y": 38,
+          "size": 4.6,
+          "sub": "pivot"
+        }
+      ],
+      "at": [
+        "a11"
+      ],
+      "text": "The number in the corner has a name. It is the pivot."
+    },
+    {
+      "do": "mark",
+      "id": "ringpivot",
+      "kind": "ring",
+      "at": [
+        "a11"
+      ],
+      "text": "I will ring it, because this round is measured against it."
+    },
+    {
+      "do": "point",
+      "at": [
+        "a21"
+      ],
+      "text": "Now look below the pivot. Ada has two oranges there, and I want them gone."
+    },
+    {
+      "do": "say",
+      "text": "How many do I take away? I divide. How many of the pivot, which is one orange, fit into the two I want to remove? Two. So I take two of Obi's receipts away from Ada's."
+    },
+    {
+      "do": "mark",
+      "id": "arrow1",
+      "kind": "arrow",
+      "at": [
+        "r1"
+      ],
+      "to": "r2",
+      "text": "Two lots of Obi, coming out of Ada. That number came from dividing, not from guessing."
+    },
+    {
+      "do": "rough",
+      "title": "rough work:   Ada  −  2 × Obi",
+      "lines": [
+        "2 × Obi  =   2 oranges,  2 bread,  1000"
+      ],
+      "at": [
+        "rough"
+      ],
+      "text": "Let me pull a pad over and do the arithmetic on it, so the receipts stay clean. Two lots of Obi is two oranges, two bread, one thousand naira."
+    },
+    {
+      "do": "mark",
+      "id": "xo",
+      "kind": "cross",
+      "at": [
+        "a21"
+      ],
+      "text": "Oranges first. Two take away two is none at all. Watch me cross them out."
+    },
+    {
+      "do": "rough",
+      "lines": [
+        "2 × Obi  =   2 oranges,  2 bread,  1000",
+        "oranges:     2  −  2   =   0"
+      ],
+      "at": [
+        "rough"
+      ],
+      "text": "Two take away two equals zero. Down it goes on the pad."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "a21",
+          "label": "0",
+          "x": 33,
+          "y": 54,
+          "size": 4.6
+        }
+      ],
+      "unmark": [
+        "xo",
+        "arrow1",
+        "ringpivot"
+      ],
+      "at": [
+        "a21"
+      ],
+      "text": "And a zero on the board. That zero is the whole point, because whatever an orange costs, it can no longer confuse this row."
+    },
+    {
+      "do": "rough",
+      "lines": [
+        "2 × Obi  =   2 oranges,  2 bread,  1000",
+        "oranges:     2  −  2   =   0",
+        "bread:        3  −  2   =   1"
+      ],
+      "at": [
+        "rough"
+      ],
+      "text": "Bread next. Ada had three loaves, two lots of Obi has two. Three take away two leaves one."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "a22",
+          "label": "1",
+          "x": 47,
+          "y": 54,
+          "size": 4.6
+        }
+      ],
+      "at": [
+        "a22"
+      ],
+      "text": "One loaf."
+    },
+    {
+      "do": "rough",
+      "lines": [
+        "2 × Obi  =   2 oranges,  2 bread,  1000",
+        "oranges:     2  −  2   =   0",
+        "bread:        3  −  2   =   1",
+        "money:     1300  −  1000   =   300"
+      ],
+      "at": [
+        "rough"
+      ],
+      "text": "And the money. Thirteen hundred, take away one thousand, is three hundred."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "b2",
+          "label": "300",
+          "x": 70,
+          "y": 54,
+          "size": 4.6
+        }
+      ],
+      "at": [
+        "b2"
+      ],
+      "text": "Three hundred naira."
+    },
+    {
+      "do": "rough",
+      "close": true,
+      "at": [
+        "rough"
+      ],
+      "text": "That is the whole move done. Let me put the rough work away, so the receipts stand on their own again."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "a21",
+        "a22",
+        "b2"
+      ],
+      "cues": [
+        "no",
+        "one",
+        "three"
+      ],
+      "text": "Read that bottom row as a receipt. No oranges. One loaf of bread. Three hundred naira."
+    },
+    {
+      "do": "say",
+      "text": "So bread is three hundred naira. A price nobody told us, found by taking one basket out of another."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "ansy",
+          "label": "bread = 300",
+          "x": 68,
+          "y": 88,
+          "size": 3.2
+        }
+      ],
+      "at": [
+        "ansy"
+      ],
+      "text": "Down it goes, where we can see it."
+    },
+    {
+      "do": "compare",
+      "at": [
+        "a11",
+        "a21"
+      ],
+      "cues": [
+        "one",
+        "zero"
+      ],
+      "text": "And look at the shape. A one on top, a zero underneath. That step down is what people mean by a staircase."
+    },
+    {
+      "do": "board",
+      "sub": "Now walk back up",
+      "text": "The bottom row has given us everything it can. So we climb back to the row above."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "a11",
+        "a12",
+        "b1"
+      ],
+      "cues": [
+        "one",
+        "one",
+        "five"
+      ],
+      "text": "Obi's receipt. One orange, one bread, five hundred naira."
+    },
+    {
+      "do": "point",
+      "at": [
+        "ansy"
+      ],
+      "text": "And we now know the bread was three hundred."
+    },
+    {
+      "do": "say",
+      "text": "So one orange, plus three hundred, makes five hundred. Which means the orange is two hundred."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "ansx",
+          "label": "orange = 200",
+          "x": 30,
+          "y": 88,
+          "size": 3.2
+        }
+      ],
+      "at": [
+        "ansx"
+      ],
+      "text": "Orange, two hundred naira."
+    },
+    {
+      "do": "mark",
+      "id": "ulist1",
+      "kind": "underline",
+      "at": [
+        "ansx",
+        "ansy"
+      ],
+      "text": "There is the price list, out of two receipts and nothing else."
+    },
+    {
+      "do": "say",
+      "text": "And we check, against the receipt we leaned on least. Ada bought two oranges, four hundred, and three loaves, nine hundred. Four hundred and nine hundred is thirteen hundred, exactly what she paid. It holds."
+    },
+    {
+      "do": "board",
+      "sub": "Your turn",
+      "text": "That is one complete run. Before I show you the rule, two questions about what you have just watched."
+    },
+    {
+      "do": "ask",
+      "text": "The first one is on the board in front of you.",
+      "ask": {
+        "type": "select",
+        "prompt": "Tap the zero that the cancelling made.",
+        "expect": "a21",
+        "hint": "Bottom row, under the word oranges."
+      }
+    },
+    {
+      "do": "ask",
+      "text": "And one about the second move.",
+      "ask": {
+        "type": "type",
+        "prompt": "Obi paid 500 for his shopping. If he bought three times as much, what would he pay?",
+        "expect": [
+          "1500",
+          "1,500",
+          "1500 naira",
+          "one thousand five hundred"
+        ],
+        "hint": "Three times the shopping, three times the money."
+      }
+    },
+    {
+      "do": "praise",
+      "text": "Good. Now the part that matters most."
+    },
+    {
+      "do": "clear",
+      "sub": "The rule, in three beats",
+      "text": "Watching me do it is not the same as being able to do it yourself. So here is the rule, and it has only three beats."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "rule1",
+          "label": "1.   Find the pivot",
+          "x": 50,
+          "y": 30,
+          "size": 3.6
+        }
+      ],
+      "at": [
+        "rule1"
+      ],
+      "text": "Beat one. Find the pivot. It is the first number of the row you are working on, and the very first time, that means the top-left corner."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "rule2",
+          "label": "2.   Clear the column below it",
+          "x": 50,
+          "y": 46,
+          "size": 3.6
+        }
+      ],
+      "at": [
+        "rule2"
+      ],
+      "text": "Beat two. Clear the column below the pivot. Make every number under it a zero."
+    },
+    {
+      "do": "say",
+      "text": "And here is the part that is usually left out. How do you know how many rows to take away? You divide."
+    },
+    {
+      "do": "say",
+      "text": "Think back. We wanted to remove Ada's two oranges. The pivot was one orange. How many ones fit into two? Two. So we took two pivot rows away. That two was never a guess. It was a division."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "frm",
+          "label": "m   =   number to clear   ÷   pivot",
+          "x": 50,
+          "y": 88,
+          "size": 3.2
+        }
+      ],
+      "at": [
+        "frm"
+      ],
+      "text": "Here is that in symbols. The multiplier, m, is the number you want to clear, divided by the pivot. Write that one on your hand."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "rule3",
+          "label": "3.   Step down and across",
+          "x": 50,
+          "y": 62,
+          "size": 3.6
+        }
+      ],
+      "at": [
+        "rule3"
+      ],
+      "text": "Beat three. Step down one row and across one column, to the next pivot, and do the same thing again."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "rule4",
+          "label": "Stop at the staircase. Then walk back up.",
+          "x": 50,
+          "y": 80,
+          "size": 3.2
+        }
+      ],
+      "at": [
+        "rule4"
+      ],
+      "text": "You keep going until the zeros make a staircase. Then you stop, and walk back up, and each row hands you one more price."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "rule1",
+        "rule2",
+        "rule3"
+      ],
+      "cues": [
+        "Pivot",
+        "below",
+        "across"
+      ],
+      "text": "Say it with me. Pivot. Clear below. Step down and across."
+    },
+    {
+      "do": "say",
+      "text": "One warning before we go on. If the pivot is not a one, that division can leave you with fractions. Which is exactly why we swapped the receipts at the start, to bring a one to the top and keep the arithmetic kind."
+    },
+    {
+      "do": "clear",
+      "sub": "Now the same rule, with three items",
+      "text": "Now watch the very same three beats on a bigger grid. Three unknown prices need three receipts."
+    },
+    {
+      "do": "say",
+      "text": "Oranges, bread, and a tin of milk. And from here we label the rows the way a textbook does, R one, R two, R three. They are still only receipts."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "gx",
+          "label": "oranges",
+          "x": 29,
+          "y": 18,
+          "size": 2.5
+        },
+        {
+          "id": "gy",
+          "label": "bread",
+          "x": 40,
+          "y": 18,
+          "size": 2.5
+        },
+        {
+          "id": "gz",
+          "label": "milk",
+          "x": 51,
+          "y": 18,
+          "size": 2.5
+        },
+        {
+          "id": "gc",
+          "label": "paid",
+          "x": 72,
+          "y": 18,
+          "size": 2.5
+        }
+      ],
+      "at": [
+        "gx"
+      ],
+      "text": "Four columns. Oranges, bread, milk, and what was paid."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "s1",
+          "label": "R1",
+          "x": 15,
+          "y": 28,
+          "size": 3
+        },
+        {
+          "id": "c11",
+          "label": "1",
+          "x": 29,
+          "y": 28,
+          "size": 4.2
+        },
+        {
+          "id": "c12",
+          "label": "1",
+          "x": 40,
+          "y": 28,
+          "size": 4.2
+        },
+        {
+          "id": "c13",
+          "label": "1",
+          "x": 51,
+          "y": 28,
+          "size": 4.2
+        },
+        {
+          "id": "vb1",
+          "label": "|",
+          "x": 61,
+          "y": 28,
+          "size": 5.5
+        },
+        {
+          "id": "d1",
+          "label": "600",
+          "x": 72,
+          "y": 28,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "c11"
+      ],
+      "text": "One of each, six hundred naira."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "s2",
+          "label": "R2",
+          "x": 15,
+          "y": 42,
+          "size": 3
+        },
+        {
+          "id": "c21",
+          "label": "2",
+          "x": 29,
+          "y": 42,
+          "size": 4.2
+        },
+        {
+          "id": "c22",
+          "label": "3",
+          "x": 40,
+          "y": 42,
+          "size": 4.2
+        },
+        {
+          "id": "c23",
+          "label": "4",
+          "x": 51,
+          "y": 42,
+          "size": 4.2
+        },
+        {
+          "id": "vb2",
+          "label": "|",
+          "x": 61,
+          "y": 42,
+          "size": 5.5
+        },
+        {
+          "id": "d2",
+          "label": "2000",
+          "x": 72,
+          "y": 42,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "c21"
+      ],
+      "text": "Two oranges, three bread, four milk. Two thousand."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "s3",
+          "label": "R3",
+          "x": 15,
+          "y": 56,
+          "size": 3
+        },
+        {
+          "id": "c31",
+          "label": "1",
+          "x": 29,
+          "y": 56,
+          "size": 4.2
+        },
+        {
+          "id": "c32",
+          "label": "3",
+          "x": 40,
+          "y": 56,
+          "size": 4.2
+        },
+        {
+          "id": "c33",
+          "label": "6",
+          "x": 51,
+          "y": 56,
+          "size": 4.2
+        },
+        {
+          "id": "vb3",
+          "label": "|",
+          "x": 61,
+          "y": 56,
+          "size": 5.5
+        },
+        {
+          "id": "d3",
+          "label": "2500",
+          "x": 72,
+          "y": 56,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "c31"
+      ],
+      "text": "One orange, three bread, six milk. Two thousand five hundred."
+    },
+    {
+      "do": "say",
+      "text": "Beat one. Find the pivot."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "c11",
+          "label": "1",
+          "x": 29,
+          "y": 28,
+          "size": 4.2,
+          "sub": "pivot"
+        }
+      ],
+      "at": [
+        "c11"
+      ],
+      "text": "Top-left corner, and this time there is already a one sitting in it, so no swap is needed."
+    },
+    {
+      "do": "mark",
+      "id": "gring1",
+      "kind": "ring",
+      "at": [
+        "c11"
+      ],
+      "text": "There is our pivot."
+    },
+    {
+      "do": "say",
+      "text": "Beat two. Clear the column below it. Two numbers to kill this time, so we do it twice."
+    },
+    {
+      "do": "point",
+      "at": [
+        "c21"
+      ],
+      "text": "The first is a two. How many ones fit into two? Two. So, two pivot rows away."
+    },
+    {
+      "do": "rough",
+      "title": "rough work:   R2  −  2 × R1",
+      "lines": [
+        "2 × R1  =   2,  2,  2   |  1200"
+      ],
+      "at": [
+        "rough"
+      ],
+      "text": "Pad out again. Two lots of R one is two, two, two, and twelve hundred."
+    },
+    {
+      "do": "mark",
+      "id": "gx2",
+      "kind": "cross",
+      "at": [
+        "c21"
+      ],
+      "text": "Oranges. Two take away two is none."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "c21",
+          "label": "0",
+          "x": 29,
+          "y": 42,
+          "size": 4.2
+        }
+      ],
+      "unmark": [
+        "gx2"
+      ],
+      "at": [
+        "c21"
+      ],
+      "text": "Zero."
+    },
+    {
+      "do": "rough",
+      "lines": [
+        "2 × R1  =   2,  2,  2   |  1200",
+        "bread:    3  −  2   =   1",
+        "milk:      4  −  2   =   2",
+        "money:  2000  −  1200   =   800"
+      ],
+      "at": [
+        "rough"
+      ],
+      "text": "Bread, three take away two is one. Milk, four take away two is two. And two thousand take away twelve hundred is eight hundred."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "c22",
+          "label": "1",
+          "x": 40,
+          "y": 42,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "c22"
+      ],
+      "text": "One loaf."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "c23",
+          "label": "2",
+          "x": 51,
+          "y": 42,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "c23"
+      ],
+      "text": "Two milk."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "d2",
+          "label": "800",
+          "x": 72,
+          "y": 42,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "d2"
+      ],
+      "text": "Eight hundred naira."
+    },
+    {
+      "do": "point",
+      "at": [
+        "c31"
+      ],
+      "text": "Now the other one. A single orange. How many ones fit into one? One. So only one pivot row away."
+    },
+    {
+      "do": "rough",
+      "title": "rough work:   R3  −  1 × R1",
+      "lines": [
+        "1 × R1  =   1,  1,  1   |  600",
+        "bread:    3  −  1   =   2",
+        "milk:      6  −  1   =   5",
+        "money:  2500  −  600   =   1900"
+      ],
+      "at": [
+        "rough"
+      ],
+      "text": "And the same again, with one lot this time. Three take away one is two. Six take away one is five. Two thousand five hundred take away six hundred is nineteen hundred."
+    },
+    {
+      "do": "mark",
+      "id": "gx3",
+      "kind": "cross",
+      "at": [
+        "c31"
+      ],
+      "text": "Oranges, one take away one, is none."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "c31",
+          "label": "0",
+          "x": 29,
+          "y": 56,
+          "size": 4.2
+        }
+      ],
+      "unmark": [
+        "gx3",
+        "gring1"
+      ],
+      "at": [
+        "c31"
+      ],
+      "text": "Zero again."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "c32",
+          "label": "2",
+          "x": 40,
+          "y": 56,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "c32"
+      ],
+      "text": "Two loaves."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "c33",
+          "label": "5",
+          "x": 51,
+          "y": 56,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "c33"
+      ],
+      "text": "Five milk."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "d3",
+          "label": "1900",
+          "x": 72,
+          "y": 56,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "d3"
+      ],
+      "text": "Nineteen hundred naira."
+    },
+    {
+      "do": "rough",
+      "close": true,
+      "at": [
+        "rough"
+      ],
+      "text": "And away the pad goes again."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "c11",
+        "c21",
+        "c31"
+      ],
+      "cues": [
+        "one",
+        "nothing",
+        "zeros"
+      ],
+      "text": "First column done. A one at the top, and then nothing but zeros. Beat two is finished."
+    },
+    {
+      "do": "say",
+      "text": "Beat three. Step down one row, and across one column."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "c22",
+          "label": "1",
+          "x": 40,
+          "y": 42,
+          "size": 4.2,
+          "sub": "pivot"
+        }
+      ],
+      "at": [
+        "c22"
+      ],
+      "text": "And there is the next pivot. Bread is what we cancel now."
+    },
+    {
+      "do": "mark",
+      "id": "gring2",
+      "kind": "ring",
+      "at": [
+        "c22"
+      ],
+      "text": "Ring it, and begin the three beats again."
+    },
+    {
+      "do": "point",
+      "at": [
+        "c32"
+      ],
+      "text": "Below it, two loaves. How many ones fit into two? Two. So, two rows away, exactly as before."
+    },
+    {
+      "do": "rough",
+      "title": "rough work:   R3  −  2 × R2",
+      "lines": [
+        "2 × R2  =   0,  2,  4   |  1600",
+        "bread:    2  −  2   =   0",
+        "milk:      5  −  4   =   1",
+        "money:  1900  −  1600   =   300"
+      ],
+      "at": [
+        "rough"
+      ],
+      "text": "Two lots of R two is nothing, two, four, and sixteen hundred. Two take away two is nothing. Five take away four is one. And nineteen hundred take away sixteen hundred is three hundred."
+    },
+    {
+      "do": "mark",
+      "id": "gx4",
+      "kind": "cross",
+      "at": [
+        "c32"
+      ],
+      "text": "So the bread cancels here too."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "c32",
+          "label": "0",
+          "x": 40,
+          "y": 56,
+          "size": 4.2
+        }
+      ],
+      "unmark": [
+        "gx4",
+        "gring2"
+      ],
+      "at": [
+        "c32"
+      ],
+      "text": "Zero."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "c33",
+          "label": "1",
+          "x": 51,
+          "y": 56,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "c33"
+      ],
+      "text": "One tin of milk."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "d3",
+          "label": "300",
+          "x": 72,
+          "y": 56,
+          "size": 4.2
+        }
+      ],
+      "at": [
+        "d3"
+      ],
+      "text": "Three hundred naira."
+    },
+    {
+      "do": "rough",
+      "close": true,
+      "at": [
+        "rough"
+      ],
+      "text": "Working done. Let me clear the pad off the board."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "c11",
+        "c22",
+        "c33"
+      ],
+      "cues": [
+        "one",
+        "one",
+        "one"
+      ],
+      "text": "And stop. One, one, one, stepping down and across, with zeros under every step. That is the staircase."
+    },
+    {
+      "do": "say",
+      "text": "Three beats, twice round. Pivot, clear below, step down and across. That is every bit of the method you will ever need."
+    },
+    {
+      "do": "board",
+      "sub": "Your turn: walk back up",
+      "text": "And now the walking back up is yours. I have built the staircase. You climb it."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "c31",
+        "c32",
+        "c33",
+        "d3"
+      ],
+      "cues": [
+        "no",
+        "no",
+        "one",
+        "three"
+      ],
+      "text": "The bottom row says no oranges, no bread, one tin of milk, three hundred naira."
+    },
+    {
+      "do": "ask",
+      "text": "Start at the bottom, where only one item is left.",
+      "ask": {
+        "type": "type",
+        "prompt": "1 milk = 300. What does a tin of milk cost?",
+        "expect": [
+          "300",
+          "300 naira",
+          "three hundred",
+          "n300"
+        ],
+        "hint": "One tin, three hundred naira. The row says it outright."
+      }
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "gz3",
+          "label": "milk = 300",
+          "x": 75,
+          "y": 90,
+          "size": 3
+        }
+      ],
+      "at": [
+        "gz3"
+      ],
+      "text": "Milk, three hundred."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "c22",
+        "c23",
+        "d2"
+      ],
+      "cues": [
+        "one",
+        "two",
+        "eight"
+      ],
+      "text": "Up a step. The middle row says one bread, and two milk, came to eight hundred."
+    },
+    {
+      "do": "say",
+      "text": "You know the milk now. Two tins at three hundred is six hundred."
+    },
+    {
+      "do": "ask",
+      "text": "So the middle row is yours.",
+      "ask": {
+        "type": "type",
+        "prompt": "bread + 600 = 800. What does one loaf cost?",
+        "expect": [
+          "200",
+          "200 naira",
+          "two hundred",
+          "n200"
+        ],
+        "hint": "Eight hundred, take away six hundred."
+      }
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "gy2",
+          "label": "bread = 200",
+          "x": 50,
+          "y": 90,
+          "size": 3
+        }
+      ],
+      "at": [
+        "gy2"
+      ],
+      "text": "Bread, two hundred."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "c11",
+        "c12",
+        "c13",
+        "d1"
+      ],
+      "cues": [
+        "one",
+        "one",
+        "one",
+        "six"
+      ],
+      "text": "And the top row. One orange, one bread, one milk, six hundred naira."
+    },
+    {
+      "do": "say",
+      "text": "Bread two hundred and milk three hundred is five hundred between them."
+    },
+    {
+      "do": "ask",
+      "text": "Last one, and the lesson is yours.",
+      "ask": {
+        "type": "type",
+        "prompt": "orange + 500 = 600. What does one orange cost?",
+        "expect": [
+          "100",
+          "100 naira",
+          "one hundred",
+          "n100"
+        ],
+        "hint": "Six hundred, take away five hundred."
+      }
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "gx1",
+          "label": "orange = 100",
+          "x": 25,
+          "y": 90,
+          "size": 3
+        }
+      ],
+      "at": [
+        "gx1"
+      ],
+      "text": "Orange, one hundred."
+    },
+    {
+      "do": "mark",
+      "id": "ulist",
+      "kind": "underline",
+      "at": [
+        "gx1",
+        "gy2",
+        "gz3"
+      ],
+      "text": "And there is the whole price list. You walked up that staircase yourself."
+    },
+    {
+      "do": "praise",
+      "text": "Well done. Three prices, from three receipts, and you did the last half of it without me."
+    },
+    {
+      "do": "clear",
+      "sub": "How your textbook writes it",
+      "text": "You have the method. Now let me show you the same thing in the language you will meet in a textbook or an exam, so that none of it ever looks strange."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "eq1",
+          "label": "2x  +  3y   =   1300",
+          "x": 50,
+          "y": 26,
+          "size": 3.8
+        }
+      ],
+      "at": [
+        "eq1"
+      ],
+      "text": "Let x stand for the price of an orange, and y for the price of a loaf. Then Ada's receipt is this."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "eq2",
+          "label": "1x  +  1y   =   500",
+          "x": 50,
+          "y": 40,
+          "size": 3.8
+        }
+      ],
+      "at": [
+        "eq2"
+      ],
+      "text": "And Obi's is this. Two equations, two unknowns. That is all a system of equations ever was."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "mat1",
+          "label": "[  2    3  |  1300  ]",
+          "x": 50,
+          "y": 62,
+          "size": 3.8
+        }
+      ],
+      "at": [
+        "mat1"
+      ],
+      "text": "Drop the letters, keep the columns, and you have the augmented matrix."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "mat2",
+          "label": "[  1    1  |   500  ]",
+          "x": 50,
+          "y": 76,
+          "size": 3.8
+        }
+      ],
+      "at": [
+        "mat2"
+      ],
+      "text": "Which is exactly the grid we built out of two receipts."
+    },
+    {
+      "do": "compare",
+      "at": [
+        "eq1",
+        "mat1"
+      ],
+      "cues": [
+        "equations",
+        "matrix"
+      ],
+      "text": "The same two facts. Written as equations, and written as a matrix. Nothing is different but the ink."
+    },
+    {
+      "do": "clear",
+      "sub": "The three row operations",
+      "text": "And the three moves have proper names and proper symbols. These three lines are the entire method."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "op1",
+          "label": "R₁   ↔   R₂",
+          "x": 50,
+          "y": 24,
+          "size": 4,
+          "sub": "swap two rows"
+        }
+      ],
+      "at": [
+        "op1"
+      ],
+      "text": "R one, arrow both ways, R two. Swap two rows."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "op2",
+          "label": "R₂   →   k × R₂",
+          "x": 50,
+          "y": 44,
+          "size": 4,
+          "sub": "multiply a row, where k is not zero"
+        }
+      ],
+      "at": [
+        "op2"
+      ],
+      "text": "R two becomes k times R two. Multiply a whole row, by anything except nothing."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "op3",
+          "label": "R₂   →   R₂  −  m × R₁",
+          "x": 50,
+          "y": 64,
+          "size": 4,
+          "sub": "clear the column below a pivot"
+        }
+      ],
+      "at": [
+        "op3"
+      ],
+      "text": "And R two becomes R two, take away m lots of R one. That is the one that does the real work."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "frm2",
+          "label": "m   =   number to clear   ÷   pivot",
+          "x": 50,
+          "y": 86,
+          "size": 3.4
+        }
+      ],
+      "at": [
+        "frm2"
+      ],
+      "text": "With m from the formula you already know. The number you want to clear, divided by the pivot."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "op1",
+        "op2",
+        "op3"
+      ],
+      "cues": [
+        "Swap",
+        "multiply",
+        "take"
+      ],
+      "text": "Swap. Multiply. Take away. Three lines, and there is no fourth."
+    },
+    {
+      "do": "clear",
+      "sub": "Row echelon form, and the climb back",
+      "text": "Two last names, and then you have everything."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "ech1",
+          "label": "[  1    1  |   500  ]",
+          "x": 50,
+          "y": 26,
+          "size": 3.8
+        },
+        {
+          "id": "ech2",
+          "label": "[  0    1  |   300  ]",
+          "x": 50,
+          "y": 40,
+          "size": 3.8
+        }
+      ],
+      "at": [
+        "ech1"
+      ],
+      "text": "When each row's leading number sits further right than the one above, with nothing but zeros below it, the matrix is in row echelon form. That is the proper name for our staircase."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "bs1",
+          "label": "bottom row:    1y = 300     →    y = 300",
+          "x": 50,
+          "y": 62,
+          "size": 3.2
+        }
+      ],
+      "at": [
+        "bs1"
+      ],
+      "text": "And the climb back has a name too. Back substitution. The bottom row has one unknown, so it gives you that price outright."
+    },
+    {
+      "do": "show",
+      "objects": [
+        {
+          "id": "bs2",
+          "label": "row above:    x + 300 = 500    →    x = 200",
+          "x": 50,
+          "y": 78,
+          "size": 3.2
+        }
+      ],
+      "at": [
+        "bs2"
+      ],
+      "text": "Then you put it into the row above, and that row gives you the next one. Keep going until every price is known."
+    },
+    {
+      "do": "trace",
+      "at": [
+        "bs1",
+        "bs2"
+      ],
+      "cues": [
+        "bottom",
+        "above"
+      ],
+      "text": "Bottom row first. Then the row above. Always upwards."
+    },
+    {
+      "do": "board",
+      "sub": "What to remember",
+      "text": "Take three beats out of this room with you."
+    },
+    {
+      "do": "say",
+      "text": "Pivot. Find it, at the top-left of whatever is left to tidy."
+    },
+    {
+      "do": "say",
+      "text": "Clear below. The multiplier is the number you want to clear, divided by the pivot. Then R two becomes R two, take away m lots of R one."
+    },
+    {
+      "do": "say",
+      "text": "Step down and across, and start again. Stop at the staircase, then walk back up."
+    },
+    {
+      "do": "say",
+      "text": "That is Gaussian elimination. It works for two prices, for three, and for three thousand. The grid gets bigger. The three beats never change."
+    }
+  ],
+  "faq": [
+    {
+      "k": [
+        "how many",
+        "how do i know",
+        "multiplier",
+        "how many rows",
+        "where does the number come from"
+      ],
+      "a": "You divide. Take the number you want to turn into a zero, and divide it by the pivot. If the pivot is one orange and you want to remove two, two divided by one is two, so you take two pivot rows away."
+    },
+    {
+      "k": [
+        "pivot"
+      ],
+      "a": "The pivot is the first number of the row you are working on, at the top-left of whatever is left to tidy. It is the item you are cancelling this round, and a pivot of one is far kinder than a pivot of seven."
+    },
+    {
+      "k": [
+        "beats",
+        "three beats",
+        "the rule",
+        "steps of the method",
+        "what do i do"
+      ],
+      "a": "Three beats, over and over. Find the pivot. Clear the column below it. Step down one row and across one column. When the zeros form a staircase you stop, and walk back up."
+    },
+    {
+      "k": [
+        "swap",
+        "swapping",
+        "order of the rows",
+        "order of the receipts"
+      ],
+      "a": "Swapping rows is allowed because rows are receipts, and the market does not care which you read first. We swap to bring a one to the top, so the dividing stays simple."
+    },
+    {
+      "k": [
+        "augmented",
+        "the line",
+        "vertical line",
+        "bar",
+        "matrix"
+      ],
+      "a": "The grid is the matrix. The line is the equals sign: shopping on the left, money on the right. Augmented only means the money came along too."
+    },
+    {
+      "k": [
+        "staircase",
+        "echelon",
+        "shape",
+        "when do i stop"
+      ],
+      "a": "You stop when each row's leading number sits further right than the one above it, with nothing but zeros underneath. That shape is the staircase. Its proper name is row echelon form."
+    },
+    {
+      "k": [
+        "take away",
+        "subtract",
+        "why is it allowed",
+        "why does it work"
+      ],
+      "a": "Because both rows are true receipts. Lift one shopper's basket out of another's, take their money off the other's money, and what is left still matches. Nothing has been invented."
+    },
+    {
+      "k": [
+        "cancel",
+        "cancelling",
+        "disappear"
+      ],
+      "a": "Cancelling means arranging it so one item appears the same number of times in both receipts, then taking one from the other. That item vanishes, and stops confusing the items left behind."
+    },
+    {
+      "k": [
+        "back",
+        "backwards",
+        "substitute",
+        "substitution",
+        "climb"
+      ],
+      "a": "Walking back up is called back substitution. The bottom row has one item left, so it tells you that price outright, and each price you learn makes the row above it simple enough to read."
+    },
+    {
+      "k": [
+        "no answer",
+        "no solution",
+        "impossible",
+        "cannot"
+      ],
+      "a": "If a row ends up saying no oranges, no bread, no milk, but some money was paid, the receipts contradict each other. No price list can fit them all."
+    },
+    {
+      "k": [
+        "many",
+        "infinite",
+        "more than one",
+        "not enough"
+      ],
+      "a": "If a whole row becomes nothing but zeros, that receipt told you what the others already had. You are short of information, and many price lists would fit."
+    },
+    {
+      "k": [
+        "fraction",
+        "divide",
+        "does not divide",
+        "decimal",
+        "kobo"
+      ],
+      "a": "If the pivot does not divide neatly, fractions appear. Nothing breaks, the three beats still work. Swapping a friendlier row to the top first is how you avoid most of them."
+    },
+    {
+      "k": [
+        "gauss",
+        "who",
+        "name",
+        "why the name"
+      ],
+      "a": "Named after Carl Friedrich Gauss, though Chinese mathematicians were doing exactly this on counting boards about two thousand years before he was born."
+    },
+    {
+      "k": [
+        "real life",
+        "use",
+        "why learn",
+        "computer",
+        "useful"
+      ],
+      "a": "This is how computers solve large systems, from weather forecasts to bridge design. The grid may have thousands of rows, but the moves are the three you have just learned at the market."
+    }
+  ]
+}

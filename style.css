@@ -1,0 +1,135 @@
+/* Layout on top of the Organic design system (organic.css). */
+
+body { background: var(--color-bg); }
+.muted { font-size: 13px; color: var(--color-neutral-600); margin-left: 8px; }
+
+.topbar { position: sticky; top: 0; z-index: 10; flex-wrap: wrap; gap: 14px; padding: 14px 26px;
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent); backdrop-filter: blur(6px); }
+.topbar .nav-brand { font-size: 22px; margin-right: 0; }
+.topbar nav { display: flex; gap: 8px; }
+.tab.active { background: var(--color-accent-2-100); }
+.spacer { flex: 1; }
+.curriculum { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--color-neutral-700); }
+.curriculum .input { width: auto; padding: 8px 14px; }
+
+.page { max-width: 1180px; margin: 0 auto; padding: 26px 26px 48px; display: flex; flex-direction: column; gap: 18px; }
+.page h1 { font-size: 36px; margin: 0; line-height: 1.08; }
+.page > .tag { align-self: flex-start; }
+.lede { margin: 0; max-width: 64ch; font-size: 16px; color: var(--color-neutral-700); }
+.hidden { display: none !important; }
+
+/* Lessons */
+.lesson-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 18px; }
+.lesson-card { padding: 20px; gap: 10px; }
+.lesson-card .top { display: flex; justify-content: space-between; align-items: center; }
+.lesson-card .card-title { font-size: 21px; }
+.lesson-card .card-body { font-size: 15px; color: var(--color-neutral-700); }
+.lesson-card .btn { align-self: flex-start; margin-top: auto; }
+
+/* Board */
+.board-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.board-head h1 { margin: 6px 0 4px; font-size: 30px; }
+.board-frame { background: var(--color-neutral-200); border-radius: var(--radius-lg); padding: 14px; box-shadow: var(--shadow-md);
+  width: 100%; max-width: max(640px, calc((100vh - 210px) * 1.61)); align-self: center; }
+#board { display: block; width: 100%; aspect-ratio: 1000 / 620; cursor: pointer; touch-action: none; }
+
+.tray { padding: 16px; gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { padding: 10px 16px; border-radius: 999px; border: 2px solid var(--color-neutral-300); background: var(--color-neutral-100);
+  font: 15px var(--font-body); color: var(--color-text); cursor: grab; touch-action: none; }
+.chip.selected { border-color: var(--color-accent); background: var(--color-accent-100); }
+.row-slot { min-width: 150px; padding: 12px 16px; border-radius: var(--radius-lg); border: 2px dashed var(--color-neutral-300);
+  background: var(--color-neutral-100); display: flex; flex-direction: column; gap: 2px; cursor: pointer; }
+.row-slot.filled { border-style: solid; }
+.row-slot.right { border-color: var(--color-accent-2); background: var(--color-accent-2-100); }
+.row-slot.wrong { border-color: var(--color-accent); }
+.row-slot small { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-neutral-600); }
+
+.controls { padding: 16px 18px; flex-direction: row; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; }
+.caption-box { flex: 1 1 260px; }
+#caption { font-size: 17px; line-height: 1.35; min-height: 46px; }
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+#btn-voice.on { background: var(--color-accent-2-100); border-color: var(--color-accent-2); }
+
+.inline-form { padding: 16px 18px; display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 0; }
+#ask-box { padding: 16px 18px; gap: 10px; }
+#ask-box .inline-form { padding: 0; }
+.grow { flex: 1 1 240px; }
+.ask-reply { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--radius-lg); background: var(--color-accent-2-100); font-size: 16px; }
+.ask-reply .btn { align-self: flex-start; }
+
+#drag-ghost { position: fixed; display: none; transform: translate(-50%, -50%) rotate(-2deg); padding: 10px 16px; border-radius: 999px;
+  background: var(--color-accent); color: #2c332d; font-size: 15px; box-shadow: var(--shadow-lg); pointer-events: none; z-index: 50; }
+
+/* Progress */
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.summary .card { padding: 18px; gap: 2px; }
+.summary .count { font-family: var(--font-heading); font-size: 38px; line-height: 1; }
+.table-wrap { overflow-x: auto; }
+.table { min-width: 720px; }
+#btn-clear { align-self: flex-start; }
+
+@media (max-width: 640px) {
+  .topbar, .page { padding-left: 16px; padding-right: 16px; }
+}
+.topbar a.btn-ghost { color: var(--color-accent); }
+.voice-note { font-size: 13px; color: var(--color-accent-700); }
+.voice-note:empty { display: none; }
+
+/* Speech bubble under the board, pointing up at the tutor */
+.speech { position: relative; margin-top: 14px; padding: 12px 20px 14px; border-radius: 22px; background: var(--color-neutral-100); box-shadow: var(--shadow-sm); }
+.speech::before { content: ""; position: absolute; top: -12px; left: 14%; border: 12px solid transparent; border-top: 0; border-bottom-color: var(--color-neutral-100); }
+#caption { font-size: 20px; font-weight: 700; line-height: 1.35; min-height: 27px; }
+.controls { justify-content: center; }
+
+/* ---------- Engine additions ---------- */
+.head-tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* Shown while an answer script plays over the top of a lesson. */
+.interject-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap; padding: 10px 16px; margin-bottom: 14px;
+  border: 1px solid var(--color-accent-2); border-radius: var(--radius-lg);
+  background: var(--color-accent-2-100); font-size: 14.5px;
+}
+
+.json-box {
+  min-height: 130px; font-family: ui-monospace, monospace; font-size: 12px;
+  line-height: 1.45; resize: vertical; width: 100%; box-sizing: border-box;
+}
+.file-button { cursor: pointer; }
+
+.channel-note { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; line-height: 1.5; color: var(--color-neutral-700); }
+.channel-note code { font-family: ui-monospace, monospace; font-size: 11.5px; background: var(--color-neutral-100); padding: 1px 5px; border-radius: 5px; word-break: break-all; }
+
+.intake-row { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--color-neutral-200); font-size: 14px; }
+.intake-row:last-child { border-bottom: 0; }
+
+#intake-box { gap: 12px; }
+
+/* The rendered-voice picker, beside the voice controls. */
+.voice-pick-wrap { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-neutral-700); }
+.voice-pick-wrap select { font-size: 13px; padding: 6px 10px; max-width: 250px; }
+
+/* The paper look: a white panel, and the caption as a black pill under it,
+   the way an explainer video captions its narrator. Set from app.js when a
+   script asks for "theme": "paper" or the learner picks it. */
+.board-frame.theme-paper { background: #ffffff; }
+.board-frame.theme-paper .speech { background: #1c1b1a; color: #fff; border-radius: 14px; padding: 12px 24px 14px;
+  margin: 12px auto 4px; width: fit-content; max-width: 92%; box-shadow: none; }
+.board-frame.theme-paper .speech::before { display: none; }
+.board-frame.theme-paper .speech .card-kicker { color: rgba(255,255,255,0.55); }
+.board-frame.theme-paper #caption { color: #fff; text-align: center; }
+.board-frame.theme-paper .voice-note { color: #ffb98a; text-align: center; }
+
+/* The question pipeline: which stage is running, then the learner's check-in. */
+.think-note { margin-top: 6px; font-size: 13.5px; font-style: italic; color: var(--color-accent-2); }
+.think-note::before { content: "● "; animation: think-pulse 1s ease-in-out infinite; }
+@keyframes think-pulse { 50% { opacity: 0.25; } }
+.checkin { padding: 14px 18px; gap: 10px; margin-bottom: 14px; border: 2px solid var(--color-accent-2); }
+.checkin .buttons { gap: 10px; }
+.ask-model { font-size: 12.5px; }
+.model-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.btn-small { padding: 4px 10px; font-size: 13px; }
+.key-form { padding: 0; }
+.key-note { flex-basis: 100%; font-size: 12.5px; }

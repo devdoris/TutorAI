@@ -1,0 +1,19 @@
+{
+  "id": "outside-demo",
+  "title": "Sent in from outside",
+  "subject": "Mathematics",
+  "objective": "Show that the engine renders a script nobody in the app wrote.",
+  "level": 2,
+  "concept": "reading-numbers",
+  "board": { "kind": "circles", "heading": "", "sub": "This lesson was not built into the app" },
+  "steps": [
+    { "do": "say", "text": "Nobody wrote me into this app. I arrived as a file, and the engine is reading me now." },
+    { "do": "show", "objects": [{ "id": "a", "label": "7", "x": 30, "y": 32, "shape": "circle", "sub": "Tens" }], "at": ["a"], "text": "Here is a seven, in the tens place." },
+    { "do": "show", "objects": [{ "id": "b", "label": "4", "x": 62, "y": 32, "shape": "circle", "sub": "Units" }], "at": ["b"], "text": "And a four, in the units." },
+    { "do": "compare", "at": ["a", "b"], "text": "Seven tens and four units. Seventy-four." },
+    { "do": "ask", "text": "Your turn.", "ask": { "type": "select", "prompt": "Tap the digit worth seventy.", "expect": "a", "hint": "Seventy is seven tens." } },
+    { "do": "ask", "text": "And in words.", "ask": { "type": "type", "prompt": "Write the whole number in digits.", "expect": ["74"], "hint": "Tens first, then units." } },
+    { "do": "praise", "text": "Rendered by the same tutor, the same board and the same practice loop — with no code change." }
+  ],
+  "meta": { "source": "file" }
+}
