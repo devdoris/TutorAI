@@ -19,7 +19,11 @@
   const E = root.TutorEngineLib;
 
   function introFor(script) {
-    return "Let us learn " + String(script.title || "this objective").toLowerCase() +
+    // Lower-cased to sit inside the sentence, except a name in capitals (JSON,
+    // XML), which is read as letters and stays as it is.
+    const title = String(script.title || "this objective").split(" ")
+      .map(w => (/^[A-Z][A-Z0-9]+[:,.]?$/.test(w) ? w : w.toLowerCase())).join(" ");
+    return "Let us learn " + title +
       ". I will teach it aloud. You can stop me at any time to ask a question.";
   }
 

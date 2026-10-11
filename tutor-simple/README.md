@@ -42,6 +42,9 @@ assert it.
 | --- | --- |
 | `index.html` | The page: top bar and three screens (Lessons, Board, Progress) |
 | `engine.js` | **Execution.** The script format, the runner, and every way a script can arrive. Reads nothing from the other two |
+| `dictionary.js` | **Generation.** The dictionary: every directive, field and shape a script may use, and the prompt built from it. `dictionary.json` is its export |
+| `pipeline.js` | **Generation.** A question mid-lesson: intent → explanation → Script Manager → a checked script |
+| `llm.py` | Asks Claude one thing for the pipeline; run by `server.py` |
 | `generate.js` | **Generation.** The numbers lesson at three levels, and the scripts written to answer a learner's question |
 | `lessons.js` | The original lessons, in the old `verb` / `say` / `target` shape. The engine accepts them unchanged |
 | `app.js` | The view: draws the board on a `<canvas>`, works the buttons, speaks |
@@ -172,6 +175,23 @@ of the board, which is how the tutor knows where to aim. `level` is the depth of
 explanation: 1 concrete (apples), 2 the taught lesson, 3 the general form
 (powers of ten).
 
+**Two looks.** The board is a dark chalkboard unless a script says `"board":
+{ "theme": "paper" }`, which turns it into a white panel with clean type and
+coloured pictures, the look of an explainer video, with the caption as a black
+pill underneath. Coloured icons come from collections that carry their own
+colours, such as `vscode-icons:file-type-json`; single-colour icons are inked
+to match. The **Look** picker on the Board overrides what the script asked for.
+
+**The tutor can pull a face.** Any step may carry `"face"`: `happy`,
+`surprised`, `thinking`, `plain` or `sad`. Her mouth still moves while she
+speaks; the face is what is left when she stops.
+
+**Two more shapes.** `"shape": "bubble"` is a speech bubble, with `sub` as who
+is speaking (`"sub": "JSON says:"`) and `w` its width; `"tail": "br"` moves
+the tail to the bottom right. `"shape": "window"` is a code window: a title
+bar with three dots, `sub` as the file name, and one line of fixed-width text
+per `\n` in the label. *JSON and XML* in the Lessons list uses all of this.
+
 ## Writing your own lesson
 
 Copy `examples/starter-lesson.json`, change the words, load it. There is nothing
@@ -232,6 +252,68 @@ intake** panel on the Board.
 
 ## Asking the tutor
 
+```
+  lecture ─▶ learner presses "Ask the tutor" (the lesson pauses on its step)
+          ─▶ 1. intent        is it about this lesson?          pipeline.js
+          ─▶ 2. response      the explanation, at their level   pipeline.js → model
+          ─▶ 3. Script Manager the explanation as a script,     pipeline.js → model + dictionary.js
+                               checked by the engine
+          ─▶ the board plays it                                 engine.js
+          ─▶ "Did that make sense?"  Yes · Ask another · Not yet, simpler
+```
+
+**The dictionary** (`dictionary.js`) is every word a script may use, as data:
+each directive with its fields and an example, what an object can be, the
+marks, asks, faces, icons, the teaching rules, and the usual shapes of a good
+answer. `toPrompt()` turns it into the instructions the model writes against;
+`node export-dictionary.mjs` writes it out as `dictionary.json` for anyone
+else, and `--prompt` prints the instructions. A test fails if it and the
+engine ever disagree.
+
+**What a model sends back is checked, not trusted.** Unknown directives are
+dropped, pointing at things that are not on the board is dropped, a broken
+`ask` becomes a line she says, and then the engine's own validator has the last
+word. A reply that cannot be read is asked for once more with the reason; if
+it still fails, the explanation is laid out on the board without the model.
+**Every question is answered**, about the lesson or not. The intent layer no
+longer turns anything away (only a greeting or something unsafe gets no
+explanation); it tells the Script Manager what kind of question it is, and an
+off-topic one is answered on a cleared board the model lays out itself. The
+board snapshot the model sees names the free space, and the answer rules let it
+place each new thing in a row, at an x,y of its choosing, or in a panel.
+
+**Beside the board, both scripts are visible.** The right-hand panel shows the
+lesson script with the step being played. When a question comes in, that panel
+turns orange and holds on its step; a second panel opens under it with the
+question, the stage of the pipeline that is running, then the generated script
+step by step as it plays. "I'm okay" (the button, or typed into the question
+box) hands the board back: the answer panel reads *Done*, and the lesson's step
+lights up again where it stopped.
+
+**The model can be any provider.** Board → *Ask the tutor* → *Connect the
+model*: pick Anthropic (Claude), OpenAI, OpenRouter, Google Gemini, Groq,
+DeepSeek, Ollama on this computer (no key), or any other OpenAI-compatible
+address; the model name is filled in and can be changed; paste the key;
+*Connect*. The server tries it with one small call and only keeps it if it
+works, in `model.local` beside `server.py` (git ignores it, only your user can
+read it). *Change key* with the key left empty switches model and keeps the
+key; *Disconnect* deletes it. The key never reaches the browser, and only pages
+served from this machine may use the model routes, so another website open in
+the same browser cannot spend the credit.
+
+Claude goes through the Anthropic SDK (`llm.py`, run with `uv run --with
+anthropic`, so nothing is installed); every other provider is the OpenAI
+chat format over plain HTTP, with JSON mode where the provider has it.
+`ANTHROPIC_API_KEY` still works when nothing is connected in the app. A small
+model may fail the Script Manager's checks more often; the answer then falls
+back to a plain layout of the model's explanation.
+
+**With no model it all still works offline**: intent by matching words,
+answers by the built-in generator below. The line under the question box says
+which one is answering.
+
+The rest of this section is the offline generator.
+
 A question does not get a paragraph back. It gets a **script**, which the same
 engine plays on the same board — then the lesson resumes on the exact step it
 was interrupted on. **Explain it simpler** drops to the level-1 script for the
@@ -250,7 +332,7 @@ answers. The engine is not told, and does not change.
 ## Tests
 
 ```bash
-node --test test/engine.test.mjs
+node --test test/engine.test.mjs test/pipeline.test.mjs
 ```
 
 Loads `engine.js`, `lessons.js` and `generate.js` the way the page does, plays

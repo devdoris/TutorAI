@@ -687,8 +687,549 @@
   const E = root.TutorEngineLib;
   // lessons.js declares LESSONS with const, so it is a global *binding* rather
   // than a property of window — reach it by name, not through root.
+  // JSON and XML, in the paper look: a white panel, coloured file icons, a
+  // speech bubble for each format, and the two files side by side. Written
+  // to the shape of a one-minute explainer video, with questions added.
+  const JSON_XML = {
+    "id": "json-vs-xml",
+    "title": "JSON and XML: two ways to write the same thing",
+    "subject": "Computing",
+    "objective": "Tell JSON from XML, read a person's details in both, and say which one a web app is likely to use.",
+    "level": 2,
+    "concept": "json-vs-xml",
+    "curricula": [
+      "NERDC",
+      "KS3",
+      "CCSS"
+    ],
+    "board": {
+      "kind": "blank",
+      "heading": "",
+      "sub": "",
+      "theme": "paper"
+    },
+    "meta": {
+      "source": "library"
+    },
+    "faq": [
+      {
+        "k": [
+          "tag"
+        ],
+        "a": "A tag is the label XML wraps around a value. It opens before the value, like name in angle brackets, and closes after it, with a slash. So every value is named twice."
+      },
+      {
+        "k": [
+          "json",
+          "stand",
+          "mean"
+        ],
+        "a": "JSON is short for JavaScript Object Notation. It is a way of writing data in curly brackets, with each name and its value."
+      },
+      {
+        "k": [
+          "xml",
+          "stand",
+          "mean"
+        ],
+        "a": "XML is short for Extensible Markup Language. It is a way of writing data where every value sits inside an opening and a closing tag."
+      },
+      {
+        "k": [
+          "which",
+          "better",
+          "use"
+        ],
+        "a": "Neither is better. JSON is shorter, so web apps and phones use it. XML is longer but very strictly structured, so big systems and documents use it."
+      }
+    ],
+    "steps": [
+      {
+        "do": "board",
+        "heading": "JSON and XML",
+        "text": "Hello. Today, two ways a computer writes down a person's details. Look at the board."
+      },
+      {
+        "do": "layout",
+        "grid": "2x1",
+        "panels": [
+          "JSON",
+          "XML"
+        ],
+        "text": "Two boxes."
+      },
+      {
+        "do": "trace",
+        "at": [
+          "l",
+          "r"
+        ],
+        "cues": [
+          "left",
+          "right"
+        ],
+        "text": "The left one is JSON. The right one is XML."
+      },
+      {
+        "do": "show",
+        "objects": [
+          {
+            "id": "jsonfile",
+            "icon": "vscode-icons:file-type-json",
+            "label": "JSON",
+            "panel": "l",
+            "x": 50,
+            "y": 46,
+            "size": 17
+          },
+          {
+            "id": "xmlfile",
+            "icon": "vscode-icons:file-type-xml",
+            "label": "XML",
+            "panel": "r",
+            "x": 50,
+            "y": 46,
+            "size": 17
+          }
+        ],
+        "at": [
+          "jsonfile",
+          "xmlfile"
+        ],
+        "text": "This is JSON, and this is XML."
+      },
+      {
+        "do": "compare",
+        "at": [
+          "jsonfile",
+          "xmlfile"
+        ],
+        "cues": [
+          "both",
+          "another"
+        ],
+        "face": "plain",
+        "text": "They both do the same job. They carry data from one place to another."
+      },
+      {
+        "do": "say",
+        "face": "surprised",
+        "text": "But they speak very differently. Watch."
+      },
+      {
+        "do": "transition",
+        "kind": "sweep",
+        "text": "Let us start with a person. Alex."
+      },
+      {
+        "do": "clear",
+        "keepHeading": true,
+        "grid": "none",
+        "text": "Somebody is sending a person's details."
+      },
+      {
+        "do": "show",
+        "objects": [
+          {
+            "id": "card",
+            "shape": "window",
+            "sub": "Person details",
+            "label": "Name:  Alex\nAge:   25\nCity:  London",
+            "x": 50,
+            "y": 44,
+            "size": 3.8
+          }
+        ],
+        "at": [
+          "card"
+        ],
+        "text": "Name, Alex. Age, twenty five. City, London. Three things about one person."
+      },
+      {
+        "do": "ask",
+        "text": "Quick one.",
+        "ask": {
+          "type": "type",
+          "prompt": "How old is Alex?",
+          "expect": [
+            "25",
+            "twenty five",
+            "twenty-five",
+            "twentyfive"
+          ],
+          "hint": "Read the card. The line that says Age."
+        }
+      },
+      {
+        "do": "praise",
+        "text": "Twenty five. Good. Now let us send Alex somewhere."
+      },
+      {
+        "do": "transition",
+        "kind": "wipe",
+        "text": "First, how does JSON say it?"
+      },
+      {
+        "do": "clear",
+        "keepHeading": true,
+        "text": "JSON takes the card and writes it its own way."
+      },
+      {
+        "do": "show",
+        "objects": [
+          {
+            "id": "jsonbubble",
+            "shape": "bubble",
+            "sub": "JSON says:",
+            "label": "name Alex, age 25, city London.",
+            "cue": "JSON says",
+            "x": 30,
+            "y": 24,
+            "w": 44,
+            "size": 3.2,
+            "tail": "bl"
+          },
+          {
+            "id": "jsonicon",
+            "icon": "vscode-icons:file-type-json",
+            "x": 22,
+            "y": 68,
+            "size": 17
+          },
+          {
+            "id": "jsonwin",
+            "shape": "window",
+            "sub": "person.json",
+            "label": "{\n  \"name\": \"Alex\",\n  \"age\": 25,\n  \"city\": \"London\"\n}",
+            "cue": "like this",
+            "x": 70,
+            "y": 54,
+            "size": 3.2
+          }
+        ],
+        "at": [
+          "jsonbubble",
+          "jsonwin"
+        ],
+        "cues": [
+          "JSON says",
+          "like this"
+        ],
+        "text": "JSON says: name Alex, age twenty five, city London. Written down, it looks like this."
+      },
+      {
+        "do": "point",
+        "at": [
+          "jsonwin"
+        ],
+        "face": "happy",
+        "text": "Look at it. A curly bracket, then each name and its value, one per line. Simple. Clean. No extra drama."
+      },
+      {
+        "do": "mark",
+        "id": "ringjson",
+        "kind": "ring",
+        "at": [
+          "jsonwin"
+        ],
+        "text": "Everything it needs, and nothing it does not."
+      },
+      {
+        "do": "transition",
+        "kind": "sweep",
+        "text": "Now XML. XML has a different habit."
+      },
+      {
+        "do": "clear",
+        "keepHeading": true,
+        "text": "Same person. Same three things."
+      },
+      {
+        "do": "show",
+        "objects": [
+          {
+            "id": "xmlbubble",
+            "shape": "bubble",
+            "sub": "XML says:",
+            "label": "Let me put a tag around everything.",
+            "cue": "XML says",
+            "x": 30,
+            "y": 24,
+            "w": 44,
+            "size": 3.2,
+            "tail": "bl"
+          },
+          {
+            "id": "xmlicon",
+            "icon": "vscode-icons:file-type-xml",
+            "x": 22,
+            "y": 68,
+            "size": 17
+          },
+          {
+            "id": "xmlwin",
+            "shape": "window",
+            "sub": "person.xml",
+            "label": "<person>\n  <name>Alex</name>\n  <age>25</age>\n  <city>London</city>\n</person>",
+            "cue": "See the file",
+            "x": 70,
+            "y": 54,
+            "size": 3.2
+          }
+        ],
+        "at": [
+          "xmlbubble",
+          "xmlwin"
+        ],
+        "cues": [
+          "XML says",
+          "See the file"
+        ],
+        "text": "XML says: let me put a tag around everything. See the file."
+      },
+      {
+        "do": "point",
+        "at": [
+          "xmlwin"
+        ],
+        "face": "surprised",
+        "text": "Name, Alex, name. Age, twenty five, age. City, London, city. Every single thing is wrapped, front and back."
+      },
+      {
+        "do": "ask",
+        "text": "Count for me.",
+        "ask": {
+          "type": "type",
+          "prompt": "How many times does the word name appear in the XML?",
+          "expect": [
+            "2",
+            "two",
+            "twice"
+          ],
+          "hint": "Once to open the tag, once to close it."
+        }
+      },
+      {
+        "do": "praise",
+        "text": "Twice. Once to open, once to close. That is what a tag is."
+      },
+      {
+        "do": "transition",
+        "kind": "fade",
+        "text": "So. See the difference?"
+      },
+      {
+        "do": "clear",
+        "keepHeading": true,
+        "grid": "2x1",
+        "panels": [
+          "JSON",
+          "XML"
+        ],
+        "text": "Side by side."
+      },
+      {
+        "do": "show",
+        "objects": [
+          {
+            "id": "jsonside",
+            "shape": "window",
+            "sub": "person.json",
+            "label": "{\n  \"name\": \"Alex\",\n  \"age\": 25,\n  \"city\": \"London\"\n}",
+            "cue": "left",
+            "panel": "l",
+            "x": 50,
+            "y": 36,
+            "size": 2.5
+          },
+          {
+            "id": "xmlside",
+            "shape": "window",
+            "sub": "person.xml",
+            "label": "<person>\n  <name>Alex</name>\n  <age>25</age>\n  <city>London</city>\n</person>",
+            "cue": "right",
+            "panel": "r",
+            "x": 50,
+            "y": 36,
+            "size": 2.5
+          }
+        ],
+        "at": [
+          "jsonside",
+          "xmlside"
+        ],
+        "cues": [
+          "left",
+          "right"
+        ],
+        "text": "Same person. JSON on the left, XML on the right."
+      },
+      {
+        "do": "compare",
+        "at": [
+          "jsonside",
+          "xmlside"
+        ],
+        "cues": [
+          "JSON",
+          "XML"
+        ],
+        "text": "JSON is compact and lightweight. XML is longer, because every part is named twice."
+      },
+      {
+        "do": "show",
+        "objects": [
+          {
+            "id": "api",
+            "icon": "mdi:cloud-outline",
+            "label": "Web API",
+            "cue": "web",
+            "panel": "l",
+            "x": 30,
+            "y": 80,
+            "size": 9
+          },
+          {
+            "id": "phone",
+            "icon": "mdi:cellphone",
+            "label": "Your phone",
+            "cue": "phone",
+            "panel": "l",
+            "x": 70,
+            "y": 80,
+            "size": 9
+          }
+        ],
+        "at": [
+          "api",
+          "phone"
+        ],
+        "text": "Because it is light, you will see JSON everywhere in modern web apps. Your phone talks to a server in JSON."
+      },
+      {
+        "do": "show",
+        "objects": [
+          {
+            "id": "server",
+            "icon": "mdi:server",
+            "label": "Big systems",
+            "cue": "big",
+            "panel": "r",
+            "x": 30,
+            "y": 80,
+            "size": 9
+          },
+          {
+            "id": "docs",
+            "icon": "mdi:file-document-multiple-outline",
+            "label": "Documents",
+            "cue": "documents",
+            "panel": "r",
+            "x": 70,
+            "y": 80,
+            "size": 9
+          }
+        ],
+        "at": [
+          "server",
+          "docs"
+        ],
+        "text": "But the tags are useful when big systems need highly structured documents, with parts inside parts."
+      },
+      {
+        "do": "say",
+        "face": "thinking",
+        "text": "So which one should you use? It depends on who is receiving it."
+      },
+      {
+        "do": "ask",
+        "text": "Your turn.",
+        "ask": {
+          "type": "select",
+          "prompt": "A phone app asks a web API for a user's details. Tap the file it most likely gets back.",
+          "expect": "jsonside",
+          "hint": "Compact and lightweight. The one every web API speaks."
+        }
+      },
+      {
+        "do": "praise",
+        "text": "JSON. Compact, and every web API speaks it."
+      },
+      {
+        "do": "transition",
+        "kind": "sweep",
+        "text": "So remember this."
+      },
+      {
+        "do": "clear",
+        "keepHeading": true,
+        "grid": "none",
+        "text": "Two pictures to keep."
+      },
+      {
+        "do": "show",
+        "objects": [
+          {
+            "id": "msg",
+            "icon": "mdi:message-text-outline",
+            "label": "JSON is a quick text message",
+            "cue": "text message",
+            "x": 28,
+            "y": 46,
+            "size": 18
+          },
+          {
+            "id": "folder",
+            "icon": "mdi:folder-open-outline",
+            "label": "XML is a neatly labelled folder",
+            "cue": "labelled folder",
+            "x": 72,
+            "y": 46,
+            "size": 18
+          }
+        ],
+        "at": [
+          "msg",
+          "folder"
+        ],
+        "text": "JSON is like a quick text message. XML is like a neatly labelled folder."
+      },
+      {
+        "do": "compare",
+        "at": [
+          "msg",
+          "folder"
+        ],
+        "cues": [
+          "formats",
+          "mission"
+        ],
+        "face": "plain",
+        "text": "Different formats. Same mission. Moving data from one place to another."
+      },
+      {
+        "do": "ask",
+        "text": "Last one.",
+        "ask": {
+          "type": "type",
+          "prompt": "Finish it: JSON is like a quick text ______.",
+          "expect": [
+            "message",
+            "text message"
+          ],
+          "hint": "Something short you send from your phone."
+        }
+      },
+      {
+        "do": "praise",
+        "face": "happy",
+        "text": "That is it. Next time you see curly brackets, you will know who is talking."
+      }
+    ]
+  };
+
   const legacy = typeof LESSONS !== "undefined" ? LESSONS : [];
-  const LIBRARY = [READ_NUMBERS, READ_NUMBERS_L1, READ_NUMBERS_L3, FEF, EQUATIONS, SOCIAL, DISCOUNT]
+  const LIBRARY = [READ_NUMBERS, READ_NUMBERS_L1, READ_NUMBERS_L3, FEF, EQUATIONS, SOCIAL, DISCOUNT, JSON_XML]
     .concat(legacy.map(E.scriptFromLesson));
 
   // Level 2 is the taught lesson. Levels 1 and 3 are the same idea lower down
@@ -750,7 +1291,8 @@
   }
 
   function fromFaq(q, context) {
-    const hit = (context.faq || []).filter(f => (f.k || []).some(k => q.indexOf(norm(k)) >= 0))[0];
+    // A key that normalises to nothing ("," does) must not match everything.
+    const hit = (context.faq || []).filter(f => (f.k || []).some(k => { const n = norm(k); return n && q.indexOf(n) >= 0; }))[0];
     if (!hit) return null;
     const target = findOnBoard(hit.k, context.board);
     const steps = [{ do: "say", text: "Good question. Let me show you." }];
@@ -836,10 +1378,13 @@
     return has(q, "dont understand", "do not understand", "confused", "lost", "simpler", "explain again", "slower", "what do you mean");
   }
 
+  // Offline, with no pattern or FAQ line for the question, there is nothing to
+  // answer it with. Say so plainly — and say what would fix it — rather than
+  // turning the question away.
   function fallback(q, context) {
-    return mkScript("ans-none-" + Date.now(), "Outside this lesson", [
-      { do: "listen", text: "Honest answer: that is outside what this lesson covers, and I would rather not guess at it. I will flag it for your teacher." },
-      { do: "say", text: "Shall we finish this first? You can ask me again at the end." }
+    return mkScript("ans-none-" + Date.now(), "Needs the model", [
+      { do: "say", face: "thinking", text: "Good question. I only have this lesson's answers in me while the model is not connected." },
+      { do: "say", text: "Connect the model and ask me that again, and I will write an answer for the board. Or ask me about what is here." }
     ], { concept: context.concept });
   }
 

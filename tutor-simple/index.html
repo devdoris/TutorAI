@@ -54,13 +54,95 @@
       <button id="btn-back" class="btn btn-primary">Back to the lesson</button>
     </div>
 
-    <div class="board-frame">
-      <canvas id="board"></canvas>
-      <!-- What the tutor says, right under the board -->
-      <div class="speech">
-        <div class="card-kicker">Tutor says</div>
-        <div id="caption"></div>
-        <div id="voice-note" class="voice-note"></div>
+    <!-- The board, and beside it the scripts the engine is playing: the lesson's
+         own script, and — when the learner asks something — the answer script
+         in its own panel, so both are visible at once and the hand-back from
+         one to the other can be watched. -->
+    <div class="board-row">
+      <div class="board-col">
+      <div class="board-frame">
+        <canvas id="board"></canvas>
+        <!-- What the tutor says, right under the board -->
+        <div class="speech">
+          <div class="card-kicker">Tutor says</div>
+          <div id="caption"></div>
+          <div id="voice-note" class="voice-note"></div>
+          <div id="think-note" class="think-note hidden"></div>
+        </div>
+      </div>
+    <!-- Ask a question mid-lesson. The answer is a script the tutor plays. -->
+    <div id="ask-box" class="card">
+      <div class="card-kicker">Your question — the tutor writes a new script to answer it, plays it, then comes back to this step</div>
+      <form id="ask-form" class="inline-form">
+        <div class="field grow">
+          <label for="ask-input">Ask anything</label>
+          <input id="ask-input" class="input" autocomplete="off" placeholder="e.g. why is there a comma? — or anything else">
+        </div>
+        <button class="btn btn-primary">Ask</button>
+      </form>
+      <div class="model-row">
+        <span id="ask-model" class="muted ask-model"></span>
+        <button id="btn-key" type="button" class="btn btn-ghost btn-small">Connect the model</button>
+      </div>
+      <!-- Pick a provider and paste its key. It goes only to the local server, which tests it and keeps it. -->
+      <form id="key-form" class="inline-form key-form hidden" autocomplete="off">
+        <div class="field">
+          <label for="key-provider">Provider</label>
+          <select id="key-provider" class="input"></select>
+        </div>
+        <div class="field">
+          <label for="key-model">Model</label>
+          <input id="key-model" class="input" spellcheck="false">
+        </div>
+        <div id="key-base-field" class="field grow">
+          <label for="key-base">Address</label>
+          <input id="key-base" class="input" spellcheck="false" placeholder="https://…/v1">
+        </div>
+        <div id="key-input-field" class="field grow">
+          <label for="key-input">API key — stays on this computer</label>
+          <input id="key-input" class="input" type="password" spellcheck="false">
+        </div>
+        <button id="key-save" class="btn btn-primary">Connect</button>
+        <button id="key-remove" type="button" class="btn btn-ghost">Disconnect</button>
+        <div id="key-note" class="muted key-note"></div>
+      </form>
+    </div>
+      </div>
+
+      <aside class="scripts">
+        <section id="lesson-script" class="script-panel">
+          <header class="script-head">
+            <div>
+              <div class="card-kicker">Lesson script</div>
+              <div id="lesson-script-title" class="script-title"></div>
+            </div>
+            <span id="lesson-script-status" class="tag tag-outline"></span>
+          </header>
+          <div id="lesson-script-note" class="script-note"></div>
+          <ol id="lesson-steps" class="steps"></ol>
+        </section>
+
+        <section id="answer-script" class="script-panel answer hidden">
+          <header class="script-head">
+            <div>
+              <div class="card-kicker">Answer script</div>
+              <div id="answer-script-title" class="script-title"></div>
+            </div>
+            <span id="answer-script-status" class="tag tag-outline"></span>
+          </header>
+          <div id="answer-script-note" class="script-note"></div>
+          <ol id="answer-steps" class="steps"></ol>
+        </section>
+      </aside>
+    </div>
+
+    <!-- After an answer: did it land? -->
+    <div id="checkin-box" class="card checkin hidden">
+      <div class="card-kicker">Did that make sense?</div>
+      <div class="buttons">
+        <button id="checkin-back" class="btn btn-primary">Yes — back to the lesson</button>
+        <button id="checkin-another" class="btn btn-secondary">Ask another question</button>
+        <button id="checkin-simpler" class="btn btn-ghost">Not yet — explain it more simply</button>
       </div>
     </div>
 
@@ -87,6 +169,14 @@
           <span>Voice</span>
           <select id="voice-pick" class="input"></select>
         </label>
+        <label class="voice-pick-wrap">
+          <span>Look</span>
+          <select id="theme-pick" class="input" title="Chalkboard, or a white panel with coloured pictures">
+            <option value="auto">As the lesson asks</option>
+            <option value="chalk">Chalkboard</option>
+            <option value="paper">Paper</option>
+          </select>
+        </label>
         <button id="btn-ask" class="btn btn-secondary">Ask the tutor</button>
         <button id="btn-intake" class="btn btn-secondary">Script intake</button>
         <button id="btn-check" class="btn btn-primary">Check my answer</button>
@@ -103,17 +193,6 @@
       <button class="btn btn-primary">Send to the tutor</button>
     </form>
 
-    <!-- Ask a question mid-lesson. The answer is a script the tutor plays. -->
-    <div id="ask-box" class="card">
-      <div class="card-kicker">Your question — the tutor writes a script to answer it, then comes back here</div>
-      <form id="ask-form" class="inline-form">
-        <div class="field grow">
-          <label for="ask-input">Ask about this lesson</label>
-          <input id="ask-input" class="input" autocomplete="off" placeholder="e.g. why is there a comma?">
-        </div>
-        <button class="btn btn-primary">Ask</button>
-      </form>
-    </div>
 
     <!-- Send the engine a script from anywhere -->
     <div id="intake-box" class="card">
@@ -137,6 +216,7 @@
         <div>The tutor can draw: <code>{ "do": "mark", "kind": "ring" | "cross" | "underline" | "arrow", "at": [...] }</code></div>
         <div>Divide the board: <code>{ "do": "layout", "grid": "2x2", "panels": ["…"] }</code>, then give objects <code>"panel": "tl"</code>. Bring one forward: <code>{ "do": "focus", "at": ["id"] }</code>. Change scene: <code>{ "do": "transition", "kind": "wipe" | "fade" | "sweep" }</code>.</div>
         <div>Icons from the internet: <code>"icon": "simple-icons:whatsapp"</code> (any collection on icon-sets.iconify.design). An object with <code>"explain": [...]</code> comes forward when tapped. Try <code>examples/divided-board.json</code>.</div>
+        <div>Two looks: <code>"board": { "theme": "paper" }</code> for a white panel with coloured pictures (try <code>"icon": "vscode-icons:file-type-json"</code>). A step can pull a face: <code>"face": "surprised" | "happy" | "thinking" | "plain" | "sad"</code>. Shapes <code>bubble</code> (with <code>sub</code> as who is speaking) and <code>window</code> (code, one line per <code>\n</code>).</div>
         <div>Drop a <code>.json</code> file anywhere on this page.</div>
         <div>From another window: <code>win.postMessage({ type: "tutor:script", script }, "*")</code></div>
         <div>From the console: <code>TutorEngine.run(script)</code></div>
@@ -169,6 +249,8 @@
   <script src="engine.js"></script>
   <script src="lessons.js"></script>
   <script src="generate.js"></script>
+  <script src="dictionary.js"></script>
+  <script src="pipeline.js"></script>
   <script src="voice-lines.js"></script>
   <script src="app.js"></script>
 </body>

@@ -121,6 +121,33 @@ def render(voice, rate, lines):
     return 0, len(lines), "neither uv nor edge-tts is available"
 
 
+def ask_model(request):
+    """One call to whichever model is connected (see llm.py). Claude needs the
+    Anthropic SDK, so it runs llm.py under uv, as render() does for edge-tts;
+    every other provider is plain HTTP and runs here. Returns llm.py's reply,
+    or {"error": ...}."""
+    import llm
+    cfg = llm.normalise(request["config"]) if request.get("config") else llm.load_config()
+    if not cfg or cfg["provider"] != "anthropic":
+        return llm.ask(request)
+    for command in (["uv", "run", "--quiet", "--with", "anthropic", "python3", "llm.py"],
+                    ["python3", "llm.py"]):
+        try:
+            proc = subprocess.run(command, input=json.dumps(request), capture_output=True,
+                                  text=True, cwd=str(HERE), timeout=120)
+        except FileNotFoundError:
+            continue
+        except subprocess.TimeoutExpired:
+            return {"error": "the model took too long"}
+        for row in reversed(proc.stdout.splitlines()):
+            try:
+                return json.loads(row)
+            except ValueError:
+                continue
+        return {"error": (proc.stderr or "no reply from llm.py").strip()[-300:]}
+    return {"error": "neither uv nor the anthropic package is available"}
+
+
 class Handler(SimpleHTTPRequestHandler):
     def do_POST(self):
         global current
@@ -128,6 +155,10 @@ class Handler(SimpleHTTPRequestHandler):
             self.do_prepare()
         elif self.path == "/record":
             self.do_record()
+        elif self.path == "/llm":
+            self.do_llm()
+        elif self.path == "/llm/key":
+            self.do_llm_key()
         elif self.path == "/say":
             length = int(self.headers.get("Content-Length", 0))
             text = self.rfile.read(length).decode("utf-8")[:1000]
@@ -155,10 +186,85 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path.startswith("/recorded?"):
             self.do_recorded()
             return
+        if self.path == "/llm":
+            import llm
+            self.json_reply(200, llm.status())
+            return
         if self.path.startswith("/icon?"):
             self.do_icon()
             return
         super().do_GET()
+
+    def from_this_machine(self):
+        """The model routes spend money and hold a key, so only a page served
+        from this machine may use them. Every response here carries
+        Access-Control-Allow-Origin: *, so without this check any website open
+        in the same browser could post to localhost and run up the bill."""
+        origin = self.headers.get("Origin")
+        if origin is None:
+            return True                     # curl, or the page itself on some browsers
+        host = origin.split("://", 1)[-1].split(":", 1)[0]
+        if host in ("localhost", "127.0.0.1"):
+            return True
+        self.json_reply(403, {"error": "only pages on this machine may use the model"})
+        return False
+
+    def do_llm_key(self):
+        """Connect a model from the app: {provider, model, base_url, key}, or
+        {remove: true}. It is tried with one tiny call and only saved if that
+        works. The key is never sent back to the browser."""
+        import llm
+        if not self.from_this_machine():
+            return
+        length = int(self.headers.get("Content-Length", 0))
+        try:
+            req = json.loads(self.rfile.read(length).decode("utf-8") or "{}")
+        except ValueError:
+            self.json_reply(400, {"error": "not JSON"})
+            return
+        if req.get("remove"):
+            llm.remove_config()
+            self.json_reply(200, llm.status())
+            return
+        cfg = llm.normalise({k: req.get(k) for k in ("provider", "model", "base_url", "key")})
+        # Changing the model but not retyping the key keeps the saved key, as
+        # long as it is the same provider.
+        saved = llm.load_config()
+        if not cfg["key"] and saved and saved["provider"] == cfg["provider"]:
+            cfg["key"] = saved["key"]
+        if any(c.isspace() for c in cfg["key"]):
+            self.json_reply(400, {"error": "the key has spaces in it; paste it again"})
+            return
+        if cfg["provider"] == "anthropic" and cfg["key"] and not cfg["key"].startswith("sk-ant-"):
+            self.json_reply(400, {"error": "that does not look like an Anthropic key (they start sk-ant-)"})
+            return
+        why = llm.problem(cfg)
+        if why:
+            self.json_reply(400, {"error": why})
+            return
+        res = ask_model({"system": "Reply with a JSON object: {\"ok\": true}", "prompt": "Are you there?",
+                         "effort": "low", "max_tokens": 400, "config": cfg})
+        # A reply, or an empty one, proves the key and model name work. Anything
+        # else (refused key, unknown model, no network) is reported and not saved.
+        if "text" not in res and not str(res.get("error", "")).startswith("empty reply"):
+            self.json_reply(400, {"error": "that did not work: " + res.get("error", "no reply")})
+            return
+        llm.save_config(cfg)
+        self.json_reply(200, llm.status())
+
+    def do_llm(self):
+        """One question to the model, for the question pipeline in pipeline.js.
+        The key stays here; the browser only ever sees the reply."""
+        if not self.from_this_machine():
+            return
+        length = int(self.headers.get("Content-Length", 0))
+        try:
+            req = json.loads(self.rfile.read(length).decode("utf-8") or "{}")
+        except ValueError:
+            self.json_reply(400, {"error": "not JSON"})
+            return
+        res = ask_model({k: req.get(k) for k in ("system", "prompt", "effort", "max_tokens")})
+        self.json_reply(200 if "text" in res else 503, res)
 
     def do_icon(self):
         """An icon from a collection on the internet, kept on disk once seen."""

@@ -288,6 +288,10 @@
       sub: script.board.sub || "",
       // So a script can ask for a drawn illustration (the plant cell).
       picture: script.board.picture || script.board.photo || "",
+      // How the board looks: "chalk" (dark board, chalk writing) or "paper"
+      // (white panel, coloured pictures). The view may let the learner
+      // override it; the script only says which it was written for.
+      theme: script.board.theme || "",
       objects: clone(script.objects) || [],
       slots: clone(script.slots) || [],
       tray: clone(script.tray) || [],
@@ -311,7 +315,7 @@
   // of the board.
   function applyToBoard(board, step) {
     const b = {
-      kind: board.kind, heading: board.heading, sub: board.sub, picture: board.picture,
+      kind: board.kind, heading: board.heading, sub: board.sub, picture: board.picture, theme: board.theme || "",
       objects: board.objects.slice(), slots: board.slots.slice(), tray: board.tray.slice(),
       marks: (board.marks || []).slice(),
       rough: board.rough || { open: false, title: "", lines: [] },
@@ -345,6 +349,7 @@
         if (step.kind !== undefined) b.kind = step.kind;
         if (step.heading !== undefined) b.heading = step.heading;
         if (step.sub !== undefined) b.sub = step.sub;
+        if (step.theme !== undefined) b.theme = step.theme;
         setLayout(step.layout !== undefined ? step.layout : step.grid, step.panels);
         break;
       case "layout":
@@ -637,7 +642,7 @@
     this.io = io;
     this.script = null;
     this.steps = [];
-    this.board = { kind: "blank", heading: "", sub: "", picture: "", objects: [], slots: [], tray: [] };
+    this.board = { kind: "blank", heading: "", sub: "", picture: "", theme: "", objects: [], slots: [], tray: [] };
     this.cursor = -1;
     // Whether the step under the cursor has actually been performed. Seeking
     // or pausing leaves it false, so Play and Next step agree on what comes
@@ -648,6 +653,8 @@
     this.focus = [];
     this.pending = [];   // on the board, but not written up yet
     this.mood = "idle";
+    // The expression a step asked for ("surprised", "thinking", ...), or "".
+    this.face = "";
     this.question = "";
     this.ask = null;
     this.stack = [];             // one saved frame per interjection
@@ -676,6 +683,7 @@
       focus: this.focus,
       pending: this.pending,
       mood: this.mood,
+      face: this.face,
       question: this.question,
       ask: this.ask,
       transition: this.transition,
@@ -702,7 +710,7 @@
     this.executed = false;
     this.status = "idle";
     this.caption = o.caption || "";
-    this.focus = []; this.mood = "idle"; this.question = ""; this.ask = null; this.pending = [];
+    this.focus = []; this.mood = "idle"; this.face = ""; this.question = ""; this.ask = null; this.pending = [];
     this.stack = [];
     this.emit();
     if (o.autoplay) this.play();
@@ -773,7 +781,7 @@
     this.cursor = i;
     this.executed = false;
     this.status = "paused";
-    this.focus = []; this.question = ""; this.ask = null; this.pending = []; this.mood = "idle"; this.pending = [];
+    this.focus = []; this.question = ""; this.ask = null; this.pending = []; this.mood = "idle"; this.face = ""; this.pending = [];
     this.emit();
   };
 
@@ -805,6 +813,7 @@
     this.board = applyToBoard(this.board, step);
 
     this.mood = moodFor(step);
+    this.face = typeof step.face === "string" ? step.face : "";
     this.focus = arr(step.at);
     this.pending = [];
     this.question = step.do === "ask" ? (step.ask.prompt || "") : "";
@@ -1121,7 +1130,7 @@
     this.executed = frame.executed;
     this.caption = frame.caption;
     this.status = frame.status;
-    this.focus = []; this.question = ""; this.ask = null; this.pending = []; this.mood = "idle"; this.pending = [];
+    this.focus = []; this.question = ""; this.ask = null; this.pending = []; this.mood = "idle"; this.face = ""; this.pending = [];
     this.emit();
   };
 

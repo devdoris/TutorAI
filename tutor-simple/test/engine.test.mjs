@@ -222,11 +222,12 @@ test("breaking a step down produces more, smaller steps", () => {
   assert.ok(broken.level < 2, "the broken-down script is not at a lower level");
 });
 
-test("an unanswerable question is refused rather than invented", async () => {
+test("offline, a question the generator cannot answer is answered honestly, not invented and not turned away", async () => {
   const out = await G.generateAnswerScript("who won the 1994 world cup", { faq: [], board: { objects: [] }, concept: "x" });
   const said = out.steps.map(s => s.text).join(" ");
-  assert.match(said, /outside what this lesson covers/i);
+  assert.match(said, /connect the model/i);
   assert.doesNotMatch(said, /Brazil/i);
+  assert.doesNotMatch(said, /outside what this lesson covers|flag it for your teacher/i);
 });
 
 test("the engine renders a script it has never seen", async () => {

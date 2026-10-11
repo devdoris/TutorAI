@@ -41,9 +41,19 @@ const state = {
   voiceOn: true,
   askOpen: false,
   intakeOpen: false,
+  checkIn: false,           // an answer has finished: "did that make sense?"
+  thinking: "",             // which stage of the question pipeline is running
+  // The answer panel beside the board: what was asked, who wrote the reply,
+  // and where it is — writing | playing | done | returned.
+  answer: null,
+  resumedAt: 0,             // when the lesson last took over again, to flash its step
+  keyOpen: false,           // the "Connect the model" box is showing
+  model: { ready: false, model: "", why: "not checked yet", providers: [] },
   received: [],             // scripts that arrived from outside
   progress: loadProgress()
 };
+
+try { state.themePick = localStorage.getItem("tutor-theme") || "auto"; } catch { state.themePick = "auto"; }
 
 function findThing(id) {
   const b = state.engine.board;
@@ -111,6 +121,14 @@ const runner = new E.ScriptRunner({
     if (input) input.value = "";
   },
   onFinish: function () {
+    // An answer to a question has finished, not the lesson. The learner says
+    // whether it landed before anything else happens.
+    if (runner.stack.length) {
+      if (runner.script && runner.script.meta.kind === "answer") state.checkIn = true;
+      if (state.answer) state.answer.status = "done";
+      renderBoardScreen();
+      return;
+    }
     record({});
     flash("That is the whole objective. Your progress is recorded by what you did without help.");
   }
@@ -307,17 +325,27 @@ function speak(text) {
   if (!state.voiceOn || !text) return sleep(readingTime(text || ""));
   const id = ++speechId;
   const url = voice.urls[text];
-  if (url) return playFile(url, id);
+  if (url) return playFile(url, id, text);
   if (voice.server) return renderThenSpeak(text, id);
   return speakWithBrowser(text);
 }
 
-function playFile(url, id) {
+function playFile(url, id, text) {
   return new Promise(function (resolve) {
     let settled = false;
+    // A clip that never starts (a stalled load, or a background tab Chrome will
+    // not play media in) must not freeze the lesson: after a few seconds she
+    // carries on, paced as if she had said it.
+    const stall = setTimeout(function () {
+      if (settled || player.readyState >= 2) return;
+      player.pause();
+      voiceNote("A line of audio did not load; carrying on without it.");
+      sleep(readingTime(text || "")).then(done);
+    }, 5000);
     const done = function () {
       if (settled) return;
       settled = true;
+      clearTimeout(stall);
       player.onended = null;
       player.onerror = null;
       if (id === speechId) speaking = false;
@@ -353,7 +381,7 @@ function renderThenSpeak(text, id) {
     .then(function () {
       if (id !== speechId) return;
       const url = voice.urls[text];
-      return url ? playFile(url, id) : speakWithMac(text);
+      return url ? playFile(url, id, text) : speakWithMac(text);
     })
     .catch(() => speakWithMac(text));
 }
@@ -444,7 +472,8 @@ function openLesson(id) {
   if (!script) return;
   Object.assign(state, {
     screen: "board", lessonId: id, placements: {}, feedback: {},
-    selectedCard: null, askOpen: false, usedHint: false, nod: false
+    selectedCard: null, askOpen: false, usedHint: false, nod: false,
+    answer: null, checkIn: false, thinking: ""
   });
   runner.load(script);
   render();
@@ -475,6 +504,7 @@ const intake = new E.Intake({
       interjectWith(script);
     } else {
       state.lessonId = script.id;
+      state.answer = null; state.checkIn = false;
       runner.load(script, { caption: "Loaded " + script.title + " from " + source + ". Press play." });
     }
     render();
@@ -620,22 +650,101 @@ function answerContext() {
 
 // The learner asks a question. The answer is a script, which the same engine
 // plays on the same board, before putting the lesson back where it was.
-function askTutor(question) {
-  const ctx = answerContext();
-  const goWith = script => interjectWith(script);
-
-  // "I don't understand" is a request for a simpler explanation, not a question.
-  if (G.isConfusion(question)) {
-    const lower = G.explainAtLevel((ctx.level || 2) - 1, ctx, G.LIBRARY);
-    if (lower) { goWith(lower); return; }
+//
+//   lecture → learner pauses and asks → intent layer (in scope?) → model writes
+//   the explanation → Script Manager turns it into a script with the
+//   dictionary → board plays it → "does that make sense?"
+//
+// The stages live in pipeline.js; this only shows which one is running.
+const pipeline = TutorPipeline.create({
+  llm: req => llmCall(req),
+  available: () => state.model.ready,
+  validate: E.validateScript,
+  localAnswer: (question, ctx) => G.generateAnswerScript(question, ctx),
+  onStage: function (stage, label) {
+    state.thinking = stage === "ready" ? "" : label;
+    if (state.answer && state.answer.status === "writing") state.answer.stage = state.thinking;
+    renderBoardScreen();
   }
-  G.generateAnswerScript(question, ctx).then(goWith);
+});
+const llmCall = TutorPipeline.serverLLM("");
+
+// Is there a model behind the server? Without one the pipeline still answers,
+// from the local generator.
+fetch("/llm")
+  .then(r => (r.ok ? r.json() : null))
+  .then(function (info) { if (info) state.model = info; renderBoardScreen(); })
+  .catch(function () { state.model = { ready: false, model: "", why: "no local server" }; });
+
+// Everything the lesson has said so far, so the intent layer can tell a
+// question about this lesson from one about something else.
+function lessonText() {
+  const steps = (runner.stack.length ? runner.stack[0].steps : runner.steps) || [];
+  return steps.map(st => st.text || "").filter(Boolean);
+}
+
+// After an answer, "I'm okay" / "yes" / "got it" typed into the question box
+// means the same as the button: back to the lesson.
+const OKAY = /^(ok|okay|yes|yeah|yep|sure|fine|got it|understood|i (get|got|understand) it|i'?m (ok|okay|fine|good|clear)|that makes sense|makes sense|it makes sense|clear|thanks?|thank you|continue|go on|carry on)[.! ]*$/i;
+
+function askTutor(question, extra) {
+  // While an answer is on the board, "I'm okay" is not a question: it is the
+  // learner handing the board back to the lesson.
+  if (state.engine.interjecting && !extra && OKAY.test(question.trim())) { backToLesson(); return; }
+  state.checkIn = false;
+  // An answer that is still on the board goes first, so the next one starts
+  // from the lesson rather than stacking on top of the last answer.
+  if (state.engine.interjecting) runner.resume();
+  else runner.pause();
+  const ctx = Object.assign(answerContext(), { title: state.engine.title, subject: state.engine.subject, lessonText: lessonText() });
+
+  // The answer panel opens at once, so the question and the writing of its
+  // script can be watched beside the lesson that is holding its place.
+  state.answer = { question: question, kind: "answer", status: "writing", stage: "", source: "", route: "", heldAt: stepLabel() };
+  renderBoardScreen();
+
+  // "I don't understand" with a simpler lesson ready: that lesson is the answer.
+  if (!extra && G.isConfusion(question)) {
+    const lower = G.explainAtLevel((ctx.level || 2) - 1, ctx, G.LIBRARY);
+    if (lower) { interjectWith(lower); return; }
+  }
+  state.lastQuestion = question;
+  pipeline.answer(question, ctx, extra).then(function (res) {
+    state.lastTrace = res.trace;
+    if (state.answer) { state.answer.source = res.script.meta.source; state.answer.route = res.trace.route; }
+    console.info("[tutor] question pipeline", res.trace.route, res.trace);
+    return interjectWith(res.script);
+  }).catch(function (err) {
+    state.thinking = "";
+    state.answer = null;
+    flash("I could not put that answer together. Ask me again in different words.");
+    console.error("[tutor] question pipeline failed", err);
+  });
 }
 
 // Play a script over the top of the lesson, with its voice ready first. The
 // lines are usually already on disk, so this costs a round trip, not a render.
 function interjectWith(script) {
-  return prepare(linesFor(script)).then(() => runner.interject(script, { label: stepLabel() }));
+  const meta = script.meta || {};
+  // A script that was not asked for in words (a tap, "simpler", "deeper")
+  // still gets its own panel, named after what it is.
+  if (!state.answer || state.answer.status !== "writing") {
+    state.answer = { question: meta.question || script.title || "A closer look", kind: meta.kind || "script", status: "writing", stage: "", source: meta.source || "", route: "", heldAt: stepLabel() };
+  }
+  return prepare(linesFor(script)).then(function () {
+    if (state.answer) { state.answer.status = "playing"; state.answer.source = state.answer.source || meta.source || ""; }
+    return runner.interject(script, { label: stepLabel() });
+  });
+}
+
+// The learner is satisfied: the answer is over and the lesson takes the board
+// back, on the very step it was holding. The panels show the hand-back.
+function backToLesson() {
+  state.checkIn = false;
+  if (state.answer) { state.answer.status = "returned"; state.answer.returnedTo = state.engine.returnTo || "the lesson"; }
+  state.resumedAt = Date.now();
+  runner.resumeAndPlay();
+  setTimeout(function () { state.resumedAt = 0; renderBoardScreen(); }, 3600);
 }
 
 // The learner tapped something that can be looked at closer. It comes forward
@@ -671,23 +780,71 @@ function goDeeper() {
 const canvas = document.getElementById("board");
 const ctx = canvas.getContext("2d");
 
-const BOARD = { x: 252, y: 42, w: 708, h: 534 };
+const BOARD = { x: 214, y: 42, w: 762, h: 534 };
+// The tutor stands this much left of where she was drawn, so the board can
+// have the room instead.
+const TUTOR_SHIFT = -26;
 const BX = pct => BOARD.x + pct / 100 * BOARD.w;
 const BY = pct => BOARD.y + pct / 100 * BOARD.h;
 const U = BOARD.w / 100;   // 1% of the board's width
 
-const C = {
-  ink: "#201e1d", paper: "#f5ead8", chalkboard: "#2c332d", frame: "#8c491a",
-  chalk: "#f3ecdc", faint: "rgba(243,236,220,0.45)", sage: "#a9b79b",
-  accent: "#c67139", accentLight: "#ffc6a5", green: "#7a8a5e"
+// Two looks for the same board. "chalk" is a dark board written on in a hand;
+// "paper" is a white panel with coloured pictures and clean type, the look of
+// an explainer video. The names inside are kept from the chalk days: `chalk`
+// is whatever the writing is done in, `chalkboard` whatever it is done on.
+const CHALK_FONT = '"Chalkboard SE", "Chalkboard", "Bradley Hand", "Segoe Print", "Comic Sans MS", "Marker Felt", system-ui, sans-serif';
+const PAPER_FONT = '"Avenir Next", "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif';
+const MONO_FONT = '"Menlo", "SFMono-Regular", "Consolas", ui-monospace, monospace';
+const THEMES = {
+  chalk: {
+    ink: "#201e1d", paper: "#f5ead8", chalkboard: "#2c332d", frame: "#8c491a",
+    chalk: "#f3ecdc", faint: "rgba(243,236,220,0.45)", sage: "#a9b79b", sub: "#cfd8c4",
+    accent: "#c67139", accentLight: "#ffc6a5", green: "#7a8a5e", mark: "#ffc6a5",
+    lineFaint: "rgba(243,236,220,0.18)", lineSoft: "rgba(243,236,220,0.35)", lineStrong: "#eae2cf",
+    panelFill: "rgba(243,236,220,0.035)", panelStroke: "rgba(243,236,220,0.28)", panelPointed: "rgba(198,113,57,0.16)",
+    objectFill: "rgba(243,236,220,0.07)", photoFill: "rgba(243,236,220,0.08)",
+    padFill: "#3c463c", padRule: "rgba(243,236,220,0.22)", slotFill: "rgba(44,51,45,0.85)",
+    bubbleFill: "rgba(243,236,220,0.1)", bubbleStroke: "#f3ecdc", windowFill: "rgba(0,0,0,0.28)", windowBar: "rgba(243,236,220,0.14)",
+    wipeRGB: "233,238,228", fadeRGB: "20,24,20",
+    font: CHALK_FONT, heading: CHALK_FONT, mono: MONO_FONT,
+    // Light colours are chalk and carry dust; dark ink on a highlight does not.
+    glow: true, dusty: ["#f3ecdc", "#a9b79b", "#ffc6a5", "#cfd8c4", "rgba(243,236,220,0.45)"]
+  },
+  paper: {
+    ink: "#201e1d", paper: "#fffdf8", chalkboard: "#ffffff", frame: "#ebe6db",
+    chalk: "#1f1d1b", faint: "rgba(31,29,27,0.3)", sage: "#6b7280", sub: "#6b7280",
+    accent: "#e8752a", accentLight: "#ffd7bd", green: "#3f9a5b", mark: "#e0552b",
+    lineFaint: "rgba(31,29,27,0.12)", lineSoft: "rgba(31,29,27,0.25)", lineStrong: "#4b4844",
+    panelFill: "rgba(31,29,27,0.025)", panelStroke: "rgba(31,29,27,0.16)", panelPointed: "rgba(232,117,42,0.12)",
+    objectFill: "rgba(31,29,27,0.05)", photoFill: "rgba(31,29,27,0.06)",
+    padFill: "#fff4e5", padRule: "rgba(31,29,27,0.15)", slotFill: "rgba(255,255,255,0.92)",
+    bubbleFill: "#fff6e8", bubbleStroke: "#e8752a", windowFill: "#f6f6f3", windowBar: "#e6e4df",
+    wipeRGB: "214,208,196", fadeRGB: "255,255,255",
+    font: PAPER_FONT, heading: PAPER_FONT, mono: MONO_FONT,
+    glow: false, dusty: []
+  }
 };
-// Everything written on the board is chalk in a hand. Both names are kept
-// because a heading is still written larger than the working under it.
-const CHALK = '"Chalkboard SE", "Chalkboard", "Bradley Hand", "Segoe Print", "Comic Sans MS", "Marker Felt", system-ui, sans-serif';
-const HEADING = CHALK;
-const BODY = CHALK;
-// Light colours are chalk and carry dust; dark ink on a highlight does not.
-const DUSTY = ["#f3ecdc", "#a9b79b", "#ffc6a5", "#cfd8c4", "rgba(243,236,220,0.45)"];
+const C = Object.assign({}, THEMES.chalk);
+let HEADING = C.heading;
+let BODY = C.font;
+let themeName = "";
+
+function applyTheme(name) {
+  if (name === themeName) return;
+  themeName = name;
+  Object.assign(C, THEMES[name] || THEMES.chalk);
+  HEADING = C.heading;
+  BODY = C.font;
+  document.querySelector(".board-frame").classList.toggle("theme-paper", name === "paper");
+}
+
+// The learner's pick wins; otherwise the script says which look it was
+// written for, and chalk is what everything older was written for.
+function wantedTheme() {
+  const pick = state.themePick || "auto";
+  if (pick === "chalk" || pick === "paper") return pick;
+  return state.engine.board.theme === "paper" ? "paper" : "chalk";
+}
 
 let hitAreas = [];  // rebuilt every frame: what can be clicked on the canvas
 
@@ -706,23 +863,28 @@ function text(str, x, y, size, color, font = BODY, align = "center") {
   ctx.fillStyle = color;
   ctx.textAlign = align;
   ctx.textBaseline = "middle";
-  const dusty = DUSTY.indexOf(color) >= 0;
+  const dusty = C.glow && C.dusty.indexOf(color) >= 0;
   if (dusty) { ctx.shadowColor = "rgba(243,236,220,0.38)"; ctx.shadowBlur = 6; }
   ctx.fillText(str, x, y);
   if (dusty) { ctx.shadowBlur = 0; ctx.shadowColor = "transparent"; }
 }
 
-function wrapText(str, x, y, maxWidth, size, color) {
-  ctx.font = size + "px " + BODY;
-  const words = String(str).split(" ");
-  let line = "";
+function wrapLines(str, maxWidth, size, font = BODY) {
+  ctx.font = size + "px " + font;
   const lines = [];
-  for (const w of words) {
-    if (ctx.measureText(line + w).width > maxWidth && line) { lines.push(line.trim()); line = ""; }
-    line += w + " ";
-  }
-  lines.push(line.trim());
-  lines.forEach((l, i) => text(l, x, y + i * size * 1.25, size, color, BODY, "center"));
+  String(str).split("\n").forEach(function (para) {
+    let line = "";
+    for (const w of para.split(" ")) {
+      if (ctx.measureText(line + w).width > maxWidth && line) { lines.push(line.trim()); line = ""; }
+      line += w + " ";
+    }
+    lines.push(line.trim());
+  });
+  return lines;
+}
+
+function wrapText(str, x, y, maxWidth, size, color) {
+  wrapLines(str, maxWidth, size).forEach((l, i) => text(l, x, y + i * size * 1.25, size, color, BODY, "center"));
 }
 
 function roundRect(x, y, w, h, r, fill, stroke, lineWidth = 2, dashed = false) {
@@ -765,14 +927,15 @@ function draw(now) {
   hitAreas = [];
 
   const b = state.engine.board;
-  roundRect(236, 26, 740, 566, 30, C.frame);
+  applyTheme(wantedTheme());
+  roundRect(BOARD.x - 16, 26, BOARD.w + 32, 566, 30, C.frame);
   roundRect(BOARD.x, BOARD.y, BOARD.w, BOARD.h, 20, C.chalkboard);
   drawBoardLines(b.kind);
   if (b.picture === "plant-cell") drawPlantCell(b);
   drawPanels(b);
 
   text(b.heading, BX(3), BY(6), 4.4 * U, C.chalk, HEADING, "left");
-  text(b.sub, BX(3), BY(14), 2.5 * U, "#cfd8c4", BODY, "left");
+  text(b.sub, BX(3), BY(14), 2.5 * U, C.sub, BODY, "left");
   if (state.engine.question) text(state.engine.question, BX(3), BY(95), 2.6 * U, C.accentLight, BODY, "left");
 
   b.slots.filter(s => s.place === "board").forEach(drawBoardSlot);
@@ -893,8 +1056,8 @@ function drawPanels(b) {
     const x = BX(p.x), y = BY(p.y), w = p.w / 100 * BOARD.w, h = p.h / 100 * BOARD.h;
     const pointed = isPointing() && pointedId() === p.id;
     roundRect(x, y, w, h, 12,
-      pointed ? "rgba(198,113,57,0.16)" : "rgba(243,236,220,0.035)",
-      pointed ? C.accent : "rgba(243,236,220,0.28)", pointed ? 3 : 2, !pointed);
+      pointed ? C.panelPointed : C.panelFill,
+      pointed ? C.accent : C.panelStroke, pointed ? 3 : 2, !pointed);
     if (p.title) text(p.title, x + 2 * U, y + 3.6 * U, 2.4 * U, pointed ? C.accentLight : C.sage, HEADING, "left");
     // So a mark can ring a whole part, and the arm can aim at it.
     if (!b.stage) hitAreas.push({ kind: "panel", id: p.id, x: x, y: y, w: w, h: h });
@@ -933,9 +1096,9 @@ function drawWipe(t) {
   const band = BOARD.w * 0.42;
   const cx = BOARD.x - band + (BOARD.w + band * 2) * t;
   const g = ctx.createLinearGradient(cx - band / 2, 0, cx + band / 2, 0);
-  g.addColorStop(0, "rgba(233,238,228,0)");
-  g.addColorStop(0.5, "rgba(233,238,228,0.34)");
-  g.addColorStop(1, "rgba(233,238,228,0)");
+  g.addColorStop(0, "rgba(" + C.wipeRGB + ",0)");
+  g.addColorStop(0.5, "rgba(" + C.wipeRGB + ",0.34)");
+  g.addColorStop(1, "rgba(" + C.wipeRGB + ",0)");
   onBoard(function () { ctx.fillStyle = g; ctx.fillRect(BOARD.x, BOARD.y, BOARD.w, BOARD.h); });
 }
 
@@ -943,26 +1106,26 @@ function drawSweep(t) {
   const band = BOARD.h * 0.5;
   const cy = BOARD.y - band + (BOARD.h + band * 2) * t;
   const g = ctx.createLinearGradient(0, cy - band / 2, 0, cy + band / 2);
-  g.addColorStop(0, "rgba(233,238,228,0)");
-  g.addColorStop(0.5, "rgba(233,238,228,0.3)");
-  g.addColorStop(1, "rgba(233,238,228,0)");
+  g.addColorStop(0, "rgba(" + C.wipeRGB + ",0)");
+  g.addColorStop(0.5, "rgba(" + C.wipeRGB + ",0.3)");
+  g.addColorStop(1, "rgba(" + C.wipeRGB + ",0)");
   onBoard(function () { ctx.fillStyle = g; ctx.fillRect(BOARD.x, BOARD.y, BOARD.w, BOARD.h); });
 }
 
 function drawFade(t) {
   const a = Math.sin(t * Math.PI) * 0.55;
-  onBoard(function () { ctx.fillStyle = "rgba(20,24,20," + a.toFixed(3) + ")"; ctx.fillRect(BOARD.x, BOARD.y, BOARD.w, BOARD.h); });
+  onBoard(function () { ctx.fillStyle = "rgba(" + C.fadeRGB + "," + a.toFixed(3) + ")"; ctx.fillRect(BOARD.x, BOARD.y, BOARD.w, BOARD.h); });
 }
 
 // Background lines that depend on the kind of board.
 function drawBoardLines(kind) {
-  const chalkLine = (x1, y1, x2, y2, w, color = "#eae2cf", dash) => line(BX(x1), BY(y1), BX(x2), BY(y2), color, w, dash);
+  const chalkLine = (x1, y1, x2, y2, w, color = C.lineStrong, dash) => line(BX(x1), BY(y1), BX(x2), BY(y2), color, w, dash);
   if (kind === "numberline") {
     chalkLine(4, 50, 96, 50, 4);
-    for (let i = 0; i <= 10; i++) chalkLine(4 + i * 9.2, 46, 4 + i * 9.2, 54, i % 5 === 0 ? 4 : 2, "#cfd8c4");
+    for (let i = 0; i <= 10; i++) chalkLine(4 + i * 9.2, 46, 4 + i * 9.2, 54, i % 5 === 0 ? 4 : 2, C.sub);
   } else if (kind === "axes") {
-    for (let i = 1; i <= 8; i++) { chalkLine(12 + i * 10, 22, 12 + i * 10, 82, 1.5, "rgba(243,236,220,0.18)"); text(String(i), BX(12 + i * 10), BY(88), 18, C.sage); }
-    for (let i = 1; i <= 6; i++) { chalkLine(12, 82 - i * 10, 94, 82 - i * 10, 1.5, "rgba(243,236,220,0.18)"); text(String(i), BX(8), BY(82 - i * 10), 18, C.sage); }
+    for (let i = 1; i <= 8; i++) { chalkLine(12 + i * 10, 22, 12 + i * 10, 82, 1.5, C.lineFaint); text(String(i), BX(12 + i * 10), BY(88), 18, C.sage); }
+    for (let i = 1; i <= 6; i++) { chalkLine(12, 82 - i * 10, 94, 82 - i * 10, 1.5, C.lineFaint); text(String(i), BX(8), BY(82 - i * 10), 18, C.sage); }
     chalkLine(12, 82, 94, 82, 4);
     chalkLine(12, 82, 12, 20, 4);
     text("0", BX(8), BY(88), 18, C.sage);
@@ -971,8 +1134,8 @@ function drawBoardLines(kind) {
   } else if (kind === "timeline") {
     chalkLine(6, 44, 96, 44, 4);
   } else if (kind === "bars") {
-    chalkLine(2, 30, 98, 30, 2, "rgba(243,236,220,0.35)", [10, 10]);
-    chalkLine(2, 50, 98, 50, 2, "rgba(243,236,220,0.35)", [10, 10]);
+    chalkLine(2, 30, 98, 30, 2, C.lineSoft, [10, 10]);
+    chalkLine(2, 50, 98, 50, 2, C.lineSoft, [10, 10]);
   }
 }
 
@@ -1094,7 +1257,7 @@ function drawRemoteIcon(ob, x, y, ink) {
   const top = y - m.h / 2;
   const img = remoteIcon(ob.icon, ink);
   ctx.save();
-  if (ink === C.chalk) { ctx.shadowColor = "rgba(243,236,220,0.35)"; ctx.shadowBlur = 5; }
+  if (C.glow && ink === C.chalk) { ctx.shadowColor = "rgba(243,236,220,0.35)"; ctx.shadowBlur = 5; }
   for (let i = 0; i < many; i++) {
     const ix = x - row / 2 + i * (size + gap);
     if (img) ctx.drawImage(img, ix, top, size, size);
@@ -1126,7 +1289,7 @@ function drawPhoto(ob, x, y, ink) {
     const dw = img.width * k, dh = img.height * k;
     ctx.drawImage(img, left + (m.pw - dw) / 2, top + (m.ph - dh) / 2, dw, dh);
   } else {
-    ctx.fillStyle = "rgba(243,236,220,0.08)";
+    ctx.fillStyle = C.photoFill;
     ctx.fillRect(left, top, m.pw, m.ph);
   }
   ctx.restore();
@@ -1170,7 +1333,7 @@ function drawIcon(ob, x, y, ink) {
   ctx.strokeStyle = ink;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
-  if (ink === C.chalk) { ctx.shadowColor = "rgba(243,236,220,0.35)"; ctx.shadowBlur = 5; }
+  if (C.glow && ink === C.chalk) { ctx.shadowColor = "rgba(243,236,220,0.35)"; ctx.shadowBlur = 5; }
   for (let i = 0; i < many; i++) {
     ctx.save();
     ctx.translate(x - row / 2 + i * (size + gap), top);
@@ -1185,12 +1348,20 @@ function drawIcon(ob, x, y, ink) {
   return m;
 }
 
+// How wide the part of the board an object lives in is, in canvas units; 0
+// when it is not in one.
+function panelWidthFor(ob) {
+  if (!ob.panel) return 0;
+  const p = (state.engine.board.panels || []).find(q => q.id === ob.panel || q.name === ob.panel || String(q.index) === String(ob.panel));
+  return p ? p.w / 100 * BOARD.w : 0;
+}
+
 function drawObjectBody(ob, x, y) {
   if (x === undefined) { x = BX(ob.x); y = BY(ob.y); }
   const pointedAt = isPointing() && pointedId() === ob.id;
   const look = pointedAt ? "target" : state.feedback[ob.id] || "";
   const ring = look === "target" ? C.chalk : look === "right" ? C.green : look === "wrong" ? C.accentLight : C.faint;
-  const fill = look === "target" ? C.accent : look === "right" ? C.green : "rgba(243,236,220,0.07)";
+  const fill = look === "target" ? C.accent : look === "right" ? C.green : C.objectFill;
   const ink = look === "target" || look === "right" ? C.chalkboard : C.chalk;
   let w, h;
 
@@ -1240,7 +1411,7 @@ function drawObjectBody(ob, x, y) {
     }
     case "bar": {                           // one part of a fraction bar
       w = (ob.w || 10) * U; h = 14 * U;
-      roundRect(x - w / 2, y - h / 2, w, h, 11, look === "target" ? C.accent : ob.on ? C.green : "rgba(243,236,220,0.07)", ring);
+      roundRect(x - w / 2, y - h / 2, w, h, 11, look === "target" ? C.accent : ob.on ? C.green : C.objectFill, ring);
       break;
     }
     case "note": {                          // note on a stave
@@ -1268,10 +1439,58 @@ function drawObjectBody(ob, x, y) {
       text(ob.label, x, y, 3 * U, C.chalk);
       break;
     }
+    case "bubble": {                        // words said by a thing on the board
+      const size = (ob.size || 2.6) * U;
+      const title = ob.sub ? size * 0.85 : 0;
+      w = (ob.w || 30) * U;
+      const lines = wrapLines(ob.label, w - 4 * U, size);
+      h = 3.2 * U + (title ? title * 1.4 : 0) + lines.length * size * 1.25;
+      const left = x - w / 2, top = y - h / 2;
+      const bg = look === "target" || look === "right" ? fill : C.bubbleFill;
+      const edge = look === "target" || look === "right" ? ring : C.bubbleStroke;
+      roundRect(left, top, w, h, 14, bg, edge, 2.5);
+      // The tail: from the bottom-left corner unless told otherwise, so a
+      // bubble sits above and to the right of whoever is speaking.
+      const tx = ob.tail === "br" ? left + w - 7 * U : left + 4 * U;
+      const dir = ob.tail === "br" ? 1 : -1;
+      ctx.beginPath();
+      ctx.moveTo(tx, top + h - 1); ctx.lineTo(tx + 3.5 * U, top + h - 1); ctx.lineTo(tx + 1.7 * U + dir * 1.8 * U, top + h + 2.8 * U); ctx.closePath();
+      ctx.fillStyle = bg; ctx.fill(); ctx.strokeStyle = edge; ctx.lineWidth = 2.5; ctx.lineJoin = "round"; ctx.stroke();
+      line(tx + 1, top + h - 1, tx + 3.5 * U - 1, top + h - 1, bg, 4);
+      if (title) text(ob.sub, left + 2 * U, top + 1.6 * U + title * 0.6, title, look === "target" ? ink : C.accent, HEADING, "left");
+      lines.forEach((l, i) => text(l, x, top + 1.6 * U + (title ? title * 1.4 : 0) + size * 0.7 + i * size * 1.25, size, ink, BODY, "center"));
+      h += 2.8 * U;
+      break;
+    }
+    case "window": {                        // a code window: a title bar, then lines in a fixed-width face
+      const size = (ob.size || 2.1) * U;
+      const rows = String(ob.label).split("\n");
+      ctx.font = size + "px " + C.mono;
+      let widest = 0;
+      rows.forEach(function (r) { widest = Math.max(widest, ctx.measureText(r).width); });
+      const bar = 3 * U;
+      w = Math.max((ob.w || 0) * U, widest + 4 * U);
+      h = bar + rows.length * size * 1.35 + 2.4 * U;
+      const left = x - w / 2, top = y - h / 2;
+      roundRect(left, top, w, h, 10, look === "target" || look === "right" ? fill : C.windowFill, look ? ring : C.faint, 2);
+      ctx.save();
+      ctx.beginPath(); ctx.roundRect(left, top, w, h, 10); ctx.clip();
+      ctx.fillStyle = C.windowBar; ctx.fillRect(left, top, w, bar);
+      ctx.restore();
+      ["#ff5f57", "#febc2e", "#28c840"].forEach((c, i) => circle(left + 1.7 * U + i * 1.6 * U, top + bar / 2, 0.55 * U, c));
+      if (ob.sub) text(ob.sub, left + w - 1.6 * U, top + bar / 2, size * 0.8, look === "target" ? ink : C.sage, BODY, "right");
+      rows.forEach((r, i) => text(r, left + 2 * U, top + bar + 1.2 * U + size * 0.7 + i * size * 1.35, size, ink, C.mono, "left"));
+      break;
+    }
     default: {                              // plain label; a script can set its
-      const size = (ob.size || 3) * U;      // own size — a comma needs to read as a comma
+      let size = (ob.size || 3) * U;        // own size — a comma needs to read as a comma
       ctx.font = size + "px " + BODY;
-      w = ctx.measureText(ob.label).width + 3 * U; h = size + 2 * U;
+      let tw = ctx.measureText(ob.label).width;
+      // Written inside a part of a divided board, it is written smaller
+      // rather than across the line into the next part.
+      const room = panelWidthFor(ob) - 4 * U;
+      if (room > 0 && tw > room) { size *= room / tw; ctx.font = size + "px " + BODY; tw = ctx.measureText(ob.label).width; }
+      w = tw + 3 * U; h = size + 2 * U;
       if (look) roundRect(x - w / 2, y - h / 2, w, h, 10, fill);
       text(ob.label, x, y, size, ink);
       if (ob.sub) text(ob.sub, x, y + h / 2 + 1.8 * U, 2.1 * U, C.sage);
@@ -1323,9 +1542,9 @@ function drawPad(pad, opening, closing) {
   // Slides up into place as it opens, and drops away as it is put aside.
   ctx.translate(0, (1 - opening) * 18 + closing * closing * (h + 30));
   ctx.globalAlpha = Math.min(opening, 1 - closing * 0.75);
-  roundRect(x, y, w, h, 16, "#3c463c", C.accent, 3);
+  roundRect(x, y, w, h, 16, C.padFill, C.accent, 3);
   text(pad.title || "rough work", x + 3.2 * U, y + 4.2 * U, 2.6 * U, C.accentLight, BODY, "left");
-  line(x + 3 * U, y + 6.6 * U, x + w - 3 * U, y + 6.6 * U, "rgba(243,236,220,0.22)", 2);
+  line(x + 3 * U, y + 6.6 * U, x + w - 3 * U, y + 6.6 * U, C.padRule, 2);
   (pad.lines || []).slice(0, ROUGH.maxLines).forEach(function (row, i) {
     text(row, x + 3.2 * U, y + 10 * U + i * 4.4 * U, 2.9 * U, C.chalk, BODY, "left");
   });
@@ -1375,7 +1594,7 @@ function drawMarks(board, now) {
     ctx.lineCap = "round";
     // Pale chalk rather than the accent colour: a mark often lands on the very
     // thing the tutor is pointing at, and that is already accent-coloured.
-    ctx.strokeStyle = C.accentLight;
+    ctx.strokeStyle = C.mark;
     ctx.lineWidth = 4.5;
     if (m.kind === "cross") drawCross(box, t);
     else if (m.kind === "underline") drawUnderline(box, t);
@@ -1392,13 +1611,13 @@ function drawCross(box, t) {
   const x1 = box.x - pad, y1 = box.y - pad, x2 = box.x + box.w + pad, y2 = box.y + box.h + pad;
   // First stroke, then the second, so it reads as two movements of a hand.
   const a = Math.min(1, t * 2), b = Math.max(0, t * 2 - 1);
-  line(x1, y1, x1 + (x2 - x1) * a, y1 + (y2 - y1) * a, C.accentLight, 4.5);
-  if (b > 0) line(x2, y1, x2 - (x2 - x1) * b, y1 + (y2 - y1) * b, C.accentLight, 4.5);
+  line(x1, y1, x1 + (x2 - x1) * a, y1 + (y2 - y1) * a, C.mark, 4.5);
+  if (b > 0) line(x2, y1, x2 - (x2 - x1) * b, y1 + (y2 - y1) * b, C.mark, 4.5);
 }
 
 function drawUnderline(box, t) {
   const y = box.y + box.h + 7;
-  line(box.x - 4, y, box.x - 4 + (box.w + 8) * t, y, C.accentLight, 4.5);
+  line(box.x - 4, y, box.x - 4 + (box.w + 8) * t, y, C.mark, 4.5);
 }
 
 function drawRing(box, t) {
@@ -1424,8 +1643,8 @@ function drawArrow(from, to, t) {
   ctx.stroke();
   if (t > 0.92) {
     const ang = Math.atan2(y2 - (y1 + y2) / 2, x2 - mx);
-    line(x2, y2, x2 - 13 * Math.cos(ang - 0.45), y2 - 13 * Math.sin(ang - 0.45), C.accentLight, 4.5);
-    line(x2, y2, x2 - 13 * Math.cos(ang + 0.45), y2 - 13 * Math.sin(ang + 0.45), C.accentLight, 4.5);
+    line(x2, y2, x2 - 13 * Math.cos(ang - 0.45), y2 - 13 * Math.sin(ang - 0.45), C.mark, 4.5);
+    line(x2, y2, x2 - 13 * Math.cos(ang + 0.45), y2 - 13 * Math.sin(ang + 0.45), C.mark, 4.5);
   }
 }
 
@@ -1434,7 +1653,7 @@ function drawBoardSlot(slot) {
   const w = 22 * U, h = 8 * U;
   const x = BX(slot.x) - w / 2, y = BY(slot.y) - h / 2;
   const waiting = state.engine.ask && state.engine.ask.type === "place";
-  roundRect(x, y, w, h, 14, "rgba(44,51,45,0.85)", waiting ? C.green : C.faint, 2, true);
+  roundRect(x, y, w, h, 14, C.slotFill, waiting ? C.green : C.faint, 2, true);
   const card = cardInSlot(slot.id);
   text(card ? card.label : slot.label, x + w / 2, y + h / 2, card ? 2.4 * U : 2 * U, card ? C.chalk : C.sage);
   hitAreas.push({ kind: "slot", id: slot.id, x, y, w, h });
@@ -1502,7 +1721,7 @@ function drawTutor(now) {
 
   if (isPointing()) {
     target = posOf(pointedId());
-    const angle = Math.atan2(target.y - SY, target.x - stride - SX);
+    const angle = Math.atan2(target.y - SY, target.x - stride - TUTOR_SHIFT - SX);
     const ex = SX + 62 * Math.cos(angle - 0.35), ey = SY + 62 * Math.sin(angle - 0.35);
     goal = { elbowX: ex, elbowY: ey, handX: ex + 66 * Math.cos(angle), handY: ey + 66 * Math.sin(angle) };
   } else if (mood === "celebrate") {
@@ -1512,7 +1731,7 @@ function drawTutor(now) {
   for (const k in arm) arm[k] += (goal[k] - arm[k]) * 0.15;   // glide smoothly
 
   ctx.save();
-  ctx.translate(stride, 0);
+  ctx.translate(stride + TUTOR_SHIFT, 0);
   if (mood === "celebrate") ctx.translate(0, -Math.abs(Math.sin(now / 260)) * 22);   // jump
 
   // legs, body, arms
@@ -1528,18 +1747,7 @@ function drawTutor(now) {
   if (mood === "nod") tilt = Math.sin(now / 120) * 0.12;
   ctx.save();
   ctx.translate(150, 372); ctx.rotate(tilt); ctx.translate(-150, -372);
-  circle(150, 332, 38, C.paper, C.ink, 9);
-  circle(137, 326, 4.5, C.ink);
-  circle(163, 326, 4.5, C.ink);
-  if (speaking) {
-    ctx.beginPath();
-    ctx.ellipse(150, 346, 12, 3 + Math.abs(Math.sin(now / 90)) * 6, 0, 0, Math.PI * 2);
-    ctx.fillStyle = C.ink; ctx.fill();
-  } else {
-    ctx.beginPath();
-    ctx.arc(150, 334, 16, 0.2 * Math.PI, 0.8 * Math.PI);
-    ctx.strokeStyle = C.ink; ctx.lineWidth = 5; ctx.stroke();
-  }
+  drawFace(now);
   ctx.restore();
 
   // listening ring and celebration sparks
@@ -1556,7 +1764,47 @@ function drawTutor(now) {
   ctx.restore();
 
   // dotted chalk line from the hand to what is being pointed at
-  if (target) line(arm.handX + stride, arm.handY, target.x, target.y, C.accent, 3, [3, 12]);
+  if (target) line(arm.handX + stride + TUTOR_SHIFT, arm.handY, target.x, target.y, C.accent, 3, [3, 12]);
+}
+
+// The expression a step asked for, if any: "happy", "surprised", "thinking",
+// "plain" or "sad". With none, a smile. The mouth still moves while she
+// speaks, whatever the face.
+function drawFace(now) {
+  const face = state.engine.face || "";
+  circle(150, 332, 38, C.paper, C.ink, 9);
+  const stroke = (from, to, w) => line(from[0], from[1], to[0], to[1], C.ink, w);
+  if (face === "surprised") {
+    circle(137, 326, 7, C.paper, C.ink, 3); circle(163, 326, 7, C.paper, C.ink, 3);
+    circle(138, 327, 3, C.ink); circle(164, 327, 3, C.ink);
+    stroke([128, 311], [145, 308], 4); stroke([155, 308], [172, 311], 4);
+  } else if (face === "happy") {
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 4; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(137, 329, 6, 1.15 * Math.PI, 1.85 * Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.arc(163, 329, 6, 1.15 * Math.PI, 1.85 * Math.PI); ctx.stroke();
+  } else if (face === "thinking") {
+    circle(140, 323, 4.5, C.ink); circle(166, 323, 4.5, C.ink);
+    stroke([155, 306], [172, 312], 4);
+  } else {
+    circle(137, 326, 4.5, C.ink); circle(163, 326, 4.5, C.ink);
+    if (face === "sad") { stroke([128, 313], [145, 317], 4); stroke([155, 317], [172, 313], 4); }
+  }
+  if (speaking) {
+    ctx.beginPath();
+    ctx.ellipse(150, 346, face === "surprised" ? 8 : 12, 3 + Math.abs(Math.sin(now / 90)) * 6, 0, 0, Math.PI * 2);
+    ctx.fillStyle = C.ink; ctx.fill();
+  } else if (face === "surprised") {
+    ctx.beginPath(); ctx.ellipse(150, 349, 6, 8, 0, 0, Math.PI * 2); ctx.fillStyle = C.ink; ctx.fill();
+  } else if (face === "plain" || face === "thinking") {
+    stroke([140, 349], [160, 349], 5);
+  } else if (face === "sad") {
+    ctx.beginPath(); ctx.arc(150, 360, 14, 1.25 * Math.PI, 1.75 * Math.PI);
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 5; ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.arc(150, 334, 16, 0.2 * Math.PI, 0.8 * Math.PI);
+    ctx.strokeStyle = C.ink; ctx.lineWidth = 5; ctx.stroke();
+  }
 }
 
 function polyline(points) {
@@ -1646,7 +1894,19 @@ function renderBoardScreen() {
   $("btn-reveal").classList.toggle("hidden", !ask);
   $("answer-form").classList.toggle("hidden", !(ask && ask.type === "type"));
   $("ask-box").classList.toggle("hidden", !state.askOpen);
+  // The pipeline at work, and afterwards the learner's say on whether it landed.
+  $("think-note").textContent = state.thinking;
+  $("think-note").classList.toggle("hidden", !state.thinking);
+  $("checkin-box").classList.toggle("hidden", !(state.checkIn && e.interjecting));
+  $("checkin-back").textContent = "Yes — back to " + (e.returnTo || "the lesson");
+  $("key-form").classList.toggle("hidden", !state.keyOpen);
+  $("btn-key").textContent = state.keyOpen ? "Close" : state.model.ready ? "Change key" : "Connect the model";
+  $("key-remove").classList.toggle("hidden", !state.model.ready);
+  $("ask-model").textContent = state.model.ready
+    ? "Answered by " + state.model.model + (state.model.label ? " (" + state.model.label + ")" : "") + " through the dictionary."
+    : "Answered offline by the built-in generator (" + (state.model.why || "no model") + ").";
   $("intake-box").classList.toggle("hidden", !state.intakeOpen);
+  renderScripts();
 
   // Tray of cards + row slots (sentence parts, timeline order)
   const tray = e.board.tray || [];
@@ -1661,6 +1921,124 @@ function renderBoardScreen() {
     return `<div class="row-slot ${card ? "filled" : ""} ${mark}" data-slot="${s.id}"><small>${escapeHtml(s.label)}</small><span>${card ? escapeHtml(card.label) : "—"}</span></div>`;
   }).join("");
 }
+
+// ---------- The scripts beside the board ----------
+// Two panels. The lesson's script is always there, with the step being played;
+// when a question comes in it turns orange and holds on its step while the
+// answer script plays in the second panel. "I'm okay" hands the board back and
+// the lesson's step lights up again. Nothing here decides anything: it is a
+// window onto what the engine is doing.
+
+// One line for a step, in the words the learner will hear or see.
+function describeStep(st) {
+  const d = st.do || "say";
+  let what = st.text || "";
+  if (d === "ask" && st.ask && st.ask.prompt) what = (what ? what + " " : "") + "“" + st.ask.prompt + "”";
+  else if (!what && d === "show") what = (st.objects || []).map(o => o.label !== undefined ? o.label : (o.icon || o.id)).join(", ");
+  else if (!what && d === "layout") what = (st.panels || []).map(p => typeof p === "string" ? p : (p.title || p.id)).join(" | ");
+  else if (!what && d === "rough") what = (st.lines || []).join(" · ");
+  else if (!what && st.at) what = [].concat(st.at).join(", ");
+  return what || "(" + d + ")";
+}
+
+// Draw a list of steps once, then only move the highlight as the cursor moves.
+function renderSteps(list, steps, cursor, opts) {
+  const o = opts || {};
+  if (list._steps !== steps) {
+    list._steps = steps;
+    list._scrolled = "";
+    list.innerHTML = steps && steps.length
+      ? steps.map((st, i) => `<li class="step-row"><span class="num">${i + 1}</span><span class="do">${escapeHtml(st.do || "say")}</span><span class="what">${escapeHtml(describeStep(st))}</span><span class="flag"></span></li>`).join("")
+      : `<li class="empty ${o.writing ? "writing" : ""}">${escapeHtml(o.empty || "Nothing yet.")}</li>`;
+  }
+  const rows = list.children;
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row.classList.contains("step-row")) continue;
+    const here = i === cursor;
+    row.classList.toggle("done", o.allDone || i < cursor);
+    row.classList.toggle("current", here && !o.hold);
+    row.classList.toggle("hold", here && !!o.hold);
+    row.classList.toggle("resumed", here && !!o.resumed);
+    row.lastElementChild.textContent = here ? (o.flag || "") : "";
+  }
+  // Keep the step being played in the middle of the list. Re-checked on every
+  // render, because the list changes height when the other panel opens.
+  if (cursor >= 0 && rows[cursor]) {
+    const row = rows[cursor];
+    const top = row.offsetTop - list.offsetTop;
+    const want = Math.max(0, top - (list.clientHeight - row.offsetHeight) / 2);
+    const visible = top >= list.scrollTop && top + row.offsetHeight <= list.scrollTop + list.clientHeight;
+    const key = cursor + ":" + (o.hold ? "h" : "p");
+    if (!visible || list._scrolled !== key) { list._scrolled = key; list.scrollTop = want; }
+  }
+}
+
+function renderScripts() {
+  const e = state.engine;
+  const held = runner.stack.length ? runner.stack[0] : null;     // the lesson, while an answer plays
+  const lessonScript = held ? held.script : runner.script;
+  const steps = held ? held.steps : runner.steps;
+  const cursor = held ? held.cursor : e.cursor;
+  const total = steps ? steps.length : 0;
+  const at = n => "step " + (n + 1) + " of " + total;
+  const recent = state.resumedAt && Date.now() - state.resumedAt < 3500;
+
+  // --- the lesson ---
+  const lp = $("lesson-script");
+  lp.classList.toggle("holding", !!held);
+  lp.classList.toggle("playing", !held && (e.status === "playing" || e.status === "asking"));
+  $("lesson-script-title").textContent = lessonScript ? lessonScript.title : "No lesson open";
+  let status, note = "";
+  if (held) {
+    status = cursor >= 0 ? "Holding at " + at(cursor) : "Holding at the start";
+    note = "<strong>Paused for your question.</strong> The lesson keeps its place here and continues from this step when you say you are okay.";
+  } else if (e.status === "playing" || e.status === "asking") {
+    status = "Playing · " + at(cursor);
+    if (recent) note = "<strong>Back in the lesson</strong> at " + at(cursor) + ", exactly where it stopped.";
+  } else if (e.status === "done") status = "Finished · " + total + " steps";
+  else if (cursor >= 0) status = "Paused at " + at(cursor);
+  else status = total ? total + " steps · ready" : "";
+  $("lesson-script-status").textContent = status;
+  $("lesson-script-note").innerHTML = note;
+  renderSteps($("lesson-steps"), steps || [], cursor, {
+    hold: !!held, resumed: recent && !held,
+    flag: held ? "holding here" : recent ? "back here" : "",
+    empty: "Pick a lesson to see its script."
+  });
+
+  // --- the answer ---
+  const a = state.answer;
+  const ap = $("answer-script");
+  const live = !!held;                                           // the answer is on the board now
+  ap.classList.toggle("hidden", !a && !live);
+  if (!a && !live) return;
+  ap.classList.toggle("finished", !live && !!a && a.status === "returned");
+  const kind = (live && runner.script && runner.script.meta.kind) || (a && a.kind) || "answer";
+  const kicker = kind === "focus" ? "A closer look" : kind === "answer" ? "Answer script" : "Extra script";
+  ap.querySelector(".card-kicker").textContent = kicker;
+  const question = a && a.question ? a.question : (runner.script ? runner.script.title : "");
+  $("answer-script-title").textContent = kind === "answer" ? "“" + question + "”" : question;
+
+  const by = a && a.source ? "Written by " + (a.source === "llm" ? "the model" : a.source === "generator" ? "the built-in generator" : a.source) + (a.route ? " (" + a.route + ")" : "") + "." : "";
+  if (live) {
+    const done = e.status === "done";
+    $("answer-script-status").textContent = done ? "Finished" : "Playing · " + at2(e.cursor, e.total);
+    $("answer-script-note").innerHTML = (by ? by + " " : "") + (done
+      ? "<strong>The answer is over.</strong> Say you are okay, or ask another question, and the lesson takes the board back at " + escapeHtml(e.returnTo) + "."
+      : "A new script, playing on the board now. The lesson is waiting at " + escapeHtml(e.returnTo) + ".");
+    renderSteps($("answer-steps"), runner.steps, e.cursor, { allDone: done, flag: done ? "" : "playing" });
+  } else if (a.status === "writing") {
+    $("answer-script-status").textContent = "Writing…";
+    $("answer-script-note").innerHTML = "<strong>" + escapeHtml(a.stage || "Working on it…") + "</strong> The lesson is holding at " + escapeHtml(a.heldAt) + ".";
+    renderSteps($("answer-steps"), [], -1, { writing: true, empty: "The tutor is writing a new script for this question. It will appear here, step by step." });
+  } else {
+    $("answer-script-status").textContent = "Done";
+    $("answer-script-note").innerHTML = (by ? by + " " : "") + "<strong>Finished.</strong> The lesson picked up again at " + escapeHtml(a.returnedTo || "its step") + ".";
+    renderSteps($("answer-steps"), $("answer-steps")._steps || [], -1, { allDone: true });
+  }
+}
+function at2(n, total) { return "step " + (n + 1) + " of " + total; }
 
 function setIntakeError(message) {
   $("intake-error").textContent = message || "";
@@ -1722,7 +2100,73 @@ $("btn-check").addEventListener("click", checkPlacements);
 $("btn-repeat").addEventListener("click", () => speak(state.flash || state.engine.caption));
 $("btn-simpler").addEventListener("click", explainSimpler);
 $("btn-deeper").addEventListener("click", goDeeper);
-$("btn-back").addEventListener("click", () => runner.resumeAndPlay());
+$("btn-back").addEventListener("click", backToLesson);
+
+// Connect the model from the app: the key goes to the local server, which
+// tries it with one small call and keeps it in anthropic-key.local. The page
+// never stores it and the server never sends it back.
+const providerById = id => (state.model.providers || []).filter(p => p.id === id)[0] || {};
+
+// Fill the box from what is connected now, or from a provider's defaults.
+function fillKeyForm(pid, fromDefaults) {
+  const list = state.model.providers || [];
+  $("key-provider").innerHTML = list.map(p => `<option value="${p.id}">${escapeHtml(p.label)}</option>`).join("");
+  const p = providerById(pid) ;
+  $("key-provider").value = p.id || "";
+  const current = !fromDefaults && state.model.provider === p.id;
+  $("key-model").value = current ? state.model.model : (p.model || "");
+  $("key-base").value = current ? state.model.base_url : (p.base || "");
+  $("key-input").value = "";
+  $("key-input").placeholder = current && state.model.ready ? "leave empty to keep the saved key"
+    : p.id === "anthropic" ? "sk-ant-…" : p.id === "custom" ? "only if the address needs one" : "paste the key";
+  // The address only needs editing for a local or unlisted model.
+  $("key-base-field").classList.toggle("hidden", !(p.id === "custom" || p.id === "ollama"));
+  $("key-input-field").classList.toggle("hidden", !(p.key || p.id === "custom"));
+}
+
+function sendKey(fields) {
+  const note = $("key-note");
+  note.textContent = fields.remove ? "Disconnecting…" : "Checking with one small call…";
+  $("key-save").disabled = true;
+  return fetch("/llm/key", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fields) })
+    .then(r => r.json())
+    .then(function (res) {
+      if (res.error) { note.textContent = res.error; return; }
+      state.model = res;
+      $("key-input").value = "";
+      note.textContent = "";
+      state.keyOpen = false;
+      flash(state.model.ready ? "I am connected. Ask me anything about the lesson." : "Disconnected. I will answer from what I already know.");
+    })
+    .catch(err => { note.textContent = "Could not reach the local server (" + err.message + "). Open the app with start.command."; })
+    .finally(() => { $("key-save").disabled = false; renderBoardScreen(); });
+}
+$("btn-key").addEventListener("click", () => {
+  state.keyOpen = !state.keyOpen;
+  if (state.keyOpen) { fillKeyForm(state.model.provider || "anthropic", false); $("key-note").textContent = ""; }
+  renderBoardScreen();
+  if (state.keyOpen) $("key-model").focus();
+});
+$("key-provider").addEventListener("change", e => fillKeyForm(e.target.value, true));
+$("key-form").addEventListener("submit", e => {
+  e.preventDefault();
+  sendKey({ provider: $("key-provider").value, model: $("key-model").value.trim(), base_url: $("key-base").value.trim(), key: $("key-input").value.trim() });
+});
+$("key-remove").addEventListener("click", () => sendKey({ remove: true }));
+
+// After an answer: understood, another question, or still lost.
+$("checkin-back").addEventListener("click", backToLesson);
+$("checkin-another").addEventListener("click", () => {
+  state.checkIn = false;
+  state.askOpen = true;
+  renderBoardScreen();
+  $("ask-input").focus();
+});
+$("checkin-simpler").addEventListener("click", () => {
+  const q = state.lastQuestion || (runner.script && runner.script.meta.question) || "";
+  if (!q) { explainSimpler(); return; }
+  askTutor(q, { simpler: true });
+});
 
 $("btn-test-voice").addEventListener("click", () => {
   state.voiceOn = true;
@@ -1747,6 +2191,11 @@ $("voice-pick").addEventListener("change", function (e) {
   prepareCurrent().then(() => speak("This is the voice I will teach with."));
 });
 $("btn-prepare-all").addEventListener("click", prepareEverything);
+$("theme-pick").value = state.themePick || "auto";
+$("theme-pick").addEventListener("change", function (e) {
+  state.themePick = e.target.value;
+  try { localStorage.setItem("tutor-theme", state.themePick); } catch { /* private mode */ }
+});
 
 $("btn-voice").addEventListener("click", () => {
   state.voiceOn = !state.voiceOn;
@@ -1755,6 +2204,8 @@ $("btn-voice").addEventListener("click", () => {
 });
 $("btn-ask").addEventListener("click", () => {
   state.askOpen = !state.askOpen;
+  // Asking stops the lecture where it is; the answer comes back to this step.
+  if (state.askOpen && !state.engine.interjecting) runner.pause();
   renderBoardScreen();
   if (state.askOpen) $("ask-input").focus();
 });
