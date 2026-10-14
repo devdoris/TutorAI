@@ -129,8 +129,40 @@ test("offline, a question still becomes a script that ends by checking in", asyn
   assert.equal(res.trace.route, "offline");
   assert.equal(last(res.script).do, "listen");
   assert.equal(last(res.script).text, P.CHECK_IN);
+  assert.equal(res.script.board.inherit, false);
+  assert.equal(res.script.board.theme, "chalk", "an answer should keep the lesson's blackboard theme");
+  assert.equal(res.script.steps[0].do, "clear");
+  assert.equal(res.script.steps[1].do, "show");
+  assert.equal(res.script.steps[1].objects[0].label, "why is there a comma?");
+  assert.equal(res.script.steps[2].do, "clear", "the learner's question should be cleared before the answer");
   assert.equal(res.script.meta.kind, "answer");
   assert.ok(E.validateScript(res.script).ok);
+});
+
+test("a question gets a clean board, then the paused lesson is restored exactly", async () => {
+  const { ctx, h } = midLesson();
+  const originalBoard = JSON.parse(JSON.stringify(h.runner.board));
+  const originalCursor = h.runner.cursor;
+  const question = "What does the zero do?";
+  const res = await make(null).answer(question, ctx);
+
+  await h.runner.interject(res.script, { label: "step " + (originalCursor + 1) });
+  assert.equal(h.runner.stack.length, 1);
+  assert.equal(h.runner.board.objects.some(o => o.id === "d1"), false, "the lesson's number remained on the answer board");
+  assert.equal(res.script.steps[1].objects[0].label, question, "the learner's exact question was not shown");
+  assert.equal(res.script.steps[2].do, "clear", "the question should not overlap the answer");
+  assert.equal(res.script.board.theme, "chalk");
+
+  h.runner.resume();
+  assert.deepEqual(h.runner.board, originalBoard);
+  assert.equal(h.runner.cursor, originalCursor);
+});
+
+test("a question answer retains the lesson's selected board theme", async () => {
+  const { ctx } = midLesson();
+  ctx.board = Object.assign({}, ctx.board, { theme: "paper" });
+  const res = await make(null).answer("What does x mean?", ctx);
+  assert.equal(res.script.board.theme, "paper");
 });
 
 test("with a model: intent, then explanation, then a script built from the dictionary", async () => {
@@ -139,8 +171,10 @@ test("with a model: intent, then explanation, then a script built from the dicti
     intent: { kind: "in_scope", restated: "Why does 40,632 have a comma?", reason: "about the board" },
     respond: { direct_answer: "The comma splits off the thousands.", explanation: ["Count three digits from the right.", "Everything left of it is thousands."],
       example: null, refers_to: ["comma"], check: { prompt: "How many thousands?", expect: "40", hint: "Left of the comma." } },
-    script: { title: "The comma", board: { inherit: true }, steps: [
-      { do: "point", at: ["comma"], text: "This comma splits off the thousands." },
+    script: { title: "The comma", board: { inherit: false }, steps: [
+      { do: "clear", text: "Start with an empty board." },
+      { do: "show", objects: [{ id: "answer-comma", label: "thousands", x: 50, y: 60 }], at: ["answer-comma"], text: "This comma splits off the thousands." },
+      { do: "point", at: ["comma"], text: "This points at the paused lesson and should be removed." },
       { do: "point", at: ["ghost"], text: "This one does not exist." },
       { do: "ask", text: "Try.", ask: { prompt: "No type or expect" } },
       { do: "dance", text: "Not a directive." },
@@ -156,8 +190,17 @@ test("with a model: intent, then explanation, then a script built from the dicti
   assert.equal(res.script.meta.source, "llm");
 
   const s = res.script;
+  assert.equal(s.steps[0].do, "clear");
+  assert.equal(s.steps[1].objects[0].label, "why the comma");
+  assert.equal(s.steps[2].do, "clear", "the learner's question should be cleared before the answer");
+  assert.equal(s.board.inherit, false);
+  assert.equal(s.board.theme, "chalk", "a model-selected paper theme should not replace the lesson's blackboard");
   assert.ok(!s.steps.some(st => st.do === "dance"), "an unknown directive got through");
   assert.ok(!s.steps.some(st => (st.at || []).includes("ghost")), "pointing at nothing got through");
+  assert.ok(!s.steps.some(st => (st.at || []).includes("comma")), "the answer points at an object from the paused lesson");
+  assert.ok(s.steps.filter(st => st.do === "show").every(st => st.objects
+    .filter(o => o.id !== "learner-question").every(o => o.x === undefined && o.y === undefined)),
+    "answer objects should use the engine's automatic spacing");
   assert.equal(s.steps.filter(st => st.do === "ask").length, 1, "the broken ask was not turned into speech");
   assert.equal(last(s).text, P.CHECK_IN);
   assert.ok(E.validateScript(s).ok);
@@ -183,6 +226,8 @@ test("an off-topic question is still answered, and the Script Manager is told to
   assert.ok(!/declined/.test(res.trace.route));
   assert.ok(m.calls[2].prompt.includes('"do": "clear"') || m.calls[2].prompt.includes("do\": \"clear\""), "the Script Manager was not told to clear the board");
   assert.ok(res.script.steps.some(s => s.do === "point" && (s.at || []).includes("l")), "pointing at a panel the answer's own layout made was stripped");
+  const answerLayout = res.script.steps.findIndex(s => s.do === "layout");
+  assert.equal(res.script.steps[answerLayout + 1].do, "clear", "the next answer scene should clear the previous one");
   assert.equal(last(res.script).text, P.CHECK_IN);
   assert.ok(E.validateScript(res.script).ok);
 });
@@ -225,7 +270,7 @@ test("when the Script Manager keeps failing, the explanation is laid out locally
   });
   const res = await make(m.llm).answer("what comes after thousands", ctx);
   assert.equal(res.trace.route, "model explanation, laid out locally");
-  assert.equal(res.script.steps[0].do, "point", "the local layout did not point at what the explanation refers to");
+  assert.equal(res.script.steps[0].do, "clear", "the local answer did not start on a clean board");
   assert.ok(res.script.steps.some(s => s.do === "rough"), "the example was not worked on the pad");
   assert.ok(E.validateScript(res.script).ok);
 });

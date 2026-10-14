@@ -1,0 +1,122 @@
+{
+  "id": "two-clues-two-unknowns",
+  "title": "Two clues, two unknowns",
+  "subject": "Mathematics",
+  "objective": "Solve two simultaneous equations by subtracting matching parts, then check both prices.",
+  "level": 2,
+  "concept": "simultaneous-equations",
+  "curricula": ["NERDC", "KS3", "CCSS"],
+  "board": {
+    "kind": "blank",
+    "heading": "",
+    "sub": ""
+  },
+  "faq": [
+    {
+      "k": ["simultaneous", "same time", "two equations"],
+      "a": "They are two clues about the same unknown prices. The answer must make both clues true at the same time."
+    },
+    {
+      "k": ["why subtract", "subtract", "cancel"],
+      "a": "Both clues contain the same two pens. Taking one whole clue away from the other removes the pens and leaves only notebooks."
+    },
+    {
+      "k": ["x", "y", "unknown"],
+      "a": "x and y are just short labels for the prices we do not know yet: x for one notebook and y for one pen."
+    },
+    {
+      "k": ["check", "correct"],
+      "a": "Put the notebook price and pen price into both original clues. They must make both totals come out right."
+    }
+  ],
+  "steps": [
+    {
+      "do": "board",
+      "heading": "Two shopping clues",
+      "sub": "Find the price of one notebook and one pen",
+      "text": "Here is a problem that sounds complicated. It is really just two clues about two prices. We will take it one small step at a time."
+    },
+    {
+      "do": "rough",
+      "title": "The two clues",
+      "lines": ["3 notebooks + 2 pens = ₦1,600", "1 notebook + 2 pens = ₦800"],
+      "at": ["rough"],
+      "text": "Three notebooks and two pens cost one thousand six hundred naira. One notebook and the same two pens cost eight hundred naira."
+    },
+    {
+      "do": "say",
+      "text": "We do not know either price. Let x mean the price of one notebook. Let y mean the price of one pen. These are called unknowns because their prices are hidden."
+    },
+    {
+      "do": "rough",
+      "title": "Write the clues with x and y",
+      "lines": ["3x + 2y = 1,600", "x + 2y = 800"],
+      "at": ["rough"],
+      "text": "The first clue becomes three x plus two y equals one thousand six hundred. The second becomes x plus two y equals eight hundred."
+    },
+    {
+      "do": "say",
+      "text": "Look at the two pens. There are two pens in each clue. If we take the smaller whole clue away from the larger one, those same two pen prices disappear."
+    },
+    {
+      "do": "rough",
+      "title": "Subtract the matching clues",
+      "lines": ["3x + 2y = 1,600", "− (x + 2y = 800)", "2x = 800"],
+      "at": ["rough"],
+      "text": "Three notebooks take away one notebook leaves two notebooks. Two pens take away two pens leaves none. One thousand six hundred take away eight hundred leaves eight hundred."
+    },
+    {
+      "do": "say",
+      "text": "So two notebooks cost eight hundred naira. If two equal notebooks cost eight hundred, one notebook costs half of that."
+    },
+    {
+      "do": "rough",
+      "title": "Find one notebook",
+      "lines": ["2x = 800", "x = 800 ÷ 2", "x = ₦400"],
+      "at": ["rough"],
+      "text": "Eight hundred shared equally between two notebooks is four hundred naira for one. We have found x."
+    },
+    {
+      "do": "say",
+      "text": "Now put the notebook price, four hundred naira, into the second clue. That leaves only the price of the two pens to work out."
+    },
+    {
+      "do": "rough",
+      "title": "Find one pen",
+      "lines": ["x + 2y = 800", "400 + 2y = 800", "2y = 400, so y = ₦200"],
+      "at": ["rough"],
+      "text": "Take four hundred away from eight hundred. The two pens together cost four hundred naira, so one pen costs two hundred."
+    },
+    {
+      "do": "say",
+      "text": "Let us test our answer in the shopping clues. If either total is wrong, then we need to go back and find our mistake."
+    },
+    {
+      "do": "rough",
+      "title": "Check both clues",
+      "lines": ["3 × 400 + 2 × 200 = 1,600 ✓", "400 + 2 × 200 = 800 ✓"],
+      "at": ["rough"],
+      "text": "Three notebooks at four hundred each, plus two pens at two hundred each, makes one thousand six hundred. The second clue makes eight hundred. Both are right."
+    },
+    {
+      "do": "say",
+      "face": "happy",
+      "text": "So the mystery is solved. One notebook costs four hundred naira. One pen costs two hundred naira. Two clues, two unknowns, and no scary shortcut."
+    },
+    {
+      "do": "ask",
+      "text": "Your turn. Use the same idea.",
+      "ask": {
+        "type": "type",
+        "prompt": "If 2x = 800, what is x?",
+        "expect": ["400", "₦400", "four hundred"],
+        "hint": "Share 800 equally between the two x values."
+      }
+    },
+    {
+      "do": "praise",
+      "face": "happy",
+      "text": "Exactly. You can solve a pair of clues by cancelling the part that matches."
+    }
+  ]
+}

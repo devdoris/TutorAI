@@ -153,14 +153,10 @@
   // ---------- 3. script manager ----------
 
   function scriptPrompt(question, response, ctx, intent) {
-    const kind = intent && intent.kind;
-    const offTopic = kind === "out_of_scope" || (kind === "unsure" && !(response.refers_to || []).length);
-    const where = offTopic
-      ? "This question is not about what is on the board, so nothing there helps. Start with { \"do\": \"clear\" } and lay the board out yourself for this answer: a heading, then objects placed where you decide (x and y, or a layout with panels)."
-      : "Point at board ids when a sentence is about them. Decide where each new thing goes: in a row under what is there, at an x and y you choose beside what it belongs to, or in a panel of a layout you set. Use the free space named under BOARD.";
+    const where = "Start with { \"do\": \"clear\" }. This is a separate answer scene on a fresh board. The learner's exact question is shown first, then cleared before your explanation begins. Do not point at or rely on objects from the paused lesson. Use the rough-work pad for calculations, keep each example to a few short lines, and show one idea at a time. Do not leave earlier examples or decorative objects underneath new working.";
     return "QUESTION\n" + question +
       "\n\nLESSON\n" + JSON.stringify(lessonOf(ctx)) +
-      "\n\nBOARD (already there — point at these ids)\n" + D().describeBoard(ctx.board) +
+      "\n\nPAUSED LESSON BOARD (shown again only after the answer)\n" + D().describeBoard(ctx.board) +
       "\n\nTHE EXPLANATION TO PUT ON THE BOARD\n" + JSON.stringify(response, null, 1) +
       "\n\nTurn this explanation into one script. Keep its words; split them so each step does one thing. " + where +
       " Put example lines on the rough pad or as new ans- objects. Use the check as the one ask. End with a listen step.";
@@ -179,13 +175,13 @@
   // pointing at things that do not exist goes, and an ask that would be
   // rejected becomes a line the tutor says. Then the engine's own validator
   // has the last word.
-  function sanitise(raw, ctx) {
+  function sanitise(raw) {
     const known = D().directiveNames();
     const there = {};
-    ((ctx.board && ctx.board.objects) || []).forEach(o => { if (o && o.id) there[o.id] = true; });
-    ((ctx.board && ctx.board.layout && ctx.board.layout.panels) || []).forEach(p => { there[p.id] = true; there[p.name] = true; });
     const s = Object.assign({}, raw);
     s.board = s.board && s.board.inherit === false ? s.board : Object.assign({}, s.board, { inherit: true });
+    [].concat(s.objects || [], s.slots || []).forEach(o => { if (o && o.id) there[o.id] = true; });
+    panelsOf({ grid: s.board.grid || s.board.layout, panels: s.board.panels }).forEach(p => { there[p] = true; });
     s.steps = [].concat(s.steps || []).filter(st => st && typeof st === "object" && known.indexOf(st.do || "say") >= 0).map(function (st) {
       const step = Object.assign({}, st);
       if (step.do === "show") ids(step.objects).forEach(o => { if (o.id) there[o.id] = true; });
@@ -209,29 +205,74 @@
     return s;
   }
 
+  function separateScenes(steps) {
+    const separated = [];
+    let hasScene = false;
+    steps.forEach(function (step) {
+      if (step.do === "clear") {
+        separated.push(step);
+        hasScene = false;
+        return;
+      }
+      if (["layout", "show", "rough"].indexOf(step.do) >= 0 && hasScene) {
+        separated.push({
+          do: "clear",
+          keepHeading: true,
+          grid: step.do === "rough" ? "none" : undefined,
+          text: "Let us look at this part on its own."
+        });
+        hasScene = false;
+      }
+      if (step.do === "show") {
+        step.objects = ids(step.objects).map(function (object) {
+          const placed = Object.assign({}, object, { row: "answer" });
+          delete placed.x;
+          delete placed.y;
+          delete placed.lx;
+          delete placed.ly;
+          return placed;
+        });
+      }
+      if (["layout", "show", "rough"].indexOf(step.do) >= 0) hasScene = true;
+      separated.push(step);
+    });
+    return separated;
+  }
+
   // The last word is always the same question, so the app knows where the
   // learner gets to say whether it landed.
-  function finish(script, question, source, intent) {
-    const steps = ids(script.steps).filter((st, i, all) => !(st.do === "listen" && i === all.length - 1));
+  function finish(script, question, source, intent, context) {
+    script = sanitise(script);
+    let steps = ids(script.steps).filter((st, i, all) => !(st.do === "listen" && i === all.length - 1));
+    while (steps.length && steps[0].do === "clear") steps.shift();
+    steps = separateScenes(steps);
+    let questionId = "learner-question";
+    let suffix = 1;
+    while (steps.some(st => [].concat(st.objects || []).some(o => o.id === questionId))) {
+      suffix += 1;
+      questionId = "learner-question-" + suffix;
+    }
+    steps.unshift(
+      { do: "clear", heading: "", grid: "none", text: "Let us put your question on a clear board." },
+      { do: "show", objects: [{ id: questionId, shape: "bubble", sub: "You asked", label: question, x: 50, y: 36, w: 82, size: 2.5 }], at: [questionId], text: "You asked: " + question },
+      { do: "clear", heading: script.title || "Let us work it out", grid: "none", text: "Now let us work through it." }
+    );
     steps.push({ do: "listen", text: CHECK_IN });
+    const theme = context && context.board && context.board.theme || "chalk";
     return Object.assign({}, script, {
       id: script.id && String(script.id).indexOf("ans-") === 0 ? script.id + "-" + Date.now() : "ans-" + Date.now(),
       title: script.title || "Your question",
-      board: script.board || { inherit: true },
+      board: Object.assign({}, script.board, { kind: "blank", heading: "Your question", sub: "", theme: theme, inherit: false }),
       steps: steps,
       meta: Object.assign({}, script.meta, { source: source, kind: "answer", question: question, intent: intent && intent.kind })
     });
   }
 
-  // The explanation, laid out without a model: still on the board, still
-  // pointing where it can. Used when the model is unreachable or what it
-  // wrote will not pass the engine's checks.
+  // The explanation, laid out without a model. Used when the model is
+  // unreachable or what it wrote will not pass the engine's checks.
   function scriptFromResponse(response, ctx) {
-    const board = (ctx.board && ctx.board.objects) || [];
-    const onBoard = id => board.some(o => o.id === id);
-    const target = response.refers_to.filter(onBoard)[0];
     const steps = [];
-    steps.push(target ? { do: "point", at: [target], text: response.direct_answer } : { do: "say", text: response.direct_answer || "Good question." });
+    steps.push({ do: "say", text: response.direct_answer || "Good question." });
     response.explanation.forEach(s => steps.push({ do: "say", text: s }));
     if (response.example) {
       steps.push({ do: "rough", title: "working", lines: response.example.lines, text: response.example.intro || "Watch the working." });
@@ -241,7 +282,7 @@
       steps.push({ do: "ask", text: "Your turn.", ask: { type: "type", prompt: response.check.prompt, expect: response.check.expect, hint: response.check.hint || "Go back over what I just said." } });
       steps.push({ do: "praise", text: "That is it." });
     }
-    return { title: "Your question", level: ctx.level || 2, concept: ctx.concept || "", board: { inherit: true }, steps: steps.filter(s => s.text || s.do === "rough") };
+    return { title: "Your question", level: ctx.level || 2, concept: ctx.concept || "", board: { inherit: false }, steps: steps.filter(s => s.text || s.do === "rough") };
   }
 
   // Only two kinds get no explanation: a greeting, and something not for a
@@ -303,7 +344,7 @@
           prompt = scriptPrompt(question, response, ctx, it) + "\n\nYour last reply could not be read (" + e.message + "). Reply with the JSON object only.";
           continue;
         }
-        const clean = sanitise(raw, ctx);
+        const clean = sanitise(raw);
         const check = o.validate ? o.validate(Object.assign({}, clean, { steps: clean.steps.concat([{ do: "listen", text: CHECK_IN }]) })) : { ok: true, errors: [], warnings: [] };
         if (check.ok && clean.steps.length) return { script: clean, warnings: check.warnings || [], repaired: attempt > 0 };
         if (attempt) break;
@@ -331,7 +372,7 @@
       const done = function (script, source, route) {
         trace.route = route;
         stage("ready");
-        const out = finish(script, question, source, it);
+        const out = finish(script, question, source, it, ctx);
         history.push({ question: question, answer: trace.response ? [trace.response.direct_answer].concat(trace.response.explanation).join(" ") : "" });
         return { script: out, trace: trace };
       };

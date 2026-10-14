@@ -492,3 +492,22 @@ test("the samples use numbers, equations, a divided board and centre stage", () 
   const icons = social.steps.reduce((all, st) => all.concat(st.objects || []), []).filter(o => I.isRemote(o.icon));
   assert.equal(icons.length, 6, "six icons from a collection");
 });
+
+test("the simultaneous-equations example is a valid, playable presentation lesson", async () => {
+  const script = JSON.parse(readFileSync(fileURLToPath(new URL("../examples/two-clues-two-unknowns.json", import.meta.url)), "utf8"));
+  const validation = E.validateScript(script);
+  assert.ok(validation.ok, validation.errors.join("; "));
+  assert.deepEqual(validation.warnings, []);
+  assert.ok(script.steps.filter(step => step.do === "rough").every(step => step.lines.length <= 3),
+    "worked examples should stay short and readable");
+
+  const h = harness();
+  h.runner.load(script);
+  assert.equal(await playToEnd(h.runner), "done");
+  const said = h.spoken.join(" ");
+  assert.match(said, /two clues about two prices/i);
+  assert.match(said, /those same two pen prices disappear/i);
+  assert.match(said, /one pen costs two hundred/i);
+  assert.match(said, /test our answer/i);
+  assert.ok(h.runner.board.rough.lines.some(line => line.includes("400 + 2 × 200 = 800")));
+});

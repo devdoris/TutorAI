@@ -2,10 +2,15 @@
 
 Plain HTML and JavaScript. No install, no bundler, no dependencies.
 
-**To open:** double-click `start.command`. It opens the app in your browser at a
-local address, and the tutor teaches with a Nigerian English voice. Use Chrome or
-Edge. (Double-clicking `index.html` also works, but then there is no renderer, so
-the browser's own voice is used and Chrome may block it.)
+**To open on Windows:** double-click `start.bat`. It starts the local server and
+opens the app at `http://127.0.0.1:8321/index.html`. Keep the server window open
+while using the app. Python 3 must be installed.
+
+**To open on macOS:** double-click `start.command`. Use Chrome or Edge.
+Double-clicking `index.html` or opening the page with Live Server does not start
+the local server; to connect an AI model, start the server with the platform
+launcher first. Live Server can still be used for the page once the local server
+is running.
 
 **Before a demo, run `prepare-voice.command` once.** It renders every line of
 every lesson to an audio file, which takes about a minute. After that the tutor
@@ -17,6 +22,13 @@ and that the browser tab is not muted.
 
 **Presenting?** The running order, how this fits the PRD, the gaps and where AI
 comes in are in the app itself: the **Demo notes** tab, or open `notes.html`.
+
+To present the maths example, open **Board → Script intake → Upload .json**,
+choose `examples/two-clues-two-unknowns.json`, then click **Run it**. It explains
+simultaneous equations through two simple shopping clues. Ask a question while
+it is playing: the tutor clears the board, shows your question, then gives the
+answer in separate, uncluttered scenes. When you choose to resume, the original
+lesson returns at the step where it paused.
 
 ## Two layers
 
@@ -52,7 +64,7 @@ assert it.
 | `icons/` | Icons fetched from the internet, kept so they load without it. Safe to delete |
 | `style.css` | Page layout |
 | `organic.css` | The design system from Claude Design (colours, fonts, buttons) |
-| `server.py` | Tiny local server started by `start.command`. Renders the tutor's lines to audio, serves them, and keeps the Mac voice as a fallback |
+| `server.py` | Tiny local server started by `start.bat` or `start.command`. Serves the app and handles the private model connection |
 | `tts.py` | Renders one batch of lines to `audio/`, named after a hash of the words |
 | `prepare-voice.mjs` | Works out every line every lesson could say, and renders them all. Run it before a demo |
 | `audio/` | The rendered files. Safe to delete; they are rebuilt on demand |

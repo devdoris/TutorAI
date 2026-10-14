@@ -21,7 +21,9 @@ Tiny local server for the Tutor demo.
 Run:  python3 server.py      (start.command does this for you)
 """
 import json
+import os
 import subprocess
+import sys
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -130,8 +132,9 @@ def ask_model(request):
     cfg = llm.normalise(request["config"]) if request.get("config") else llm.load_config()
     if not cfg or cfg["provider"] != "anthropic":
         return llm.ask(request)
-    for command in (["uv", "run", "--quiet", "--with", "anthropic", "python3", "llm.py"],
-                    ["python3", "llm.py"]):
+    python = "python" if os.name == "nt" else "python3"
+    for command in (["uv", "run", "--quiet", "--with", "anthropic", python, "llm.py"],
+                    [sys.executable, "llm.py"]):
         try:
             proc = subprocess.run(command, input=json.dumps(request), capture_output=True,
                                   text=True, cwd=str(HERE), timeout=120)
@@ -173,6 +176,19 @@ class Handler(SimpleHTTPRequestHandler):
             self.reply(200, "stopped")
         else:
             self.reply(404, "not found")
+
+    def do_OPTIONS(self):
+        if self.path not in ("/llm", "/llm/key"):
+            self.reply(404, "not found")
+            return
+        if not self.from_this_machine():
+            return
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Max-Age", "600")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
 
     def do_GET(self):
         if self.path == "/voices":
@@ -470,7 +486,6 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    import os
     os.chdir(HERE)
     print(f"Tutor is running at http://localhost:{PORT}  (close this window to stop it)")
     ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()

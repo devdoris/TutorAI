@@ -643,7 +643,7 @@ function reveal() {
 function answerContext() {
   const e = state.engine;
   return {
-    faq: e.faq, board: e.board, focus: e.focus, concept: e.concept, level: e.level,
+    faq: e.faq, board: Object.assign({}, e.board, { theme: wantedTheme() }), focus: e.focus, concept: e.concept, level: e.level,
     objective: e.objective, scriptId: e.scriptId, step: runner.currentStep()
   };
 }
@@ -667,14 +667,19 @@ const pipeline = TutorPipeline.create({
     renderBoardScreen();
   }
 });
-const llmCall = TutorPipeline.serverLLM("");
+const modelServerBase = ["localhost", "127.0.0.1"].includes(location.hostname) && location.port !== "8321"
+  ? "http://127.0.0.1:8321" : "";
+const llmCall = TutorPipeline.serverLLM(modelServerBase);
 
 // Is there a model behind the server? Without one the pipeline still answers,
 // from the local generator.
-fetch("/llm")
+fetch(modelServerBase + "/llm")
   .then(r => (r.ok ? r.json() : null))
   .then(function (info) { if (info) state.model = info; renderBoardScreen(); })
-  .catch(function () { state.model = { ready: false, model: "", why: "no local server" }; });
+  .catch(function () {
+    state.model = { ready: false, model: "", why: "local AI server unavailable", providers: [] };
+    renderBoardScreen();
+  });
 
 // Everything the lesson has said so far, so the intent layer can tell a
 // question about this lesson from one about something else.
@@ -1500,15 +1505,12 @@ function drawObjectBody(ob, x, y) {
 }
 
 // ---------- the rough-work pad ----------
-// A teacher does the arithmetic in the corner, not across the middle of the
-// lesson. The pad floats above the board with its own background, so working
-// can never land on top of the thing being worked on, and it slides away when
-// the sum is done.
+// The rough-work pad sits in the board's center and grows to fit its working.
 
 let roughShown = 0;      // when the pad opened
 let roughClosing = 0;    // when the tutor started putting it away
 let roughLast = null;    // what was on it, so it can be drawn while it closes
-const ROUGH = { x: 9, w: 82, bottom: 97, maxLines: 4, openMs: 260, closeMs: 420 };
+const ROUGH = { openMs: 260, closeMs: 420 };
 
 function drawRough(board, now) {
   const pad = board.rough;
@@ -1530,23 +1532,29 @@ function drawRough(board, now) {
 
 // `opening` runs 0 to 1 as it arrives; `closing` runs 0 to 1 as it leaves.
 function drawPad(pad, opening, closing) {
-  // The pad grows downwards from its own title as working is added, and is
-  // pinned to the bottom of the board, so one line of arithmetic takes a small
-  // pad and four lines take a taller one.
-  const rows = Math.min((pad.lines || []).length, ROUGH.maxLines);
-  const hPct = 11.5 + rows * 5.4;
-  const x = BX(ROUGH.x), y = BY(ROUGH.bottom - hPct);
-  const w = ROUGH.w / 100 * BOARD.w, h = hPct / 100 * BOARD.h;
+  const x = BOARD.x + BOARD.w * 0.05;
+  const w = BOARD.w * 0.9;
+  const top = BY(21);
+  const bottom = BY(95);
+  const maxH = bottom - top;
+  const padX = 3.2 * U;
+  const bodyW = w - padX * 2;
+  const rows = (pad.lines || []).flatMap(row => wrapLines(row, bodyW, 2.8 * U));
+  const headerH = 9.8 * U;
+  const h = Math.min(maxH, headerH + rows.length * 4.2 * U + 2.2 * U);
+  const lineH = rows.length ? Math.min(4.2 * U, (h - headerH) / rows.length) : 0;
+  const fontSize = Math.min(2.8 * U, lineH * 0.7);
+  const y = (top + bottom - h) / 2;
 
   ctx.save();
-  // Slides up into place as it opens, and drops away as it is put aside.
+  // The pad grows around wrapped working while staying inside the board.
   ctx.translate(0, (1 - opening) * 18 + closing * closing * (h + 30));
   ctx.globalAlpha = Math.min(opening, 1 - closing * 0.75);
   roundRect(x, y, w, h, 16, C.padFill, C.accent, 3);
-  text(pad.title || "rough work", x + 3.2 * U, y + 4.2 * U, 2.6 * U, C.accentLight, BODY, "left");
-  line(x + 3 * U, y + 6.6 * U, x + w - 3 * U, y + 6.6 * U, C.padRule, 2);
-  (pad.lines || []).slice(0, ROUGH.maxLines).forEach(function (row, i) {
-    text(row, x + 3.2 * U, y + 10 * U + i * 4.4 * U, 2.9 * U, C.chalk, BODY, "left");
+  text(pad.title || "rough work", x + padX, y + 3.4 * U, 2.6 * U, C.accentLight, BODY, "left");
+  line(x + 3 * U, y + 6.5 * U, x + w - 3 * U, y + 6.5 * U, C.padRule, 2);
+  rows.forEach(function (row, i) {
+    text(row, x + padX, y + 8.2 * U + lineH * (i + 0.5), fontSize, C.chalk, BODY, "left");
   });
   ctx.restore();
   // So a step can point the tutor at the pad with at: ["rough"], including
@@ -2103,14 +2111,18 @@ $("btn-deeper").addEventListener("click", goDeeper);
 $("btn-back").addEventListener("click", backToLesson);
 
 // Connect the model from the app: the key goes to the local server, which
-// tries it with one small call and keeps it in anthropic-key.local. The page
+// tries it with one small call and keeps it in model.local. The page
 // never stores it and the server never sends it back.
 const providerById = id => (state.model.providers || []).filter(p => p.id === id)[0] || {};
 
 // Fill the box from what is connected now, or from a provider's defaults.
 function fillKeyForm(pid, fromDefaults) {
   const list = state.model.providers || [];
-  $("key-provider").innerHTML = list.map(p => `<option value="${p.id}">${escapeHtml(p.label)}</option>`).join("");
+  $("key-provider").innerHTML = list.length
+    ? list.map(p => `<option value="${p.id}">${escapeHtml(p.label)}</option>`).join("")
+    : '<option value="">Start the local server first</option>';
+  $("key-provider").disabled = !list.length;
+  $("key-save").disabled = !list.length;
   const p = providerById(pid) ;
   $("key-provider").value = p.id || "";
   const current = !fromDefaults && state.model.provider === p.id;
@@ -2119,6 +2131,7 @@ function fillKeyForm(pid, fromDefaults) {
   $("key-input").value = "";
   $("key-input").placeholder = current && state.model.ready ? "leave empty to keep the saved key"
     : p.id === "anthropic" ? "sk-ant-…" : p.id === "custom" ? "only if the address needs one" : "paste the key";
+  $("key-note").textContent = list.length ? "" : "Run start.bat, then reload this page to connect a model.";
   // The address only needs editing for a local or unlisted model.
   $("key-base-field").classList.toggle("hidden", !(p.id === "custom" || p.id === "ollama"));
   $("key-input-field").classList.toggle("hidden", !(p.key || p.id === "custom"));
@@ -2128,7 +2141,7 @@ function sendKey(fields) {
   const note = $("key-note");
   note.textContent = fields.remove ? "Disconnecting…" : "Checking with one small call…";
   $("key-save").disabled = true;
-  return fetch("/llm/key", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fields) })
+  return fetch(modelServerBase + "/llm/key", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fields) })
     .then(r => r.json())
     .then(function (res) {
       if (res.error) { note.textContent = res.error; return; }
@@ -2138,12 +2151,12 @@ function sendKey(fields) {
       state.keyOpen = false;
       flash(state.model.ready ? "I am connected. Ask me anything about the lesson." : "Disconnected. I will answer from what I already know.");
     })
-    .catch(err => { note.textContent = "Could not reach the local server (" + err.message + "). Open the app with start.command."; })
+    .catch(err => { note.textContent = "Could not reach the local server (" + err.message + "). Run start.bat or start.command."; })
     .finally(() => { $("key-save").disabled = false; renderBoardScreen(); });
 }
 $("btn-key").addEventListener("click", () => {
   state.keyOpen = !state.keyOpen;
-  if (state.keyOpen) { fillKeyForm(state.model.provider || "anthropic", false); $("key-note").textContent = ""; }
+  if (state.keyOpen) { $("key-note").textContent = ""; fillKeyForm(state.model.provider || "anthropic", false); }
   renderBoardScreen();
   if (state.keyOpen) $("key-model").focus();
 });
